@@ -7,7 +7,7 @@ For example:
 
 ### bgrep bash script
 Example usage:
-    `bgrep [Ww]arning .`
+    `bgrep DEBUG[_]*SCRIPT .`
 
     bgrep regex dir_name
 
