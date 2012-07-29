@@ -2,6 +2,7 @@
 # -r = recursive
 # -i = case-insensitive
 # -I = ignore binary files
+# -l = prints just the filename
 # will open file at first occurence of word
 
 if [ $# -ne 2 ]; then
@@ -9,4 +10,4 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-vim -O "+/$1" `grep -riI "$1" "$2" | cut -d : -f 1 | uniq`
+vim -O "+/$1" `grep -riIl "$1" "$2" | uniq`
