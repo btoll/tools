@@ -31,3 +31,16 @@ This does the following:
 - pipes the result to uniq which filters out duplicates
 - vim then opens each file in a vertically split pane
 - the first file will be opened at the line where the regex is first found in the file
+
+### brm bash script
+Example usage:
+    `brm .DS_STORE __MACOSX`
+
+    brm file_or_dir_to_remove file_or_dir_to_remove 
+
+This does the following:
+
+- searches every file in the cwd
+- if more than one arg, it loops over the args and constructs the names to find
+- recursively deletes everything that matches
+- suppresses STDERR
