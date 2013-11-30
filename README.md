@@ -44,3 +44,5 @@ This does the following:
 - if more than one arg, it loops over the args and constructs the names to find
 - recursively deletes everything that matches
 - suppresses STDERR
+
+### btar Python archiver

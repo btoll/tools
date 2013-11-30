@@ -1,7 +1,7 @@
 import sys
 from time import localtime
-from os import listdir, waitpid, path
-from shutil import copytree, rmtree, make_archive, ignore_patterns
+from os import getcwd, makedirs, waitpid, path
+from shutil import make_archive, move, ignore_patterns
 from getopt import getopt, GetoptError
 from subprocess import Popen
 from getpass import getuser
@@ -24,6 +24,16 @@ def main(argv):
         usage(0)
         sys.exit(2)
 
+    # Define some variables.
+    dest_dir = '.'
+    today = localtime()
+    tmp_name = str(today.tm_year) + str(today.tm_mon) + str(today.tm_mday)
+    tmp_dir = tmp_name + '/'
+    port = '22'
+    dest_remote = '~'
+    hostname = 'benjamintoll.com'
+    username = getuser()
+
     for opt, arg in opts:
         if opt in ('-h', '--help'):
             usage(1)
@@ -33,39 +43,37 @@ def main(argv):
         elif opt in ('-d', '--dest'):
             dest_dir = arg
 
-    # Define some variables.
-    today = localtime()
-    tmp_name = str(today.tm_year) + str(today.tm_mon) + str(today.tm_mday)
-    tmp_dir = tmp_name + '/'
-    format = 'gztar'
-    port = '22'
-    dest_remote = '~'
-    hostname = 'benjamintoll.com'
-    username = getuser()
+    resp = input('Archive format: 0 => tar.gz, 1 => tar.bz2, 2 => tar, 3 => zip [0]: ')
 
-    resp = input('Archive format [' + format.upper() + ', bztar, tar, zip]: ')
-    if resp != '':
-        format = resp
+    if resp in ['1', '2', '3']:
+        if resp == '1':
+            format = 'bztar'
+            tarball = tmp_name + '.tar.bz2'
+
+        if resp == '2':
+            format = 'tar'
+            tarball = tmp_name + '.tar'
+
+        if resp == '3':
+            format = 'zip'
+            tarball = tmp_name + '.zip'
+    else:
+        format = 'gztar'
+        tarball = tmp_name + '.tar.gz'
 
     try:
-        copytree(src_dir, tmp_dir, ignore=ignore_patterns('a*', '_*'))
-
         print('Creating new tarball...')
-        tar = make_archive(tmp_name, format, dest_dir, src_dir)
+        archive = make_archive(tmp_name, format, '.', '.')
 
-        # Create the tarball variable.
-        if format == 'gztar':
-            tarball = tmp_name + '.tar.gz'
-        elif format == 'bztar':
-            tarball = tmp_name + '.tar.bz2'
-        elif format == 'tar':
-            tarball = tmp_name + '.tar'
-        elif format == 'zip':
-            tarball = tmp_name + '.zip'
+        # Create the destination directory if it doesn't exist.
+        if not path.exists(dest_dir):
+            makedirs(dest_dir)
 
-        print('Created new tarball ' + tarball + ' in ' + dest_dir + '/')
-        print('Cleaning up...')
-        rmtree(tmp_dir)
+        # Don't move the archive if the destination directory is the cwd.
+        if dest_dir != '.' and dest_dir != getcwd():
+            move(archive, dest_dir)
+
+        print('Created new tarball ' + tarball + ' in ' + dest_dir)
 
         resp = input('Push to remote server? [y|N]: ')
         if resp in ['Y', 'y']:
@@ -88,8 +96,6 @@ def main(argv):
             p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
             sts = waitpid(p.pid, 0)
             print('Tarball ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
-        else:
-            print('Tarball ' + tarball + ' created in ' + dest_dir + '/')
 
         print('Done!')
 
