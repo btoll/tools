@@ -61,6 +61,7 @@ Usage:
     -s, --src     The location of the assets to archive. Defaults to cwd.
     -d, --dest    The location of where the assets should be archived. Defaults to cwd.
     -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
+    --silent      Session will be non-interactive. Useful for automation.
 
 - supports archive formats gzip, bzip2, tar and zip
 - supports pushing archive to a remote server

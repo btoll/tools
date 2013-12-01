@@ -8,7 +8,7 @@ from getpass import getuser
 
 def usage(level):
     if level == 0:
-        print('Usage: python3 tar_jslite.py [-h | --help [[-n | --name] [-s | --src] [-d | --dest] [-r | --root]]]\nTry `python3 barchiver.py --help` for more information.')
+        print('Usage: python3 tar_jslite.py [-h | --help [[-n | --name] [-s | --src] [-d | --dest] [-r | --root] [--silent]]]\nTry `python3 barchiver.py --help` for more information.')
 
     elif level == 1:
         print('''Usage:
@@ -18,11 +18,12 @@ def usage(level):
   -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
   -s, --src     The location of the assets to archive. Defaults to cwd.
   -d, --dest    The location of where the assets should be archived. Defaults to cwd.
-  -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.\'''')
+  -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
+  --silent      Session will be non-interactive. Useful for automation.''')
 
 def main(argv):
     try:   
-        opts, args = getopt(argv, 'hn:s:d:r:', ['help', 'name=', 'src=', 'dest=', 'root='])
+        opts, args = getopt(argv, 'hn:s:d:r:', ['help', 'silent', 'name=', 'src=', 'dest=', 'root='])
     except GetoptError:
         usage(0)
         sys.exit(2)
@@ -31,6 +32,7 @@ def main(argv):
     dest_dir = '.'
     src_dir = '.'
     root_dir = '.'
+    silent = False
     today = localtime()
     tmp_name = str(today.tm_year) + str(today.tm_mon) + str(today.tm_mday) + str(today.tm_hour) + str(today.tm_min) + str(today.tm_sec)
     port = '22'
@@ -50,25 +52,31 @@ def main(argv):
             dest_dir = arg
         elif opt in ('-r', '--root'):
             root_dir = arg
+        elif opt in ('--silent'):
+            silent = True
 
-    resp = input('''Choose an archive format:
+    if not silent:
+        resp = input('''Choose an archive format:
 0 = tar.gz
 1 = tar.bz2
 2 = tar
 3 = zip
 ? [0]: ''')
-    if resp in ['1', '2', '3']:
-        if resp == '1':
-            format = 'bztar'
-            tarball = tmp_name + '.tar.bz2'
+        if resp in ['1', '2', '3']:
+            if resp == '1':
+                format = 'bztar'
+                tarball = tmp_name + '.tar.bz2'
 
-        if resp == '2':
-            format = 'tar'
-            tarball = tmp_name + '.tar'
+            if resp == '2':
+                format = 'tar'
+                tarball = tmp_name + '.tar'
 
-        if resp == '3':
-            format = 'zip'
-            tarball = tmp_name + '.zip'
+            if resp == '3':
+                format = 'zip'
+                tarball = tmp_name + '.zip'
+        else:
+            format = 'gztar'
+            tarball = tmp_name + '.tar.gz'
     else:
         format = 'gztar'
         tarball = tmp_name + '.tar.gz'
@@ -98,27 +106,28 @@ def main(argv):
 
         print('\nCreated new archive ' + tarball + ' in ' + path.abspath(dest_dir) + '.')
 
-        resp = input('Push to remote server? [y|N]: ')
-        if resp in ['Y', 'y']:
-            resp = input('Username [' + username + ']: ')
-            if resp != '':
-                username = resp
+        if not silent:
+            resp = input('Push to remote server? [y|N]: ')
+            if resp in ['Y', 'y']:
+                resp = input('Username [' + username + ']: ')
+                if resp != '':
+                    username = resp
 
-            resp = input('Port [' + port + ']: ')
-            if resp != '':
-                port = resp
+                resp = input('Port [' + port + ']: ')
+                if resp != '':
+                    port = resp
 
-            resp = input('Hostname [' + hostname + ']: ')
-            if resp != '':
-                hostname = resp
+                resp = input('Hostname [' + hostname + ']: ')
+                if resp != '':
+                    hostname = resp
 
-            resp = input('Remote filepath [' + dest_remote + ']: ')
-            if resp != '':
-                dest_remote = resp
+                resp = input('Remote filepath [' + dest_remote + ']: ')
+                if resp != '':
+                    dest_remote = resp
 
-            p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
-            sts = waitpid(p.pid, 0)
-            print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
+                p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
+                sts = waitpid(p.pid, 0)
+                print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
 
         print('Done!')
 
