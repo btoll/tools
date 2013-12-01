@@ -3,6 +3,8 @@ For example:
 
     alias bfind="/usr/local/www/utils/bfind.sh"
     alias bgrep="/usr/local/www/utils/bgrep.sh"
+    alias brm="/usr/local/www/utils/brm.sh"
+    alias barchiver="python3 /usr/local/www/utils/barchiver.py"
 
 ----------------------------------------------------------------------------------------
 
@@ -45,4 +47,20 @@ This does the following:
 - recursively deletes everything that matches
 - suppresses STDERR
 
-### btar Python archiver
+### barchiver Python script
+Must have at least Python 3.2
+
+Example usage:
+    `barchiver --name my_archive_20131225 --src . --dest /usr/local/www/dotfiles`
+
+Usage:
+
+    Optional flags:
+    -h, --help    Help.
+    -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
+    -s, --src     The location of the assets to archive. Defaults to cwd.
+    -d, --dest    The location of where the assets should be archived. Defaults to cwd.
+    -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
+
+- supports archive formats gzip, bzip2, tar and zip
+- supports pushing archive to a remote server

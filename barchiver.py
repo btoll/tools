@@ -8,7 +8,7 @@ from getpass import getuser
 
 def usage(level):
     if level == 0:
-        print('Usage: python3 tar_jslite.py [-h | --help [[-n | --name] [-s | --src] [-d | --dest]]]\nTry `python3 barchiver.py --help` for more information.')
+        print('Usage: python3 tar_jslite.py [-h | --help [[-n | --name] [-s | --src] [-d | --dest] [-r | --root]]]\nTry `python3 barchiver.py --help` for more information.')
 
     elif level == 1:
         print('''Usage:
@@ -17,11 +17,12 @@ def usage(level):
   -h, --help    Help.
   -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
   -s, --src     The location of the assets to archive. Defaults to cwd.
-  -d, --dest    The location of where the assets should be archived. Defaults to cwd.''')
+  -d, --dest    The location of where the assets should be archived. Defaults to cwd.
+  -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.\'''')
 
 def main(argv):
     try:   
-        opts, args = getopt(argv, 'hn:s:d:', ['help', 'name=', 'src=', 'dest='])
+        opts, args = getopt(argv, 'hn:s:d:r:', ['help', 'name=', 'src=', 'dest=', 'root='])
     except GetoptError:
         usage(0)
         sys.exit(2)
@@ -29,6 +30,7 @@ def main(argv):
     # Define some variables.
     dest_dir = '.'
     src_dir = '.'
+    root_dir = '.'
     today = localtime()
     tmp_name = str(today.tm_year) + str(today.tm_mon) + str(today.tm_mday) + str(today.tm_hour) + str(today.tm_min) + str(today.tm_sec)
     port = '22'
@@ -46,6 +48,8 @@ def main(argv):
             src_dir = arg
         elif opt in ('-d', '--dest'):
             dest_dir = arg
+        elif opt in ('-r', '--root'):
+            root_dir = arg
 
     resp = input('''Choose an archive format:
 0 = tar.gz
@@ -75,7 +79,7 @@ def main(argv):
             makedirs(dest_dir)
 
         try:
-            archive = make_archive(tmp_name, format, dest_dir, src_dir)
+            archive = make_archive(tmp_name, format, root_dir, src_dir)
         except FileNotFoundError as e:
             print(e)
             if (path.isfile(tarball)):
