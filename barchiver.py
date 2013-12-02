@@ -40,6 +40,13 @@ def main(argv):
     dest_remote = '~'
     hostname = gethostname()
     username = getuser()
+    format = 'gztar'
+    formats = {
+        'gztar': '.tar.gz',
+        'bztar': '.tar.bz2',
+        'tar': '.tar',
+        'zip': '.zip'
+    }
 
     for opt, arg in opts:
         if opt in ('-h', '--help'):
@@ -65,6 +72,7 @@ def main(argv):
                 username = json_data.get('username')
                 hostname = json_data.get('hostname')
                 port = str(json_data.get('port'))
+                format = json_data.get('format')
 
                 silent = True
 
@@ -85,21 +93,16 @@ def main(argv):
         if resp in ['1', '2', '3']:
             if resp == '1':
                 format = 'bztar'
-                tarball = tmp_name + '.tar.bz2'
 
             if resp == '2':
                 format = 'tar'
-                tarball = tmp_name + '.tar'
 
             if resp == '3':
                 format = 'zip'
-                tarball = tmp_name + '.zip'
         else:
             format = 'gztar'
-            tarball = tmp_name + '.tar.gz'
-    else:
-        format = 'gztar'
-        tarball = tmp_name + '.tar.gz'
+
+    tarball = tmp_name + formats[format]
 
     try:
         # Create the destination directory if it doesn't exist.
@@ -145,14 +148,10 @@ def main(argv):
                 if resp != '':
                     dest_remote = resp
 
-                p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
-                sts = waitpid(p.pid, 0)
-                print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
-
-        elif silent:
-            p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
-            sts = waitpid(p.pid, 0)
-            print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
+        print('Pushing to server...')
+        p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
+        sts = waitpid(p.pid, 0)
+        print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
 
         print('Done!')
 

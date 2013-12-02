@@ -1,18 +1,48 @@
 ### Setup aliases
 For example:
 
+    alias barchiver="python3 /usr/local/www/utils/barchiver.py"
     alias bfind="/usr/local/www/utils/bfind.sh"
     alias bgrep="/usr/local/www/utils/bgrep.sh"
     alias brm="/usr/local/www/utils/brm.sh"
-    alias barchiver="python3 /usr/local/www/utils/barchiver.py"
 
 ----------------------------------------------------------------------------------------
+
+### barchiver Python script
+Must have at least Python 3.2
+
+- Supports archive formats gzip, bzip2, tar and zip.
+- Supports pushing archive to a remote server.
+- Supports pointing script at a config file for the remote server params.
+
+Example usage:
+
+    barchiver --name my_archive_20131225 --src . --dest /usr/local/www/dotfiles
+    barchiver --name motley --config ~/.barchiver/benjamintoll.com
+
+For example, the file ~/.barchiver/benjamintoll.com in the example above could look like this:
+
+    {   
+        "hostname": "benjamintoll.com",
+        "username": "benjamin",
+        "port": 2009,
+        "format": "bztar"
+    }
+
+Usage:
+
+    Optional flags:
+    -h, --help    Help.
+    -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
+    -s, --src     The location of the assets to archive. Defaults to cwd.
+    -d, --dest    The location of where the assets should be archived. Defaults to cwd.
+    -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to cwd.
+    -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
 
 ### bfind bash script
 Example usage:
 
-    `bfind . Component.js`
-
+    bfind . Component.js
     bfind dir_name file_name
 
 This does the following:
@@ -24,8 +54,7 @@ This does the following:
 ### bgrep bash script
 Example usage:
 
-    `bgrep DEBUG[_]*SCRIPT .`
-
+    bgrep DEBUG[_]*SCRIPT .
     bgrep regex dir_name
 
 This does the following:
@@ -39,8 +68,7 @@ This does the following:
 ### brm bash script
 Example usage:
 
-    `brm .DS_STORE __MACOSX`
-
+    brm .DS_STORE __MACOSX
     brm file_or_dir_to_remove file_or_dir_to_remove 
 
 This does the following:
@@ -49,26 +77,3 @@ This does the following:
 - if more than one arg, it loops over the args and constructs the names to find
 - recursively deletes everything that matches
 - suppresses STDERR
-
-### barchiver Python script
-Must have at least Python 3.2
-
-Example usage:
-
-    `barchiver --name my_archive_20131225 --src . --dest /usr/local/www/dotfiles`
-
-    `barchiver --name motley --config ~/.brc_json`
-
-Usage:
-
-    Optional flags:
-    -h, --help    Help.
-    -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
-    -s, --src     The location of the assets to archive. Defaults to cwd.
-    -d, --dest    The location of where the assets should be archived. Defaults to cwd.
-    -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
-    -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
-
-- supports archive formats gzip, bzip2, tar and zip
-- supports pushing archive to a remote server
-- supports pointing script at a config file for the remote server params
