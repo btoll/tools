@@ -1,4 +1,5 @@
-import sys
+import sys, json
+from socket import gethostname
 from time import localtime
 from os import getcwd, makedirs, waitpid, path, remove
 from shutil import make_archive, move, ignore_patterns
@@ -8,7 +9,7 @@ from getpass import getuser
 
 def usage(level):
     if level == 0:
-        print('Usage: python3 tar_jslite.py [-h | --help [[-n | --name] [-s | --src] [-d | --dest] [-r | --root] [--silent]]]\nTry `python3 barchiver.py --help` for more information.')
+        print('Usage: python3 tar_jslite.py [-h | --help [[-n | --name] [-s | --src] [-d | --dest] [-r | --root] [-c | --config] [--silent]]]\nTry `python3 barchiver.py --help` for more information.')
 
     elif level == 1:
         print('''Usage:
@@ -19,11 +20,11 @@ def usage(level):
   -s, --src     The location of the assets to archive. Defaults to cwd.
   -d, --dest    The location of where the assets should be archived. Defaults to cwd.
   -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
-  --silent      Session will be non-interactive. Useful for automation.''')
+  -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.''')
 
 def main(argv):
     try:   
-        opts, args = getopt(argv, 'hn:s:d:r:', ['help', 'silent', 'name=', 'src=', 'dest=', 'root='])
+        opts, args = getopt(argv, 'hn:s:d:r:c:', ['help', 'silent', 'name=', 'src=', 'dest=', 'root=', 'config='])
     except GetoptError:
         usage(0)
         sys.exit(2)
@@ -37,7 +38,7 @@ def main(argv):
     tmp_name = str(today.tm_year) + str(today.tm_mon) + str(today.tm_mday) + str(today.tm_hour) + str(today.tm_min) + str(today.tm_sec)
     port = '22'
     dest_remote = '~'
-    hostname = 'benjamintoll.com'
+    hostname = gethostname()
     username = getuser()
 
     for opt, arg in opts:
@@ -52,6 +53,25 @@ def main(argv):
             dest_dir = arg
         elif opt in ('-r', '--root'):
             root_dir = arg
+        elif opt in ('-c', '--config'):
+            try:
+                # This can read 'username hostname port'.
+                # username, hostname, port = open(arg, encoding='utf-8').readline().split()
+
+                # TODO: Is there a better way to get the values from the Json?
+                with open(arg, mode='r', encoding='utf-8') as f:
+                    json_data = json.loads(f.read())
+
+                username = json_data.get('username')
+                hostname = json_data.get('hostname')
+                port = str(json_data.get('port'))
+
+                silent = True
+
+            # Exceptions could be bad Json or file not found.
+            except (ValueError, FileNotFoundError) as e:
+                print(e)
+                sys.exit(1)
         elif opt in ('--silent'):
             silent = True
 
@@ -128,6 +148,11 @@ def main(argv):
                 p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
                 sts = waitpid(p.pid, 0)
                 print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
+
+        elif silent:
+            p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
+            sts = waitpid(p.pid, 0)
+            print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
 
         print('Done!')
 

@@ -10,6 +10,7 @@ For example:
 
 ### bfind bash script
 Example usage:
+
     `bfind . Component.js`
 
     bfind dir_name file_name
@@ -22,6 +23,7 @@ This does the following:
 
 ### bgrep bash script
 Example usage:
+
     `bgrep DEBUG[_]*SCRIPT .`
 
     bgrep regex dir_name
@@ -36,6 +38,7 @@ This does the following:
 
 ### brm bash script
 Example usage:
+
     `brm .DS_STORE __MACOSX`
 
     brm file_or_dir_to_remove file_or_dir_to_remove 
@@ -51,7 +54,10 @@ This does the following:
 Must have at least Python 3.2
 
 Example usage:
+
     `barchiver --name my_archive_20131225 --src . --dest /usr/local/www/dotfiles`
+
+    `barchiver --name motley --config ~/.brc_json`
 
 Usage:
 
@@ -61,7 +67,8 @@ Usage:
     -s, --src     The location of the assets to archive. Defaults to cwd.
     -d, --dest    The location of where the assets should be archived. Defaults to cwd.
     -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
-    --silent      Session will be non-interactive. Useful for automation.
+    -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
 
 - supports archive formats gzip, bzip2, tar and zip
 - supports pushing archive to a remote server
+- supports pointing script at a config file for the remote server params
