@@ -39,7 +39,20 @@ Usage:
     -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to cwd.
     -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
 
+### csv bash script
+I had several csv files that I needed to slice by column(s). In addition, some lines had commas within double-quotes, which is no good when the field delimiter is the comma. So, I decided that this script will replace all commas not within double quotes to an underscore and then specify the underscore as the field delimiter in my import tool.
+
+The command-line arguments are the csv to operate on, followed by an optional filename for the newly-created file (.csv will be appended) and the optional columns to slice.
+
+If using a tool like mysqlimport, name the new file the same name as the database table that the records should be inserted into.
+
+Example usage:
+
+    bash csv.bash psa.csv cards 2-5
+
+
 ### bfind bash script
+
 Example usage:
 
     bfind . Component.js
