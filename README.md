@@ -3,6 +3,7 @@ For example:
 
     alias barchiver="python3 /usr/local/www/utils/barchiver.py"
     alias bfind="/usr/local/www/utils/bfind.sh"
+    alias bgone="/usr/local/www/utils/bgone.sh"
     alias bgrep="/usr/local/www/utils/bgrep.sh"
     alias brm="/usr/local/www/utils/brm.sh"
 
@@ -63,6 +64,84 @@ This does the following:
 - finds every file that matches file_name in dir_name
 - vim then opens each file in a vertically split pane
 
+### bgone git bash script
+
+This script will delete any git branch, both locally and remotely, that has been merged and that
+matches the filtered search.
+
+If unsure about which branches your fuzzy search will match and delete, it is recommended to first
+do a dry run using the `-l` switch.
+
+This uses the git command `git branch --merged` under the covers.
+
+Example usage:
+
+    bgone [defaults to -r origin -f EXTJS*]
+    bgone -r origin
+    bgone -f HELLO*
+    bgone -f WORLD* -r btoll
+
+Usage:
+
+    Optional flags:
+    -f    The filter to use for existing local branches.
+          Defaults to 'EXTJS*'
+
+    -h    Help
+
+    -l    Will operate in DRY RUN mode.  Will list all branches to be deleted.
+          This is useful (and safe) when you are not sure which branches will be removed by the filter.
+
+    -r    The name of the remote repository from which to delete the branch.
+          Defaults to 'origin'
+
+This does the following:
+
+- will delete all branches that match the filter, both local and remote
+- uses getopts, so will accept arguments in any order
+
+Note that you can also define the following environment variables used by the script:
+
+    GIT_DEFAULT_FILTER
+    GIT_DEFAULT_REPO
+
+The biggest fear is of accidentally deleting a branch that hasn't been merged yet, and the most
+likely scenario for this is that of an unpushed branch. To help ease that fear, the following
+truth table shows the outcome of running the command for UNMERGED branches:
+```
++-----------------------------------------------------------------------------------------------+
+|    Command    |  Is pushed  |  Has commits  |  On `foo`  |  Deleted Local  |  Deleted Remote  |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo         Y              Y                                                        |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo         Y              Y            Y                                 Y         |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo         Y                           Y                                 Y         |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo         Y                                           Y                 Y         |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo                        Y            Y                                           |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo                        Y                                                        |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo                                     Y                                           |
++-----------------------------------------------------------------------------------------------+
+|  bgone -f foo                                                     Y                           |
++-----------------------------------------------------------------------------------------------+
+```
+For example, this first line can be read as:
+'If I run the following command from a branch that is not `foo`, has one or more commits and has
+been pushed to a remote repo, the branch will not be deleted either locally or remotely.'
+
+The second line can be read as:
+'If I run the following command from a branch that is `foo`, has one or more commits and has been
+pushed to a remote repo, the branch will not be deleted locally but will be deleted remotely.'
+
+The only scenarios in which a local branch will be deleted is when it contains no commits.
+
+The script will not force delete (`-D`) any branches!
+
+But as usual, make sure you know what you're doing! I am not responsible for lost branches!
 
 ### bgrep bash script
 Example usage:
