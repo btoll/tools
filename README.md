@@ -6,6 +6,7 @@ For example:
     alias bgone="/usr/local/www/utils/bgone.sh"
     alias bgrep="/usr/local/www/utils/bgrep.sh"
     alias brm="/usr/local/www/utils/brm.sh"
+    alias bticket="/usr/local/www/utils/bticket.sh"
 
 ----------------------------------------------------------------------------------------
 
@@ -23,7 +24,7 @@ Example usage:
 
 For example, the file ~/.barchiver/benjamintoll.com in the example above could look like this:
 
-    {   
+    {
         "hostname": "benjamintoll.com",
         "username": "benjamin",
         "port": 2009,
@@ -161,7 +162,7 @@ This does the following:
 Example usage:
 
     brm .DS_STORE __MACOSX
-    brm file_or_dir_to_remove file_or_dir_to_remove 
+    brm file_or_dir_to_remove file_or_dir_to_remove
 
 This does the following:
 
@@ -169,3 +170,23 @@ This does the following:
 - if more than one arg, it loops over the args and constructs the names to find
 - recursively deletes everything that matches
 - suppresses STDERR
+
+### bticket bash script (for ExtJS)
+Example usage:
+    `bticket 5671 3.4.0`
+
+Example usage:
+    `bticket EXTJSIV-11987 SDK4`
+
+    bticket ticket_dir_name ext_version
+
+Run the script wherever your ticket directories are located.
+
+It will ask for the location of your SDK or build directory if the proper environment variables have not been set (`$EXT_SDK` and `$EXT_BUILDS`). If prompted for a location, hit enter to accept the default path (preset in the script).
+
+This does the following:
+
+- makes the directory in which the new ticket will live (in this example, `5671`).
+- creates an `index.html` document within the new directory which properly references the JavaScript and CSS resources it needs to load.
+
+The script properly handles versions 2.x, 3.x, 4.x, 5.x and any git repos that follow the naming convention of SDK*, i.e., SDK5.
