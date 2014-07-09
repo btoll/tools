@@ -6,6 +6,7 @@ For example:
     alias bgone="/usr/local/www/utils/bgone.sh"
     alias bgrep="/usr/local/www/utils/bgrep.sh"
     alias brm="/usr/local/www/utils/brm.sh"
+    alias btag="/usr/local/www/utils/btag.sh"
     alias bticket="/usr/local/www/utils/bticket.sh"
 
 ----------------------------------------------------------------------------------------
@@ -170,6 +171,25 @@ This does the following:
 - if more than one arg, it loops over the args and constructs the names to find
 - recursively deletes everything that matches
 - suppresses STDERR
+
+### btag bash script
+Example usages:
+
+When bisecting:
+
+    btag 4.2.2 | xargs git bisect good
+    git bisect good $(btag 4.2.2)
+    git bisect bad `btag 4.2.2`
+
+This will grep for the first commit hash in the tag description and use it for the good or bad commit anchor for git-bisect.
+
+When checking out a tagged version:
+
+    btag 4.2.2 | xargs git checkout
+    git checkout $(btag 4.2.2)
+    git checkout `btag 4.2.2`
+
+Note that you can pass just the version number or the full tag name.
 
 ### bticket bash script (for ExtJS)
 Example usage:
