@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Usage: pass no arguments to default to checkout the first parent, or pass an integer
+# to pass a higher ancestor.
+
+[ $# -eq 1 ] && PARENT=$1 || PARENT=1
+PARENT="HEAD~$PARENT"
+
+if type git-hashtag >/dev/null 2>&1; then
+    git checkout $(git hashtag $PARENT)
+else
+    git checkout $(git show $PARENT | grep commit | awk '{print $2}')
+fi
