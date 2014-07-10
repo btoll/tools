@@ -1,23 +1,3 @@
-### git-checkout-parent
-This is good for checking out the direct parent or any other ancestor of the current commit.
-
-Example usages:
-
-    git checkout-parent
-    git checkout-parent 4
-
-To install the script:
-
-    1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
-    2. Make sure it's executable.
-    3. Done.
-
-To install the man page:
-
-    1. Put the file anywhere in your manpath. For instance, `/usr/local/share/man/man1`.
-    2. Name it `git-checkout-parent.1`.
-    3. Done.
-
 ### git-cleanup
 
 This script will delete any git branch, both locally and remotely, that has been merged and that
