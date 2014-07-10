@@ -1,15 +1,3 @@
-### Setup aliases
-For example:
-
-    alias barchiver="python3 /usr/local/www/utils/barchiver.py"
-    alias bfind="/usr/local/www/utils/bfind.sh"
-    alias bgrep="/usr/local/www/utils/bgrep.sh"
-    alias brm="/usr/local/www/utils/brm.sh"
-    alias btag="/usr/local/www/utils/btag.sh"
-    alias bticket="/usr/local/www/utils/bticket.sh"
-
-----------------------------------------------------------------------------------------
-
 ### git-cleanup
 
 This script will delete any git branch, both locally and remotely, that has been merged and that
@@ -101,6 +89,39 @@ The script will not force delete (`-D`) any branches!
 
 But as usual, make sure you know what you're doing! I am not responsible for lost branches!
 
+### git-hashtag
+Example usages:
+
+When bisecting:
+
+    git hashtag 4.2.2 | xargs git bisect good
+    git bisect good $(git hashtag 4.2.2)
+    git bisect bad `git hashtag 4.2.2`
+
+This will grep for the first commit hash in the tag description and use it for the good or bad commit anchor for git-bisect.
+
+When checking out a tagged version:
+
+    git hashtag 4.2.2 | xargs git checkout
+    git checkout $(git hashtag 4.2.2)
+    git checkout `git hashtag 4.2.2`
+
+Note that you can pass just the version number or the full tag name.
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+
+### Setup aliases
+For example:
+
+    alias barchiver="python3 /usr/local/www/utils/barchiver.py"
+    alias bfind="/usr/local/www/utils/bfind.sh"
+    alias bgrep="/usr/local/www/utils/bgrep.sh"
+    alias brm="/usr/local/www/utils/brm.sh"
+    alias bticket="/usr/local/www/utils/bticket.sh"
+
+----------------------------------------------------------------------------------------
+
 ### barchiver Python script
 Must have at least Python 3.2
 
@@ -182,25 +203,6 @@ This does the following:
 - if more than one arg, it loops over the args and constructs the names to find
 - recursively deletes everything that matches
 - suppresses STDERR
-
-### btag bash script
-Example usages:
-
-When bisecting:
-
-    btag 4.2.2 | xargs git bisect good
-    git bisect good $(btag 4.2.2)
-    git bisect bad `btag 4.2.2`
-
-This will grep for the first commit hash in the tag description and use it for the good or bad commit anchor for git-bisect.
-
-When checking out a tagged version:
-
-    btag 4.2.2 | xargs git checkout
-    git checkout $(btag 4.2.2)
-    git checkout `btag 4.2.2`
-
-Note that you can pass just the version number or the full tag name.
 
 ### bticket bash script (for ExtJS)
 Example usage:
