@@ -1,0 +1,54 @@
+GIT-CLEANUP(1)
+
+NAME
+        git-cleanup - Delete local and remote branches that have been merged and match the given filter.
+
+SYNOPSIS
+        git cleanup [-l] [-f filter ] [-r remote ]
+
+DESCRIPTION
+        This script will delete any git branch, both locally and remotely, that has been merged and that matches the filtered search.
+        If unsure about which branches your fuzzy search will match and delete, it is recommended to first do a dry run using the `-l`
+        switch.
+
+        This uses the git command `git branch --merged` under the covers.
+
+        This does the following:
+        - warn you if you're in danger of deleting the remote HEAD. See the truth table below for how that could happen.
+        - will delete all branches that match the filter, both local and remote
+        - uses getopts, so will accept arguments in any order
+
+        Note that you can also define the following environment variables used by the script:
+
+            GIT_DEFAULT_FILTER
+            GIT_DEFAULT_REPO
+
+        The biggest fear is of accidentally deleting a branch that hasn't been merged yet, and the most likely scenario for
+        this is that of an unpushed branch. This is mitigated by the program warning you if the branch you're on is in the
+        list of merged branches.
+
+        The only scenarios in which a local branch will be deleted is when it contains no commits.
+
+        The script will not force delete (`-D`) any branches!
+
+OPTIONS
+        -f  The filter to use for existing local branches.
+            Defaults to 'EXTJS*'
+
+        -h  Help
+
+        -l  Will operate in DRY RUN mode.  Will list all branches to be deleted.
+            This is useful (and safe) when you are not sure which branches will be removed by the filter.
+
+        -r  The name of the remote repository from which to delete the branch.
+            Defaults to 'origin'.
+
+EXAMPLES
+        git cleanup [defaults to -r origin -f EXTJS*]
+        git cleanup -r origin
+        git cleanup -f HELLO*
+        git cleanup -f WORLD* -r btoll
+
+AUTHOR
+        Benjamin Toll <benjam72@yahoo.com>
+
