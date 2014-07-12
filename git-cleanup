@@ -3,6 +3,9 @@
 # Let's set some defaults or define from env vars.
 FILTER=${GIT_DEFAULT_FILTER:-"EXTJS*"}
 REPO=${GIT_DEFAULT_REPO:-"origin"}
+HEAD=`git rev-parse --abbrev-ref HEAD`
+WARN="!!!WARNING!!! HEAD will be deleted!"
+GO=true
 
 # Swap out for user-provided options if given.
 while getopts "f:hlr:" OPTION; do
@@ -43,13 +46,33 @@ fi
 
 for BRANCH in `git branch --merged`; do
     # Let's operate on only the desired branches.
-    # Append '*' to FILTER for fuzzy matching.
-    if [[ "$BRANCH" == $FILTER ]]; then
+    if [[ $BRANCH =~ $FILTER ]]; then
+        if [ $HEAD = $BRANCH ]; then
+            MATCHED="$WARN Maybe move to a base branch?"
+        fi
+
         if [ $DRY_RUN ]; then
             echo $BRANCH
         else
-            echo `git branch -d $BRANCH`
-            echo `git push $REPO :$BRANCH`
+            if [ -n "$MATCHED" ]; then
+                echo $WARN
+                read -p "Continue anyway? [y/n]" CONTINUE
+                if [ $CONTINUE = "n" ]; then
+                    GO=false
+                fi
+
+                # Unset so the warning message doesn't display again below.
+                unset MATCHED
+            fi
+
+            if [ $GO = true ]; then
+                echo `git branch -d $BRANCH`
+                echo `git push $REPO :$BRANCH`
+            fi
         fi
     fi
 done
+
+if [ -n "$MATCHED" ]; then
+    echo $MATCHED
+fi

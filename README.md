@@ -1,3 +1,15 @@
+    To install the git scripts:
+
+        1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
+        2. Make sure it's executable.
+        3. Done.
+
+    To install the git man pages:
+
+        1. Put the file anywhere in your manpath. For instance, `/usr/local/share/man/man1`.
+        2. Append `.1` to the file name. For example, name it `git-cleanup.1`.
+        3. Done.
+
 ### git-cleanup
 
 This script will delete any git branch, both locally and remotely, that has been merged and that
@@ -18,7 +30,7 @@ Example usage:
 Usage:
 
     Optional flags:
-    -f    The filter to use for existing local branches.
+    -f    The filter to use for existing local branches. Accepts regular expressions.
           Defaults to 'EXTJS*'
 
     -h    Help
@@ -29,20 +41,9 @@ Usage:
     -r    The name of the remote repository from which to delete the branch.
           Defaults to 'origin'
 
-To install the script:
-
-    1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
-    2. Make sure it's executable.
-    3. Done.
-
-To install the man page:
-
-    1. Put the file anywhere in your manpath. For instance, `/usr/local/share/man/man1`.
-    2. Name it `git-cleanup.1`.
-    3. Done.
-
 This does the following:
 
+- warn you if you're in danger of deleting the remote HEAD. See the truth table below for how that could happen.
 - will delete all branches that match the filter, both local and remote
 - uses getopts, so will accept arguments in any order
 
