@@ -1,11 +1,23 @@
 #!/bin/bash
 
-# Let's set some defaults or define from env vars.
 FILTER=${GIT_DEFAULT_FILTER:-"EXTJS*"}
 REPO=${GIT_DEFAULT_REPO:-"origin"}
+BRANCHES=`git branch --merged`
 HEAD=`git rev-parse --abbrev-ref HEAD`
 WARN="!!!WARNING!!! HEAD will be deleted!"
 GO=true
+
+usage() {
+    echo "Optional flags:"
+    echo "-f    The filter to use for existing local branches."
+    echo "      Defaults to 'EXTJS*'"
+    echo
+    echo "-l    Will operate in DRY RUN mode.  Will list all branches to be deleted."
+    echo "      This is useful (and safe) when you are not sure which branches will be removed by the filter."
+    echo
+    echo "-r    The name of the remote repository from which to delete the branch."
+    echo "      Defaults to 'origin'"
+}
 
 # Swap out for user-provided options if given.
 while getopts "f:hlr:" OPTION; do
@@ -14,22 +26,7 @@ while getopts "f:hlr:" OPTION; do
             FILTER=$OPTARG
             ;;
         h)
-            # Putting quotes around the sentinel (EOF) prevents the text from undergoing parameter expansion.
-#            read -d '' HELP << "EOF"
-#                Optional flags:
-#                -f    The filter to use for existing local branches.
-#                      Defaults to 'EXTJS*'
-#
-#                -l    Will operate in DRY RUN mode.  Will list all branches to be deleted.
-#                      This is useful (and safe) when you are not sure which branches will be removed by the filter.
-#
-#                -r    The name of the remote repository from which to delete the branch.
-#                      Defaults to 'origin'
-#EOF
-#            echo $HELP
-#            exit 0
-            echo "Optional flags: -f (filter), -l (dry run), -r (remote repo)"
-            exit 0
+            usage
             ;;
         l)
             DRY_RUN=true
@@ -40,24 +37,24 @@ while getopts "f:hlr:" OPTION; do
     esac
 done
 
-if [ $DRY_RUN ]; then
+if [ "$DRY_RUN" = true ]; then
     echo "[DRY RUN] The following branches will be removed:"
 fi
 
-for BRANCH in `git branch --merged`; do
+for BRANCH in $BRANCHES; do
     # Let's operate on only the desired branches.
-    if [[ $BRANCH =~ $FILTER ]]; then
-        if [ $HEAD = $BRANCH ]; then
+    if [[ "$BRANCH" =~ $FILTER ]]; then
+        if [ "$HEAD" = "$BRANCH" ]; then
             MATCHED="$WARN Maybe move to a base branch?"
         fi
 
-        if [ $DRY_RUN ]; then
+        if [ "$DRY_RUN" = true ]; then
             echo $BRANCH
         else
             if [ -n "$MATCHED" ]; then
                 echo $WARN
                 read -p "Continue anyway? [y/n]" CONTINUE
-                if [ $CONTINUE = "n" ]; then
+                if [ "$CONTINUE" = "n" ]; then
                     GO=false
                 fi
 
@@ -65,7 +62,7 @@ for BRANCH in `git branch --merged`; do
                 unset MATCHED
             fi
 
-            if [ $GO = true ]; then
+            if [ "$GO" = true ]; then
                 echo `git branch -d $BRANCH`
                 echo `git push $REPO :$BRANCH`
             fi
