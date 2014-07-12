@@ -1,0 +1,26 @@
+GIT-HASHTAG(1)
+
+NAME
+        git-hashtag - Get the hash of any tagged commit.
+
+SYNOPSIS
+        git hashtag [tagname]
+
+DESCRIPTION
+        This will grep for the first commit hash in the tag description and use it for the good or bad commit anchor for git-bisect.
+        Note that you can pass just the version number or the full tag name.
+
+        It can be useful when bisecting or checking out a tagged version.
+
+EXAMPLES
+        git hashtag 4.2.2 | xargs git bisect good
+        git bisect good $(git hashtag 4.2.2)
+        git bisect bad `git hashtag 4.2.2`
+
+        git hashtag 4.2.2 | xargs git checkout
+        git checkout $(git hashtag 4.2.2)
+        git checkout `git hashtag 4.2.2`
+
+AUTHOR
+        Benjamin Toll <benjam72@yahoo.com>
+
