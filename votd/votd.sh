@@ -18,6 +18,8 @@ getTip
 
 # Resend if it's not a helpful tip!
 # http://unix.stackexchange.com/a/48536
+# This tip was deleted from the original vim.org web site, probably because it was spam.
+# Tip 1241 has been removed
 if grep -q "It is hard to find helpful information if there are too many tips" $FILE; then
     getTip
 fi

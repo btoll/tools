@@ -1,5 +1,4 @@
 <?php
-# This script could be a lot better, but it gets the job done.
 # For example:
 #
 #    php votd.php tip479.html
