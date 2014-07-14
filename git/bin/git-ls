@@ -16,7 +16,7 @@ usage() {
     echo "--edit, -edit, -e     : Open all listed files in Vim using:"
     echo "          b = no windows (just buffers)"
     echo "          h = horizontally-split windows"
-    echo "          v = vertically-split windows (default)"
+    echo "          v = vertically-split windows"
     echo
     echo " -help, -h            : Help"
     echo
@@ -30,12 +30,11 @@ while [ "$#" -gt 0 ]; do
     case $OPT in
         --commit|-commit|-c) shift; COMMIT=$1 ;;
         --edit|-edit|-e)
+            shift
             case $1 in
-                b) VIM=" "; shift ;;
-                h) VIM="-o"; shift ;;
-                v) VIM="-O"; shift ;;
-                # The default (note can't combined with 'v' switch b/c of 'shift').
-                *) VIM="-O" ;;
+                b) VIM=" " ;;
+                h) VIM="-o" ;;
+                v) VIM="-O" ;;
             esac
             ;;
         -help|-h) usage; exit 0 ;;

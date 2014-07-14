@@ -44,7 +44,6 @@ This does the following:
 
 - warn you if you're in danger of deleting the remote HEAD. See the truth table below for how that could happen.
 - will delete all branches that match the filter, both local and remote
-- uses getopts, so will accept arguments in any order
 
 Note that you can also define the following environment variables used by the script:
 
@@ -115,7 +114,7 @@ Example usages:
         - List the files that make up the latest commit.
 
     git ls -e
-        - Opens all listed files in Vim in vertically-split windows (the default).
+        - Opens all listed files in Vim in vertically-split windows.
 
     git ls -edit b -limit 4
         - Opens all listed files in Vim (in buffers), limiting the number of files opened to the first four.
