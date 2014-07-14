@@ -108,3 +108,19 @@ When checking out a tagged version:
 
 Note that you can pass just the version number or the full tag name.
 
+### git-ls
+Example usages:
+
+    git ls
+        - List the files that make up the latest commit.
+
+    git ls -e
+        - Opens all listed files in Vim in vertically-split windows (the default).
+
+    git ls -edit b -limit 4
+        - Opens all listed files in Vim (in buffers), limiting the number of files opened to the first four.
+
+    git ls -c cf457b6 -e h -l 3
+        - Opens all listed files for the specified hash (cf457b6) in horizontally-split windows, limiting the
+          number of files opened to the first three.
+

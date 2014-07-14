@@ -1,0 +1,58 @@
+#!/bin/bash
+# https://stackoverflow.com/questions/424071/list-all-the-files-for-a-commit-in-git
+
+COMMIT="HEAD"
+LIMIT=
+VIM=
+
+usage() {
+    echo "GIT-LS"
+    echo
+    echo "Usage: $0 [args]"
+    echo
+    echo "Args:"
+    echo "--commit, -commit, -c : List the files in this commit (defaults to HEAD)."
+    echo
+    echo "--edit, -edit, -e     : Open all listed files in Vim using:"
+    echo "          b = no windows (just buffers)"
+    echo "          h = horizontally-split windows"
+    echo "          v = vertically-split windows (default)"
+    echo
+    echo " -help, -h            : Help"
+    echo
+    echo "--limit, -limit, -l   : Limit the number of files listed."
+    echo
+}
+
+# Swap out for user-provided options if given.
+while [ "$#" -gt 0 ]; do
+    OPT="$1"
+    case $OPT in
+        --commit|-commit|-c) shift; COMMIT=$1 ;;
+        --edit|-edit|-e)
+            case $1 in
+                b) VIM=" "; shift ;;
+                h) VIM="-o"; shift ;;
+                v) VIM="-O"; shift ;;
+                # The default (note can't combined with 'v' switch b/c of 'shift').
+                *) VIM="-O" ;;
+            esac
+            ;;
+        -help|-h) usage; exit 0 ;;
+        --limit|-limit|-l) shift; LIMIT=$1 ;;
+    esac
+    shift
+done
+
+CMD="git diff-tree --no-commit-id --name-only -r $COMMIT"
+
+if [ -n "$LIMIT" ]; then
+    CMD="$CMD | head -$LIMIT"
+fi
+
+if [ -n "$VIM" ]; then
+    CMD='vim '"$VIM"' $('"$CMD"')'
+fi
+
+eval $CMD
+
