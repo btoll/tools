@@ -113,7 +113,7 @@ Example usages:
     git ls
         - List the files that make up the latest commit.
 
-    git ls -e
+    git ls --edit v
         - Opens all listed files in Vim in vertically-split windows.
 
     git ls -edit b -limit 4
