@@ -50,6 +50,12 @@ if [ -n "$LIMIT" ]; then
 fi
 
 if [ -n "$VIM" ]; then
+    # http://stackoverflow.com/a/16579925
+    if [[ ! ${PWD##*/} =~ ^SDK ]]; then
+        echo "This command can only be run from the root directory!"
+        exit 1
+    fi
+
     CMD='vim '"$VIM"' $('"$CMD"')'
 fi
 
