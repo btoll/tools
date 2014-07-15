@@ -28,7 +28,7 @@ fi
 sed -i -e '/<b>created<\/b>/,/NewPP limit report/!d' $FILE 2>/dev/null
 
 # Wrap the HTML fragment and include a link to the tip.
-echo '<html><body><p><a href='$URL'>View Tip '$TIP' on vim.wikia.com!</a></p><br />' > tmp
+echo '<html><body><p><a href='$URL'>View Tip '$TIP' on vim.wikia.com</a></p><br />' > tmp
 
 # We want to delete the last 2 lines of the file (i.e., "<!-- \n NEWPP limit report"). This is a PITA
 # to do with just sed, so let's get some help from our friend tac.

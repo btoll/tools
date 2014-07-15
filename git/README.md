@@ -116,6 +116,9 @@ Example usages:
     git ls --edit v
         - Opens all listed files in Vim in vertically-split windows.
 
+    git ls --commit HEAD -e t
+        - Opens all listed files in Vim in tabs for the specified hash (note that it will default to HEAD).
+
     git ls -edit b -limit 4
         - Opens all listed files in Vim (in buffers), limiting the number of files opened to the first four.
 

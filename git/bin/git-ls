@@ -16,6 +16,7 @@ usage() {
     echo "--edit, -edit, -e     : Open all listed files in Vim using:"
     echo "          b = no windows (just buffers)"
     echo "          h = horizontally-split windows"
+    echo "          t = tabs"
     echo "          v = vertically-split windows"
     echo
     echo " -help, -h            : Help"
@@ -34,6 +35,7 @@ while [ "$#" -gt 0 ]; do
             case $1 in
                 b) VIM=" " ;;
                 h) VIM="-o" ;;
+                t) VIM="-p" ;;
                 v) VIM="-O" ;;
             esac
             ;;
