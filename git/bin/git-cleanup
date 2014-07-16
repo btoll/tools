@@ -4,7 +4,8 @@ FILTER=${GIT_DEFAULT_FILTER:-"EXTJS*"}
 REPO=${GIT_DEFAULT_REPO:-"origin"}
 BRANCHES=`git branch --merged`
 HEAD=`git rev-parse --abbrev-ref HEAD`
-WARN="!!!WARNING!!! HEAD will be deleted!"
+WARN="!!!WARNING!!! The current branch will be deleted remotely!"
+FOUND=false
 GO=true
 
 usage() {
@@ -38,13 +39,16 @@ while getopts "f:hlr:" OPTION; do
     esac
 done
 
+echo "Match filter: $FILTER"
+
 if [ "$DRY_RUN" = true ]; then
-    echo "[DRY RUN] The following branches will be removed:"
+    echo "[[DRY RUN MODE]] The following branches will be removed:"
 fi
 
 for BRANCH in $BRANCHES; do
     # Let's operate on only the desired branches.
-    if [[ "$BRANCH" =~ $FILTER ]]; then
+    if [[ "$BRANCH" =~ ^$FILTER ]]; then
+        FOUND=true
         if [ "$HEAD" = "$BRANCH" ]; then
             MATCHED="$WARN Maybe move to a base branch?"
         fi
@@ -73,4 +77,8 @@ done
 
 if [ -n "$MATCHED" ]; then
     echo $MATCHED
+fi
+
+if [ "$FOUND" = false ]; then
+    echo "No matches found."
 fi
