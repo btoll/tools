@@ -13,6 +13,9 @@ DESCRIPTION
         In addition, files can be opened in the Vim editor in horizontally or vertically split
         windows (or none), and the number of files passed to STDOUT or Vim can be limited.
 
+        A search of the commit files can be performed using a regular expression so that only
+        those files will be targeted.
+
 EXAMPLES
         git ls
             - List the files that make up the latest commit.
@@ -30,6 +33,10 @@ EXAMPLES
         git ls -c cf457b6 -e h -l 3
             - Opens all listed files for the specified hash (cf457b6) in horizontally-split windows,
               limiting the number of files opened to the first three.
+
+        git ls -c cf457b6 -regex debugger -e h -l 3
+            - Opens all listed files for the specified hash (cf457b6) that match the specified regular expression
+              in horizontally-split windows, limiting the number of files opened to the first three.
 
 AUTHOR
         Benjamin Toll <benjam72@yahoo.com>
