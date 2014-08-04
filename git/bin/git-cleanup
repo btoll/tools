@@ -1,63 +1,82 @@
 #!/bin/bash
 
-FILTER=${GIT_DEFAULT_FILTER:-"EXTJS*"}
+PATTERN=${GIT_DEFAULT_PATTERN:-"EXTJS.*"}
 REPO=${GIT_DEFAULT_REPO:-"origin"}
-BRANCHES=`git branch --merged`
-HEAD=`git rev-parse --abbrev-ref HEAD`
-WARN="!!!WARNING!!! The current branch will be deleted remotely!"
+# http://stackoverflow.com/a/3846451
+BRANCHES=$(git branch --merged | cut -c 3-)
+HEAD=$(git rev-parse --abbrev-ref HEAD)
+WARN="\n!!!WARNING!!! The current branch will be deleted remotely!"
 FOUND=false
 GO=true
+BUFFER=
+COUNTER=0
+NO_REMOTE_DELETE=false
 
 usage() {
-    echo "Optional flags:"
-    echo "-f    The filter to use for existing local branches."
-    echo "      Defaults to 'EXTJS*'"
+    echo "GIT-CLEANUP"
     echo
-    echo "-l    Will operate in DRY RUN mode.  Will list all branches to be deleted."
-    echo "      This is useful (and safe) when you are not sure which branches will be removed by the filter."
+    echo "Usage: $0 [args]"
     echo
-    echo "-r    The name of the remote repository from which to delete the branch."
-    echo "      Defaults to 'origin'"
+    echo "Args:"
+    echo "--file, -file, -f The file to which the commands will be written."
+    echo
+    echo "-help, -h Help"
+    echo
+    echo "-l Will operate in DRY RUN mode.  Will list all branches to be deleted."
+    echo "   This is useful (and safe) when you are not sure which branches will be removed by the filter."
+    echo
+    echo "--no-remote-delete Don't delete the branch from the remote repository."
+    echo
+    echo "--pattern, -pattern, -p The regex to use for existing local branches."
+    echo "   Defaults to 'EXTJS*'"
+    echo
+    echo "--repo, -repo, -r The name of the remote repository from which to delete the branch."
+    echo "   Defaults to 'origin'"
 }
 
 # Swap out for user-provided options if given.
-while getopts "f:hlr:" OPTION; do
-    case $OPTION in
-        f)
-            FILTER=$OPTARG
-            ;;
-        h)
-            usage
-            exit 0
-            ;;
-        l)
-            DRY_RUN=true
-            ;;
-        r)
-            REPO=$OPTARG
-            ;;
+while [ "$#" -gt 0 ]; do
+    OPT="$1"
+    case $OPT in
+        --file|-file|-f) shift; FILE=$1 ;;
+        -help|-h) usage; exit 0 ;;
+        -l) DRY_RUN=true ;;
+        --no-remote-delete) NO_REMOTE_DELETE=true ;;
+        --pattern|-pattern|-p) shift; PATTERN=$1 ;;
+        --repo|-repo|-r) shift; REPO=$1 ;;
     esac
+    shift
 done
 
-echo "Match filter: $FILTER"
+echo -e "Match pattern: $PATTERN\n"
 
 if [ "$DRY_RUN" = true ]; then
-    echo "[[DRY RUN MODE]] The following branches will be removed:"
+    echo -e "[[DRY RUN MODE]] The following branches will be removed:\n"
 fi
 
 for BRANCH in $BRANCHES; do
     # Let's operate on only the desired branches.
-    if [[ "$BRANCH" =~ ^$FILTER ]]; then
+    if [[ "$BRANCH" =~ ^$PATTERN ]]; then
         FOUND=true
-        if [ "$HEAD" = "$BRANCH" ]; then
-            MATCHED="$WARN Maybe move to a base branch?"
+        if [[ -z "$FILE" && "$HEAD" = "$BRANCH" ]]; then
+            MATCHED="$WARN"
         fi
 
         if [ "$DRY_RUN" = true ]; then
             echo $BRANCH
+        elif [ -n "$FILE" ]; then
+            BUFFER[$COUNTER]="# $BRANCH"
+            COUNTER=$((COUNTER + 1))
+            BUFFER[$COUNTER]="git branch -d $BRANCH"
+            COUNTER=$((COUNTER + 1))
+
+            if [ "$NO_REMOTE_DELETE" = false ]; then
+                BUFFER[$COUNTER]="git push $REPO :$BRANCH"
+                COUNTER=$((COUNTER + 1))
+            fi
         else
-            if [ -n "$MATCHED" ]; then
-                echo $WARN
+            if [[ -n "$MATCHED" && "$NO_REMOTE_DELETE" = false ]]; then
+                echo -e $WARN
                 read -p "Continue anyway? [y/n]" CONTINUE
                 if [ "$CONTINUE" = "n" ]; then
                     GO=false
@@ -68,15 +87,27 @@ for BRANCH in $BRANCHES; do
             fi
 
             if [ "$GO" = true ]; then
-                echo `git branch -d $BRANCH`
-                echo `git push $REPO :$BRANCH`
+                git branch -d $BRANCH
+
+                if [ "$NO_REMOTE_DELETE" = false ]; then
+                    git push $REPO :$BRANCH
+                fi
             fi
         fi
     fi
 done
 
+if [ -n "$FILE" ]; then
+    # Write the entire buffer to the file...
+    printf "%s\n" "${BUFFER[@]}" > $FILE
+    # ..and make it executable.
+    chmod 701 $FILE
+    echo "Results written to $FILE."
+    exit 0
+fi
+
 if [ -n "$MATCHED" ]; then
-    echo $MATCHED
+    echo -e $MATCHED
 fi
 
 if [ "$FOUND" = false ]; then

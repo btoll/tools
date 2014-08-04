@@ -28,17 +28,22 @@ Example usage:
 
 Usage:
 
-    Optional flags:
-    -f    The filter to use for existing local branches. Accepts regular expressions.
-          Defaults to 'EXTJS*'
+    -h  Help
 
-    -h    Help
+    -f  It's possible to specify a file to which all of the git branch deletion commands will be written.
+        This will not delete any branches. It's intention is to allow for further inspection of all the
+        deletion candidates. The file will be executable.
 
-    -l    Will operate in DRY RUN mode.  Will list all branches to be deleted.
-          This is useful (and safe) when you are not sure which branches will be removed by the filter.
+    -l  Will operate in DRY RUN mode.  Will list all branches to be deleted.
+        This is useful (and safe) when you are not sure which branches will be removed by the filter.
 
-    -r    The name of the remote repository from which to delete the branch.
-          Defaults to 'origin'
+    --no-remote-delete Do not delete the branches remotely.
+
+    -p  The pattern to use for existing local branches.
+        Defaults to 'EXTJS.*'
+
+    -r  The name of the remote repository from which to delete the branch.
+        Defaults to 'origin'.
 
 This does the following:
 
@@ -47,7 +52,7 @@ This does the following:
 
 Note that you can also define the following environment variables used by the script:
 
-    GIT_DEFAULT_FILTER
+    GIT_DEFAULT_PATTERN
     GIT_DEFAULT_REPO
 
 The biggest fear is of accidentally deleting a branch that hasn't been merged yet, and the most
@@ -57,21 +62,21 @@ truth table shows the outcome of running the command for UNMERGED branches:
 +-----------------------------------------------------------------------------------------------------+
 |    Command          |  Is pushed  |  Has commits  |  On `foo`  |  Deleted Local  |  Deleted Remote  |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo         Y              Y                                                        |
+|  git cleanup -p foo         Y              Y                                                        |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo         Y              Y            Y                                 Y         |
+|  git cleanup -p foo         Y              Y            Y                                 Y         |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo         Y                           Y                                 Y         |
+|  git cleanup -p foo         Y                           Y                                 Y         |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo         Y                                           Y                 Y         |
+|  git cleanup -p foo         Y                                           Y                 Y         |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo                        Y            Y                                           |
+|  git cleanup -p foo                        Y            Y                                           |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo                        Y                                                        |
+|  git cleanup -p foo                        Y                                                        |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo                                     Y                                           |
+|  git cleanup -p foo                                     Y                                           |
 +-----------------------------------------------------------------------------------------------------+
-|  git cleanup -f foo                                                     Y                           |
+|  git cleanup -p foo                                                     Y                           |
 +-----------------------------------------------------------------------------------------------------+
 ```
 For example, this first line can be read as:
