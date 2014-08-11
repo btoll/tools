@@ -2,7 +2,7 @@
 # https://stackoverflow.com/questions/424071/list-all-the-files-for-a-commit-in-git
 
 COMMIT="HEAD"
-REGEX=
+PATTERN=
 LIMIT=
 VIM=
 
@@ -19,13 +19,13 @@ usage() {
     echo "          h = horizontally-split windows"
     echo "          t = tabs"
     echo "          v = vertically-split windows"
-    echo "Note that if a regex pattern is given that only the files that match this pattern will be opened in Vim."
+    echo "Note that if a pattern is given that only the files that match this pattern will be opened in Vim."
     echo
     echo " -help, -h            : Help"
     echo
     echo "--limit, -limit, -l   : Limit the number of files listed."
     echo
-    echo "--regex, -regex, -r   : Specify a pattern that will be used to search through all the files that make up the commit."
+    echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the files that make up the commit."
     echo
 }
 
@@ -45,16 +45,16 @@ while [ "$#" -gt 0 ]; do
             ;;
         -help|-h) usage; exit 0 ;;
         --limit|-limit|-l) shift; LIMIT=$1 ;;
-        --regex|-regex|-r) shift; REGEX=$1 ;;
+        --pattern|-pattern|-p) shift; PATTERN=$1 ;;
     esac
     shift
 done
 
 CMD="git diff-tree --no-commit-id --name-only -r $COMMIT"
 
-if [ -n "$REGEX" ]; then
+if [ -n "$PATTERN" ]; then
     # Use the `-l` switch to only display the file name.
-    CMD="$CMD | xargs grep -l $REGEX"
+    CMD="$CMD | xargs grep -l $PATTERN"
 fi
 
 if [ -n "$LIMIT" ]; then

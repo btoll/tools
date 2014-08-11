@@ -131,7 +131,7 @@ Example usages:
         - Opens all listed files for the specified hash (cf457b6) in horizontally-split windows, limiting the
           number of files opened to the first three.
 
-    git ls -c cf457b6 -regex debugger -e h -l 3
+    git ls -c cf457b6 -pattern debugger -e h -l 3
         - Opens all listed files for the specified hash (cf457b6) that match that specified regular expression
           in horizontally-split windows, limiting the number of files opened to the first three.
 
