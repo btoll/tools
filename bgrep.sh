@@ -10,4 +10,4 @@ if [ $# -ne 2 ]; then
     exit 1
 fi
 
-vim -O "+/$1" `grep -riIl "$1" "$2" | uniq`
+vim -p "+/$1" `grep -riIl "$1" "$2" | uniq`
