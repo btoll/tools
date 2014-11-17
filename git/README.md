@@ -135,3 +135,23 @@ Example usages:
         - Opens all listed files for the specified hash (cf457b6) that match that specified regular expression
           in horizontally-split windows, limiting the number of files opened to the first three.
 
+### git-review
+Example usages:
+
+    git review
+        - List the files that make up the latest commit.
+
+    git review --edit v
+        - Opens all listed files in Vim in vertically-split windows.
+
+    git review -edit b -limit 4
+        - Opens all listed files in Vim (in buffers), limiting the number of files opened to the first four.
+
+    git review -e h -l 3
+        - Opens all listed files in horizontally-split windows, limiting the number of files opened to the
+          first three.
+
+    git review -pattern debugger -e h -l 3
+        - Opens all modified files that match that specified regular expression in horizontally-split windows,
+          limiting the number of files opened to the first three.
+

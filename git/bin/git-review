@@ -1,0 +1,71 @@
+#!/bin/bash
+# https://stackoverflow.com/questions/3882838/whats-an-easy-way-to-detect-modified-files-in-a-git-workspace
+
+PATTERN=
+LIMIT=
+VIM=
+
+usage() {
+    echo "GIT-LS"
+    echo
+    echo "Usage: $0 [args]"
+    echo
+    echo "Args:"
+    echo "--edit, -edit, -e     : Open all listed files in Vim using:"
+    echo "          b = no windows (just buffers)"
+    echo "          h = horizontally-split windows"
+    echo "          t = tabs"
+    echo "          v = vertically-split windows"
+    echo "Note that if a pattern is given that only the files that match this pattern will be opened in Vim."
+    echo
+    echo " -help, -h            : Help"
+    echo
+    echo "--limit, -limit, -l   : Limit the number of files listed."
+    echo
+    echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the modified files in the workspace."
+    echo
+}
+
+# Swap out for user-provided options if given.
+while [ "$#" -gt 0 ]; do
+    OPT="$1"
+    case $OPT in
+        --edit|-edit|-e)
+            shift
+            case $1 in
+                b) VIM=" " ;;
+                h) VIM="-o" ;;
+                t) VIM="-p" ;;
+                v) VIM="-O" ;;
+            esac
+            ;;
+        -help|-h) usage; exit 0 ;;
+        --limit|-limit|-l) shift; LIMIT=$1 ;;
+        --pattern|-pattern|-p) shift; PATTERN=$1 ;;
+    esac
+    shift
+done
+
+CMD="git ls-files -m"
+
+if [ -n "$PATTERN" ]; then
+    # Use the `-l` switch to only display the file name.
+    CMD="$CMD | xargs grep -l $PATTERN"
+fi
+
+if [ -n "$LIMIT" ]; then
+    CMD="$CMD | head -$LIMIT"
+fi
+
+if [ -n "$VIM" ]; then
+    # http://stackoverflow.com/a/16579925
+    if [[ ! ${PWD##*/} =~ ^SDK ]]; then
+        echo "You need to run this command from the toplevel of the working tree."
+        exit 1
+    fi
+
+    CMD='vim '"$VIM"' $('"$CMD"')'
+fi
+
+eval $CMD
+
