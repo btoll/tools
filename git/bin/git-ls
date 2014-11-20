@@ -71,5 +71,10 @@ if [ -n "$VIM" ]; then
     CMD='vim '"$VIM"' $('"$CMD"')'
 fi
 
-eval $CMD
+if [ "$($CMD | wc -l)" -eq "0" ]; then
+    echo "[git-ls] There is nothing to list."
+    exit 0
+else
+    eval $CMD
+fi
 

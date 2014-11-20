@@ -68,7 +68,7 @@ if [ -n "$VIM" ]; then
 fi
 
 if [ "$($CMD | wc -l)" -eq "0" ]; then
-    echo "There is nothing to review."
+    echo "[git-review] There is nothing to review."
     exit 0
 else
     eval $CMD
