@@ -67,5 +67,10 @@ if [ -n "$VIM" ]; then
     CMD='vim '"$VIM"' $('"$CMD"')'
 fi
 
-eval $CMD
+if [ "$($CMD | wc -l)" -eq "0" ]; then
+    echo "There is nothing to review."
+    exit 0
+else
+    eval $CMD
+fi
 
