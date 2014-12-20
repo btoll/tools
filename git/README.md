@@ -93,6 +93,16 @@ The script will not force delete (`-D`) any branches!
 
 But as usual, make sure you know what you're doing! I am not responsible for lost branches!
 
+### git-goto
+Example usages:
+
+    git goto 5.1.0
+    git goto extjs5.1.0
+
+This is most useful when needing to quickly check out a release without having to know the tagged hash.
+
+Note that you can pass just the version number or the full tag name.
+
 ### git-hashtag
 Example usages:
 
