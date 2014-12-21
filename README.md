@@ -5,6 +5,7 @@ For example:
     alias bfind="/usr/local/www/utils/bfind.sh"
     alias bgrep="/usr/local/www/utils/bgrep.sh"
     alias brm="/usr/local/www/utils/brm.sh"
+    alias bsession="/usr/local/www/utils/bsession.sh"
     alias bticket="/usr/local/www/utils/bticket.sh"
 
 ----------------------------------------------------------------------------------------
@@ -90,6 +91,21 @@ This does the following:
 - if more than one arg, it loops over the args and constructs the names to find
 - recursively deletes everything that matches
 - suppresses STDERR
+
+### bsession bash script (for tmux and git)
+
+Example usage:
+
+    bsession -t 1972
+    bsession --ticket 1992 -version 4
+
+This does the following:
+
+- Name the tmux session the same as the ticket number.
+- cd to the appropriate SDK and create the new topic branch.
+- Split the window to be 80% of the total height.
+- Target the new pane and create the new ticket dir.
+- Attach to the tmux session.
 
 ### bticket bash script (for ExtJS)
 Example usage:
