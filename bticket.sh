@@ -6,7 +6,7 @@ EXPECTED_ARGS=2
 DEFAULT_SDK_LOCATION="../../.."
 DEFAULT_BUILDS_LOCATION="../../builds"
 DEBUG_SCRIPT="ext.js"
-ONREADY="Ext.onReady(function () {\n//REPLACE ME\n});"
+ONREADY="Ext.onReady(function () {\n});"
 
 # First establish some conditions that must be met or exit early.
 if [ $# -ne $EXPECTED_ARGS ]; then
