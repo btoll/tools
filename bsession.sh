@@ -1,4 +1,6 @@
 #!/bin/bash
+# NOTE this script uses GNU tools like sed and tac.
+# To install on Mac -> brew install coreutils.
 
 BRANCH=true
 FIDDLE=
@@ -52,24 +54,40 @@ if [ -n "$FIDDLE" ]; then
     #
     # First, rename in this form: https://fiddle.sencha.com/fiddle/da1/preview
     FIDDLE="https://fiddle.sencha.com/fiddle/"$(basename $FIDDLE)"/preview"
+
     # Then download and extract just what we need.
-    FIDDLE=$(curl $FIDDLE | sed -e '1,/launch/d' -e '/<\/script>/,$d')
+    #
+    # Here we will extract every line after the launch method and before the closing <script> tag.
+    # -n                       -> don't print
+    # '/launch/, /<\/script>/  -> match range, I guess you knew it already
+    # {                        -> if in this range
+    #     /launch/             -> and line matches /Screenshot/
+    #         {d;p;n};         -> do not print the first line (the match), print the next line and read next row
+    #     /<\/script>/         -> if line matches "<\/script>"
+    #         q;               -> quit, we have done all printing
+    #     p                    -> if we come to here, print the line
+    # }
+    #
+    # http://stackoverflow.com/a/744093
+    # There's probably a better way to do this than creating a temporary file.
+    curl $FIDDLE | gsed -n '/launch/,/<\/script>/{/launch/{d;p;n};/<\/script>/{q};p}' > foo
+
+    # We still need to delete the last n lines in this file.
+    gtac foo | sed '1,4d' | gtac > tmp
 
     pushd $BUGS
     /usr/local/www/utils/bticket.sh $TICKET $SDK
-    cd $TICKET
+    popd
 
-    # There's probably a better way to do this than creating a temporary file.
-    touch tmp
+    # Note that we cannot move the js file until the bug dir has been created.
+    mv tmp $BUGS$TICKET/foo
+    pushd $BUGS$TICKET
 
-    # Use double quotes to preserve line breaks.
-    echo "$FIDDLE" > tmp
+    sed -i '' -e '/Ext.onReady/ {
+        r foo
+    }' index.html
 
-    sed -i '' -e "/Ext.onReady/ {
-        r tmp
-    }" index.html
-
-    rm tmp
+    rm foo
     popd
 fi
 
