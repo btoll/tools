@@ -75,24 +75,22 @@ if [ -n "$FIDDLE" ]; then
     #
     # http://stackoverflow.com/a/744093
     # There's probably a better way to do this than creating a temporary file.
+    #
+    # Let's first cd to a dir where we know we have write permissions.
+    pushd $BUGS
     curl $FIDDLE | gsed -n '/launch/,/<\/script>/{/launch/{d;p;n};/<\/script>/{q};p}' > foo
 
     # We still need to delete the last n lines in this file.
     gtac foo | sed '1,4d' | gtac > tmp
 
-    pushd $BUGS
     /usr/local/www/utils/bticket.sh $TICKET $SDK
-    popd
-
-    # Note that we cannot move the js file until the bug dir has been created.
-    mv tmp $BUGS$TICKET/foo
-    pushd $BUGS$TICKET
+    cd $TICKET
 
     sed -i '' -e '/Ext.onReady/ {
-        r foo
+        r ../foo
     }' index.html
 
-    rm foo
+    rm ../foo
     popd
 fi
 

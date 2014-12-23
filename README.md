@@ -111,7 +111,7 @@ This does the following:
 
 In addition, it's possible to specify a Sencha Fiddle. In this case, it will download the Fiddle and use sed to extract the body of the `launch` command. This will then be inserted into the body of the onReady method in the `$BUGS/[new_ticket]/index.html` document.
 
-If you do not wish to create a new topic branch, set the `---no-branch` flag.
+If you do not wish to create a new topic branch, set the `--no-branch` flag.
 
 ### bticket bash script (for ExtJS)
 Example usage:
