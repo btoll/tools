@@ -2,6 +2,7 @@
 # NOTE this script uses GNU tools like sed and tac.
 # To install on Mac -> brew install coreutils.
 
+BASE_DIR=
 BRANCH=true
 FIDDLE=
 SDK=
@@ -52,8 +53,12 @@ SDK=SDK${VERSION:-5}
 if [ -n "$FIDDLE" ]; then
     # Let's re-use and re-define $FIDDLE.
     #
-    # First, rename in this form: https://fiddle.sencha.com/fiddle/da1/preview
-    FIDDLE="https://fiddle.sencha.com/fiddle/"$(basename $FIDDLE)"/preview"
+    # Let's accept either a regular Fiddle URL or a preview Fiddle URL.
+    BASE_DIR=$(basename $FIDDLE)
+    if [ "$BASE_DIR" != "preview" ]; then
+        # Rename in this form: https://fiddle.sencha.com/fiddle/da1/preview
+        FIDDLE="https://fiddle.sencha.com/fiddle/$BASE_DIR/preview"
+    fi
 
     # Then download and extract just what we need.
     #
