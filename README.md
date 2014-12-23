@@ -98,14 +98,20 @@ Example usage:
 
     bsession -t 1972
     bsession --ticket 1992 -version 4
+    bsession --ticket EXTJS-2009 --fiddle https://fiddle.sencha.com/#fiddle/da1
+    bsession --ticket EXTJS-2009 --no-branch -f https://fiddle.sencha.com/#fiddle/da1
 
 This does the following:
 
-- Name the tmux session the same as the ticket number.
-- cd to the appropriate SDK and create the new topic branch.
-- Split the window to be 80% of the total height.
-- Target the new pane and create the new ticket dir.
-- Attach to the tmux session.
+- Names the tmux session the same as the ticket number.
+- cds to the appropriate SDK and creates the new topic branch.
+- Splits the window to be 80% of the total height.
+- Targets the new pane and creates the new ticket dir.
+- Attaches to the tmux session.
+
+In addition, it's possible to specify a Sencha Fiddle. In this case, it will download the Fiddle and use sed to extract the body of the `launch` command. This will then be inserted into the body of the onReady method in the `$BUGS/[new_ticket]/index.html` document.
+
+If you do not wish to create a new topic branch, set the `---no-branch` flag.
 
 ### bticket bash script (for ExtJS)
 Example usage:
