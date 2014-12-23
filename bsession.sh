@@ -4,6 +4,7 @@
 
 BASE_DIR=
 BRANCH=true
+EXISTS=false
 FIDDLE=
 SDK=
 TICKET=
@@ -107,7 +108,19 @@ if [ $? -eq 1 ]; then
     tmux send-keys -t $TICKET 'cd $'$SDK C-m
 
     if $BRANCH; then
-        tmux send-keys -t $TICKET 'git checkout -b '$TICKET C-m
+        # Here we need to check if this branch already exists. If so, don't pass
+        # the -b flag when the branch is checked out.
+        #
+        # We'll need to cd to the correct repo to check for existence.
+        pushd /usr/local/www/$SDK
+        EXISTS="$(git show-ref refs/heads/"$TICKET")"
+        popd
+
+        if [ -z "$EXISTS" ]; then
+            NEW_BRANCH="-b"
+        fi
+
+        tmux send-keys -t $TICKET 'git checkout '$NEW_BRANCH' '$TICKET C-m
     fi
 
     tmux send-keys 'clear' C-m
