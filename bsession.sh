@@ -98,7 +98,7 @@ fi
 ###############################################################
 # 1. Name the session the same as the ticket number.
 # 2. cd to the appropriate SDK and create the new topic branch.
-# 3. Split the window to be 80% of the total height.
+# 3. Split the window to be 75% of the total height.
 # 4. Target the new pane and create the new ticket dir.
 # 5. Attach to the session.
 ###############################################################
@@ -124,7 +124,7 @@ if [ $? -eq 1 ]; then
     fi
 
     tmux send-keys 'clear' C-m
-    tmux split-window -v -p 80 -t $TICKET
+    tmux split-window -v -p 75 -t $TICKET
     tmux send-keys -t $TICKET:0.1 "cd $BUGS" C-m
 
     # Note if $FIDDLE is unset then we need to create the bug dir.

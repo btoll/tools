@@ -105,7 +105,7 @@ This does the following:
 
 - Names the tmux session the same as the ticket number.
 - cds to the appropriate SDK and creates the new topic branch.
-- Splits the window to be 80% of the total height.
+- Splits the window to be 75% of the total height.
 - Targets the new pane and creates the new ticket dir.
 - Attaches to the tmux session.
 
