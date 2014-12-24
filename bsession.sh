@@ -4,6 +4,7 @@
 
 BASE_DIR=
 BRANCH=true
+CREATE_DIR=true
 EXISTS=false
 FIDDLE=
 SDK=
@@ -40,6 +41,7 @@ while [ "$#" -gt 0 ]; do
         -help|-h) usage; exit 0 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
         --no-branch) BRANCH=false ;;
+        --no-dir) CREATE_DIR=false ;;
         --ticket|-ticket|-t) shift; TICKET=$1 ;;
         --version|-version|-v) shift; VERSION=$1 ;;
     esac
@@ -51,7 +53,7 @@ SDK=SDK${VERSION:-5}
 # If $FIDDLE is set, then let's go through the process of creating the bug dir,
 # downloading the Fiddle preview, extracting our best-guess-attempt at the code
 # body and finally slapping that into the new index.html.
-if [ -n "$FIDDLE" ]; then
+if [ -n "$FIDDLE" ] && $CREATE_DIR ; then
     # Let's re-use and re-define $FIDDLE.
     #
     # Let's accept either a regular Fiddle URL or a preview Fiddle URL.
@@ -127,13 +129,16 @@ if [ $? -eq 1 ]; then
     tmux split-window -v -p 75 -t $TICKET
     tmux send-keys -t $TICKET:0.1 "cd $BUGS" C-m
 
-    # Note if $FIDDLE is unset then we need to create the bug dir.
-    if [ -z "$FIDDLE" ]; then
+    # Note if $FIDDLE is unset and we want a new ticket dir then let's create it.
+    if [ -z "$FIDDLE" ] && $CREATE_DIR ; then
         tmux send-keys -t $TICKET:0.1 "bticket $TICKET $SDK" C-m
+        tmux send-keys -t $TICKET:0.1 "cd $TICKET" C-m
+        tmux send-keys -t $TICKET:0.1 'vim index.html' C-m
+    else
+    # Else cd again to the appropriate SDK and start a file search (note the dependency on the CtrlP plugin).
+        tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
+        tmux send-keys -t $TICKET:0.1 'vim -c :CtrlP' C-m
     fi
-
-    tmux send-keys -t $TICKET:0.1 "cd $TICKET" C-m
-    tmux send-keys -t $TICKET:0.1 'vim index.html' C-m
 fi
 tmux attach -t $TICKET
 
