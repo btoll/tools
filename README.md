@@ -101,6 +101,7 @@ Example usage:
     bsession --ticket EXTJS-2009 --fiddle https://fiddle.sencha.com/#fiddle/da1
     bsession --ticket EXTJS-2009 --no-branch -f https://fiddle.sencha.com/#fiddle/da1
     bsession -ticket EXTJS-15678 --no-dir
+    bsession -ticket EXTJS-15678 --no-dir --command "git ls -e t"
 
 This does the following:
 
@@ -124,13 +125,16 @@ Use cases:
     This will create a new `EXTJS-1972` topic branch in the upper pane and a new bug directory called `EXTJS-1972` in the lower, opened to `index.html` in Vim.
 
 - `bsession -t EXTJS-1972 --no-dir`
-    This will create a new `EXTJS-1972` topic branch in the upper pane and a file search in Vim in the lower (note there is a dependency on the CtrlP plugin)..
+    This will create a new `EXTJS-1972` topic branch in the upper pane and a file search in Vim in the lower (note there is a dependency on the CtrlP plugin).
+
+- `bsession -t EXTJS-1972 --no-dir --command "git ls -e t"
+    This will create a new `EXTJS-1972` topic branch in the upper pane and run the command specified by the `--command` flag in the bottom pane.
 
 - `bsession -t EXTJS-1972 --no-branch`
     This will not create a new topic branch but will `cd` to the appropriate SDK in the upper pane and a new bug directory called `EXTJS-1972` in the lower, opened to `index.html` in Vim.
 
 - `bsession -t EXTJS-1972 --no-branch --no-branch
-    This will not create a new topic branch but will `cd` to the appropriate SDK in the upper pane and a file search in Vim in the lower (note there is a dependency on the CtrlP plugin)..
+    This will not create a new topic branch but will `cd` to the appropriate SDK in the upper pane and a file search in Vim in the lower (note there is a dependency on the CtrlP plugin).
 
 Note that in all of the above cases it is possible to specify a Sencha Fiddle. This will download the Fiddle and make a best guess attempt to get the JavaScript within the `launch()` method, which will then be inserted into `index.html` in the new bug directory.
 

@@ -4,6 +4,8 @@
 
 BASE_DIR=
 BRANCH=true
+# Let's set a default command.
+COMMAND="vim -c :CtrlP"
 CREATE_DIR=true
 EXISTS=false
 FIDDLE=
@@ -17,11 +19,14 @@ usage() {
     echo "Usage: $0 [args]"
     echo
     echo "Args:"
-    echo " -help, -h              : Help"
+    echo "--command, -command, -c : The command to run if a bug directory is not to be created. This will be run in the bottom pane."
+    echo "                          Defaults to 'vim -c :CtrlP'."
     echo
     echo "--fiddle, -fiddle, -f   : Location of Fiddle to download using curl and paste into index.html in new bug dir."
     echo
     echo "--no-branch             : Don't create a new git topic branch (by default it will)."
+    echo
+    echo "--no-dir                : Don't create a new bug directory (by default it will)."
     echo
     echo "--ticket, -ticket, -t   : The bug ticket number."
     echo
@@ -39,6 +44,7 @@ while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
         -help|-h) usage; exit 0 ;;
+        --command|-command|-c) shift; COMMAND=$1 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
         --no-branch) BRANCH=false ;;
         --no-dir) CREATE_DIR=false ;;
@@ -137,7 +143,8 @@ if [ $? -eq 1 ]; then
     else
     # Else cd again to the appropriate SDK and start a file search (note the dependency on the CtrlP plugin).
         tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
-        tmux send-keys -t $TICKET:0.1 'vim -c :CtrlP' C-m
+        #tmux send-keys -t $TICKET:0.1 'vim -c :CtrlP' C-m
+        tmux send-keys -t $TICKET:0.1 "$COMMAND" C-m
     fi
 fi
 tmux attach -t $TICKET
