@@ -107,7 +107,7 @@ This does the following:
 
 - Names the tmux session the same as the ticket number.
 - cds to the appropriate SDK and creates the new topic branch.
-- Splits the window to be 75% of the total height.
+- Splits the window to be 55% of the total width.
 - Targets the new pane and creates the new ticket dir.
 - Attaches to the tmux session.
 
@@ -127,7 +127,7 @@ Use cases:
 - `bsession -t EXTJS-1972 --no-dir`
     This will create a new `EXTJS-1972` topic branch in the upper pane and a file search in Vim in the lower (note there is a dependency on the CtrlP plugin).
 
-- `bsession -t EXTJS-1972 --no-dir --command "git ls -e t"
+- `bsession -t EXTJS-1972 --command "git ls -e t"
     This will create a new `EXTJS-1972` topic branch in the upper pane and run the command specified by the `--command` flag in the bottom pane.
 
 - `bsession -t EXTJS-1972 --no-branch`

@@ -1,11 +1,14 @@
 #!/bin/bash
+# TODO: allow choice of split.
+# TODO: allow custom command to come from an env var?
+
 # NOTE this script uses GNU tools like sed and tac.
 # To install on Mac -> brew install coreutils.
 
 BASE_DIR=
 BRANCH=true
 # Let's set a default command.
-COMMAND="vim -c :CtrlP"
+COMMAND=
 CREATE_DIR=true
 EXISTS=false
 FIDDLE=
@@ -20,6 +23,7 @@ usage() {
     echo
     echo "Args:"
     echo "--command, -command, -c : The command to run if a bug directory is not to be created. This will be run in the bottom pane."
+    echo "                          Note that the presence of this flag trumps everything else."
     echo "                          Defaults to 'vim -c :CtrlP'."
     echo
     echo "--fiddle, -fiddle, -f   : Location of Fiddle to download using curl and paste into index.html in new bug dir."
@@ -59,7 +63,9 @@ SDK=SDK${VERSION:-5}
 # If $FIDDLE is set, then let's go through the process of creating the bug dir,
 # downloading the Fiddle preview, extracting our best-guess-attempt at the code
 # body and finally slapping that into the new index.html.
-if [ -n "$FIDDLE" ] && $CREATE_DIR ; then
+#
+# Note to only download a Fiddle if the flag is set, we're to create the bug dir AND there's no custom command!
+if [ -n "$FIDDLE" ] && $CREATE_DIR && [ -z "$COMMAND" ] ; then
     # Let's re-use and re-define $FIDDLE.
     #
     # Let's accept either a regular Fiddle URL or a preview Fiddle URL.
@@ -106,13 +112,13 @@ fi
 ###############################################################
 # 1. Name the session the same as the ticket number.
 # 2. cd to the appropriate SDK and create the new topic branch.
-# 3. Split the window to be 75% of the total height.
+# 3. Split the window to be 55% of the total width.
 # 4. Target the new pane and create the new ticket dir.
 # 5. Attach to the session.
 ###############################################################
 tmux has-session -t $TICKET 2>/dev/null
 if [ $? -eq 1 ]; then
-    tmux new-session -s $TICKET -n console -d
+    tmux new-session -s $TICKET -d
     tmux send-keys -t $TICKET 'cd $'$SDK C-m
 
     if $BRANCH; then
@@ -132,16 +138,17 @@ if [ $? -eq 1 ]; then
     fi
 
     tmux send-keys 'clear' C-m
-    tmux split-window -v -p 75 -t $TICKET
+    tmux split-window -h -p 55 -t $TICKET
     tmux send-keys -t $TICKET:0.1 "cd $BUGS" C-m
 
-    # Note if $FIDDLE is unset and we want a new ticket dir then let's create it.
-    if [ -z "$FIDDLE" ] && $CREATE_DIR ; then
+    # Note if $FIDDLE is unset, we want a new ticket dir AND there's no custom command, then let's create the bug dir.
+    if [ -z "$FIDDLE" ] && $CREATE_DIR && [ -z "$COMMAND" ]; then
         tmux send-keys -t $TICKET:0.1 "bticket $TICKET $SDK" C-m
         tmux send-keys -t $TICKET:0.1 "cd $TICKET" C-m
         tmux send-keys -t $TICKET:0.1 'vim index.html' C-m
     else
-    # Else cd again to the appropriate SDK and start a file search (note the dependency on the CtrlP plugin).
+    # Else cd again to the appropriate SDK and run the $COMMAND.
+        COMMAND=${COMMAND:-"vim -c :CtrlP"}
         tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
         #tmux send-keys -t $TICKET:0.1 'vim -c :CtrlP' C-m
         tmux send-keys -t $TICKET:0.1 "$COMMAND" C-m
