@@ -101,8 +101,6 @@ Example usages:
 
 This is most useful when needing to quickly check out a release without having to know the tagged hash.
 
-Note that you can pass just the version number or the full tag name.
-
 ### git-hashtag
 Example usages:
 
@@ -119,8 +117,6 @@ When checking out a tagged version:
     git hashtag 4.2.2 | xargs git checkout
     git checkout $(git hashtag 4.2.2)
     git checkout `git hashtag 4.2.2`
-
-Note that you can pass just the version number or the full tag name.
 
 ### git-ls
 Example usages:
