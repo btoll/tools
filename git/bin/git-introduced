@@ -2,12 +2,14 @@
 
 # Delimiter.
 D='|'
+FIELDS=("Hash (short)   -> " "Author name    -> " "Author email   -> " "Merge date     -> " "Commit message -> ")
 FORMAT=
 LOCATION=
 OPEN_IN_BROWSER=false
 PATTERN=
+PREV_IFS=
 SHA=
-URL=
+URL=https://github.com/extjs/SDK/commit/
 
 #usage() {
 #    echo "GIT-LS"
@@ -51,23 +53,38 @@ LOCATION=${LOCATION:=$(pwd)}
 git log --pretty="$FORMAT" -S"$PATTERN" -- "$LOCATION" > tmp
 wait
 
+# Save previous (global) IFS.
+PREV_IFS="$IFS"
+IFS="$D"
+
 while read LINE
 do
-    SHA=$(echo $LINE | cut -d$D -f1)
-    URL=https://github.com/extjs/SDK/commit/$SHA
+    # Disable backslash escaping and read words into an array.
+    read -r -a ARR <<<"$LINE"
 
+    # Apparently, when the lines are read into the array that it uses the default ' ' delimiter.
+    SHA=$(echo $LINE | cut -d' ' -f1)
+    #URL="$URL$SHA"
+    URL="https://github.com/extjs/SDK/commit/$SHA"
+
+    # We can only now add the 6th arr element now that we have the SHA from each search result.
+    FIELDS[5]="Url            ->  $URL"
+
+    # Get the index for each field to lookup the values in each array.
+    # http://www.linuxjournal.com/content/bash-arrays
     echo
-    echo "Hash (short)   -> $SHA"
-    echo "Author name    -> $(echo $LINE | cut -d$D -f2)"
-    echo "Author email   -> $(echo $LINE | cut -d$D -f3)"
-    echo "Merge date     -> $(echo $LINE | cut -d$D -f4)"
-    echo "Commit message -> $(echo $LINE | cut -d$D -f5)"
-    echo "Url            -> $URL"
+    for n in ${!FIELDS[*]}
+    do
+        printf "%s\n" "${FIELDS[n]} ${ARR[n]}"
+    done
 
     if $OPEN_IN_BROWSER; then
         open $URL
     fi
 done < tmp
+
+# Restore previous IFS.
+IFS="$PREV_IFS"
 
 # Add a final blank line for formatting, i.e., a blank line before the prompt.
 echo
