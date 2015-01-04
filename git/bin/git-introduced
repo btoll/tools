@@ -2,55 +2,59 @@
 
 # Delimiter.
 D='|'
-FIELDS=("Hash (short)   -> " "Author name    -> " "Author email   -> " "Merge date     -> " "Commit message -> ")
+FIELDS=("Hash (short)    -> " "Author name     -> " "Author email    -> " "Commit message  -> " "Merge date      -> ")
 FORMAT=
 LOCATION=
+DELETE_FILE=true
 OPEN_IN_BROWSER=false
 PATTERN=
 PREV_IFS=
 SHA=
-URL=https://github.com/extjs/SDK/commit/
+TMP_FILE=
+URL=
 
-#usage() {
-#    echo "GIT-LS"
-#    echo
-#    echo "Usage: $0 [args]"
-#    echo
-#    echo "Args:"
-#    echo "--commit, -commit, -c : List the files in this commit (defaults to HEAD)."
-#    echo
-#    echo "--edit, -edit, -e     : Open all listed files in Vim using:"
-#    echo "          b = no windows (just buffers)"
-#    echo "          h = horizontally-split windows"
-#    echo "          t = tabs"
-#    echo "          v = vertically-split windows"
-#    echo "Note that if a pattern is given that only the files that match this pattern will be opened in Vim."
-#    echo
-#    echo " -help, -h            : Help"
-#    echo
-#    echo "--limit, -limit, -l   : Limit the number of files listed."
-#    echo
-#    echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the files that make up the commit."
-#    echo
-#}
+usage() {
+    echo "GIT-INTRODUCED"
+    echo
+    echo "Usage: $0 [args]"
+    echo
+    echo "Args:"
+    echo "--format, -format, -f      : The format passed to internally to git log --pretty."
+    echo "                             Defaults to '%h %an %ae %s %cd'."
+    echo
+    echo " -help, -h                 : Help"
+    echo
+    echo "--location, -location, -l  : The location of the file or directory to search. Note that the more specific the location the"
+    echo                               faster the lookup. Default to the current working directory.
+    echo
+    echo "--no-delete-file           : The default is to delete the temporary CSV file used by the tool. Use this flag to override."
+    echo
+    echo "--open-in-browser          : Arguably the coolest feature. This will open the commit on GitHub using the default browser."
+    echo "                             Currently only supported on OS X."
+    echo
+    echo "--pattern, -pattern, -p    : Specify a pattern (method) that will be the basis of the log history search."
+    echo
+}
 
 # Swap out for user-provided options if given.
 while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
         --format|-format|-f) shift; FORMAT=$1 ;;
+        -help|-h) usage; exit 0 ;;
         --location|-location|-l) shift; LOCATION=$1 ;;
-        #-help|-h) usage; exit 0 ;;
+        --no-delete-file) DELETE_FILE=false ;;
         --open-in-browser) OPEN_IN_BROWSER=true ;;
         --pattern|-pattern|-p) shift; PATTERN=$1 ;;
     esac
     shift
 done
 
-FORMAT=${FORMAT:-"%h$D%an$D%ae$D%cd$D%s"}
+FORMAT=${FORMAT:-"%h$D%an$D%ae$D%s$D%cd"}
 LOCATION=${LOCATION:=$(pwd)}
+TMP_FILE="$PATTERN.csv"
 
-git log --pretty="$FORMAT" -S"$PATTERN" -- "$LOCATION" > tmp
+git log --pretty="$FORMAT" -S"$PATTERN" -- "$LOCATION" > $TMP_FILE
 wait
 
 # Save previous (global) IFS.
@@ -62,17 +66,17 @@ do
     # Disable backslash escaping and read words into an array.
     read -r -a ARR <<<"$LINE"
 
-    # Apparently, when the lines are read into the array that it uses the default ' ' delimiter.
-    SHA=$(echo $LINE | cut -d' ' -f1)
-    #URL="$URL$SHA"
-    URL="https://github.com/extjs/SDK/commit/$SHA"
+    # We need to grab the hash to properly build the URL.
+    URL="https://github.com/extjs/SDK/commit/${ARR[0]}"
 
-    # We can only now add the 6th arr element now that we have the SHA from each search result.
-    FIELDS[5]="Url            ->  $URL"
+    # We can only now add the last array element now that we have the SHA from each search result.
+    FIELDS[5]="Url             ->  $URL"
+
+    # For formatting between search results.
+    echo
 
     # Get the index for each field to lookup the values in each array.
     # http://www.linuxjournal.com/content/bash-arrays
-    echo
     for n in ${!FIELDS[*]}
     do
         printf "%s\n" "${FIELDS[n]} ${ARR[n]}"
@@ -81,7 +85,7 @@ do
     if $OPEN_IN_BROWSER; then
         open $URL
     fi
-done < tmp
+done < $TMP_FILE
 
 # Restore previous IFS.
 IFS="$PREV_IFS"
@@ -89,4 +93,6 @@ IFS="$PREV_IFS"
 # Add a final blank line for formatting, i.e., a blank line before the prompt.
 echo
 
-rm tmp
+if $DELETE_FILE; then
+    rm $TMP_FILE
+fi
