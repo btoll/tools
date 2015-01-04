@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Delimiter.
+D='|'
+FORMAT=
+LOCATION=
+OPEN_IN_BROWSER=false
+PATTERN=
+SHA=
+URL=
+
+#usage() {
+#    echo "GIT-LS"
+#    echo
+#    echo "Usage: $0 [args]"
+#    echo
+#    echo "Args:"
+#    echo "--commit, -commit, -c : List the files in this commit (defaults to HEAD)."
+#    echo
+#    echo "--edit, -edit, -e     : Open all listed files in Vim using:"
+#    echo "          b = no windows (just buffers)"
+#    echo "          h = horizontally-split windows"
+#    echo "          t = tabs"
+#    echo "          v = vertically-split windows"
+#    echo "Note that if a pattern is given that only the files that match this pattern will be opened in Vim."
+#    echo
+#    echo " -help, -h            : Help"
+#    echo
+#    echo "--limit, -limit, -l   : Limit the number of files listed."
+#    echo
+#    echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the files that make up the commit."
+#    echo
+#}
+
+# Swap out for user-provided options if given.
+while [ "$#" -gt 0 ]; do
+    OPT="$1"
+    case $OPT in
+        --format|-format|-f) shift; FORMAT=$1 ;;
+        --location|-location|-l) shift; LOCATION=$1 ;;
+        #-help|-h) usage; exit 0 ;;
+        --open-in-browser) OPEN_IN_BROWSER=true ;;
+        --pattern|-pattern|-p) shift; PATTERN=$1 ;;
+    esac
+    shift
+done
+
+FORMAT=${FORMAT:-"%h$D%an$D%ae$D%cd$D%s"}
+LOCATION=${LOCATION:=$(pwd)}
+
+git log --pretty="$FORMAT" -S"$PATTERN" -- "$LOCATION" > tmp
+wait
+
+while read LINE
+do
+    SHA=$(echo $LINE | cut -d$D -f1)
+    URL=https://github.com/extjs/SDK/commit/$SHA
+
+    echo
+    echo "Hash (short)   -> $SHA"
+    echo "Author name    -> $(echo $LINE | cut -d$D -f2)"
+    echo "Author email   -> $(echo $LINE | cut -d$D -f3)"
+    echo "Merge date     -> $(echo $LINE | cut -d$D -f4)"
+    echo "Commit message -> $(echo $LINE | cut -d$D -f5)"
+    echo "Url            -> $URL"
+
+    if $OPEN_IN_BROWSER; then
+        open $URL
+    fi
+done < tmp
+
+# Add a final blank line for formatting, i.e., a blank line before the prompt.
+echo
+
+rm tmp
