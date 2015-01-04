@@ -118,6 +118,38 @@ When checking out a tagged version:
     git checkout $(git hashtag 4.2.2)
     git checkout `git hashtag 4.2.2`
 
+### git-introduced
+Find the commit(s) that introduced or removed a method or other search pattern.
+
+Example usages:
+
+    git introduced --pattern onGridDestroy
+    git introduced -p injectLockable --open-in-browser
+    git introduced -pattern onDestroy -location ext/src/grid --no-delete-file
+    git introduced -p getDragData -l dd | tee my_search_results
+
+It is basically a wrapper for ```git log -S``` and returns the same results, however there are several advantages to it:
+
+    - Opens all search results in its own tabbed browser window.
+      This can be incredibly useful when discussing an issue with a colleague over the internets.
+      Currently only supported on Mac OS X.
+
+    - Ease of typing.
+      Since it provides sensible defaults for the formatting, it's not necessary to lookup the tokens to
+      provide your own. In addition, it will automatically use the current working directory as the search
+      location (as the last argument after the ```--```) which can significantly speed up the query.
+
+      The found matches will be in the following format (to STDOUT):
+
+          Hash (short)    ->  6449ce9
+          Author name     ->  Benjamin Toll
+          Author email    ->  benjam72@yahoo.com
+          Commit message  ->  Ensure column filter menu is destroyed when adding new column filters.
+          Merge date      ->  Mon Nov 24 13:27:27 2014 -0500
+          Url             ->  https://github.com/extjs/SDK/commit/6449ce9
+
+    - Will keep the auto-generated CSV file on disk by passing the ```--no-delete-file``` flag.
+
 ### git-ls
 Example usages:
 
