@@ -22,7 +22,7 @@ usage() {
     echo "Usage: $0 [args]"
     echo
     echo "Args:"
-    echo "--command, -command, -c : The command to run if a bug directory is not to be created. This will be run in the bottom pane."
+    echo "--command, -command, -c : The command to run if a bug directory is not to be created. This will be run in the right pane."
     echo "                          Note that the presence of this flag trumps everything else."
     echo "                          Defaults to 'vim -c :CtrlP'."
     echo
@@ -150,7 +150,6 @@ if [ $? -eq 1 ]; then
     # Else cd again to the appropriate SDK and run the $COMMAND.
         COMMAND=${COMMAND:-"vim -c :CtrlP"}
         tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
-        #tmux send-keys -t $TICKET:0.1 'vim -c :CtrlP' C-m
         tmux send-keys -t $TICKET:0.1 "$COMMAND" C-m
     fi
 fi
