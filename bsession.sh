@@ -40,7 +40,7 @@ usage() {
 
 if [ $# -eq 0 ]; then
     usage
-    exit 1
+    exit 0
 fi
 
 # Swap out for user-provided options if given.
