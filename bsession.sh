@@ -145,13 +145,15 @@ if [ $? -eq 1 ]; then
     # Note if $FIDDLE is unset, we want a new ticket dir AND there's no custom command, then let's create the bug dir.
     if [ -z "$FIDDLE" ] && $CREATE_DIR && [ -z "$COMMAND" ]; then
         tmux send-keys -t $TICKET:0.1 "bticket $TICKET $SDK" C-m
-        tmux send-keys -t $TICKET:0.1 "cd $TICKET" C-m
-        tmux send-keys -t $TICKET:0.1 'vim index.html' C-m
+        # cd back to the SDK and open the bug ticket from there.
+        tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
+        tmux send-keys -t $TICKET:0.1 "vim $BUGS/$TICKET/index.html" C-m
     elif [ -n "$FIDDLE" ]; then
     # Else if a fiddle was given, we can assume the bug dir and topic branch were already created. Go there and also
     # open the ticket in the default browser.
-        tmux send-keys -t $TICKET:0.1 "cd $TICKET" C-m
-        tmux send-keys -t $TICKET:0.1 'vim index.html' C-m
+        # cd back to the SDK and open the bug ticket from there.
+        tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
+        tmux send-keys -t $TICKET:0.1 "vim $BUGS/$TICKET/index.html" C-m
         open "http://localhost/extjs/bugs/$TICKET"
     else
     # Else cd again to the appropriate SDK and run the $COMMAND.
