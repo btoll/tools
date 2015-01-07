@@ -1,6 +1,7 @@
 #!/bin/bash
 # TODO: allow choice of split.
 # TODO: allow custom command to come from an env var?
+# TODO: cleanup!!
 
 # NOTE this script uses GNU tools like sed and tac.
 # To install on Mac -> brew install coreutils.
@@ -146,6 +147,12 @@ if [ $? -eq 1 ]; then
         tmux send-keys -t $TICKET:0.1 "bticket $TICKET $SDK" C-m
         tmux send-keys -t $TICKET:0.1 "cd $TICKET" C-m
         tmux send-keys -t $TICKET:0.1 'vim index.html' C-m
+    elif [ -n "$FIDDLE" ]; then
+    # Else if a fiddle was given, we can assume the bug dir and topic branch were already created. Go there and also
+    # open the ticket in the default browser.
+        tmux send-keys -t $TICKET:0.1 "cd $TICKET" C-m
+        tmux send-keys -t $TICKET:0.1 'vim index.html' C-m
+        open "http://localhost/extjs/bugs/$TICKET"
     else
     # Else cd again to the appropriate SDK and run the $COMMAND.
         COMMAND=${COMMAND:-"vim -c :CtrlP"}
