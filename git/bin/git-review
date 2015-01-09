@@ -46,7 +46,12 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-CMD="git ls-files -m"
+CMD="git ls-files -m | uniq"
+
+#if [ "$($CMD | wc -l)" -eq "0" ]; then
+#    echo "[git-review] There is nothing to review."
+#    exit 0
+#fi
 
 if [ -n "$PATTERN" ]; then
     # Use the `-l` switch to only display the file name.
@@ -67,10 +72,5 @@ if [ -n "$VIM" ]; then
     CMD='vim '"$VIM"' $('"$CMD"')'
 fi
 
-if [ "$($CMD | wc -l)" -eq "0" ]; then
-    echo "[git-review] There is nothing to review."
-    exit 0
-else
-    eval $CMD
-fi
+eval $CMD
 

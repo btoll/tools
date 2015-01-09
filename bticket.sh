@@ -79,7 +79,7 @@ fi
 # Create the new ticket dir.
 mkdir -m 0755 -p $1
 
-HTML="<html>\n<head>\n<title>$1</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n$ADAPTER<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\nExt.disableCacheBuster(1);\n\n$ONREADY\n</script>\n</head>\n\n<body>\n</body>\n</html>"
+HTML="<html>\n<head>\n<title>$1</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n$ADAPTER<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\n$ONREADY\n</script>\n</head>\n\n<body>\n</body>\n</html>"
 
 # Echo HTML honoring the new lines (-e flag).
 echo -e $HTML > $1/index.html

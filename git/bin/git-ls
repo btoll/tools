@@ -52,6 +52,11 @@ done
 
 CMD="git diff-tree --no-commit-id --name-only -r $COMMIT"
 
+#if [ "$($CMD | wc -l)" -eq "0" ]; then
+#    echo "[git-ls] There is nothing to list."
+#    exit 0
+#fi
+
 if [ -n "$PATTERN" ]; then
     # Use the `-l` switch to only display the file name.
     CMD="$CMD | xargs grep -l $PATTERN"
@@ -71,10 +76,5 @@ if [ -n "$VIM" ]; then
     CMD='vim '"$VIM"' $('"$CMD"')'
 fi
 
-if [ "$($CMD | wc -l)" -eq "0" ]; then
-    echo "[git-ls] There is nothing to list."
-    exit 0
-else
-    eval $CMD
-fi
+eval $CMD
 
