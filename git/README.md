@@ -101,22 +101,27 @@ Example usages:
 
 This is most useful when needing to quickly check out a release without having to know the tagged hash.
 
-### git-hashtag
-Example usages:
+### git-get-hash
+This will grep for the first commit hash in the branch or tag description. It can be useful in many different ways.
+
+For example:
+    - Use it to check out a tagged version.
+    - Use it for the good or bad anchor when bisecting.
+    - Use it in a pipeline.
 
 When bisecting:
 
-    git hashtag 4.2.2 | xargs git bisect good
-    git bisect good $(git hashtag 4.2.2)
-    git bisect bad `git hashtag 4.2.2`
+    git get-hash 4.2.2 | xargs git bisect good
+    git bisect good $(git get-hash 4.2.2)
+    git bisect bad `git get-hash 4.2.2`
 
 This will grep for the first commit hash in the tag description and use it for the good or bad commit anchor for git-bisect.
 
 When checking out a tagged version:
 
-    git hashtag 4.2.2 | xargs git checkout
-    git checkout $(git hashtag 4.2.2)
-    git checkout `git hashtag 4.2.2`
+    git get-hash 5.2.2 | xargs git checkout
+    git checkout $(git get-hash 4.2.2)
+    git checkout `git get-hash 4.2.2`
 
 ### git-introduced
 Find the commit(s) that introduced or removed a method or other search pattern.
