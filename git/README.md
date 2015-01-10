@@ -1,13 +1,33 @@
-    To install the git scripts:
+### git aliases
 
-        1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
-        2. Make sure it's executable.
-        3. Done.
+git get-hash
 
-    To install the git man pages:
+    git config --global alias.get-hash '!sh -c '"'git show \$0 | grep commit | cut -c8-'"
 
-        1. Put the file anywhere in your manpath. For instance, `/usr/local/share/man/man1`.
-        2. Done.
+git goto
+
+    git config --global alias.goto '!sh -c '"'git show \$0 | grep commit | cut -c8- | xargs git co'"
+
+git open
+
+    git config --global alias.open '!f()'" { SHA=\$(git get-hash \$1); open https://github.com/extjs/SDK/commit/\$SHA; }; f"
+
+git open-sha
+
+    git config --global alias.open-sha '!sh -c '"'open https://github.com/extjs/SDK/commit/\$0'"
+
+### git extensions
+
+To install the git scripts:
+
+    1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
+    2. Make sure it's executable.
+    3. Done.
+
+To install the git man pages:
+
+    1. Put the file anywhere in your manpath. For instance, `/usr/local/share/man/man1`.
+    2. Done.
 
 ### git-cleanup
 
@@ -94,6 +114,8 @@ The script will not force delete (`-D`) any branches!
 But as usual, make sure you know what you're doing! I am not responsible for lost branches!
 
 ### git-goto
+    !!! This is deprecated. Use the git alias instead. !!!
+
 Example usages:
 
     git goto 5.1.0
@@ -102,6 +124,9 @@ Example usages:
 This is most useful when needing to quickly check out a release without having to know the tagged hash.
 
 ### git-get-hash
+
+    !!! This is deprecated. Use the git alias instead. !!!
+
 This will grep for the first commit hash in the branch or tag description. It can be useful in many different ways.
 
 For example:
