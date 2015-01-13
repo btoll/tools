@@ -154,13 +154,14 @@ if [ $? -eq 1 ]; then
         # cd back to the SDK and open the bug ticket from there.
         tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
         tmux send-keys -t $TICKET:0.1 "vim $BUGS/$TICKET/index.html" C-m
-        open "http://localhost/extjs/bugs/$TICKET"
     else
     # Else cd again to the appropriate SDK and run the $COMMAND.
         COMMAND=${COMMAND:-"vim -c :CtrlP"}
         tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
         tmux send-keys -t $TICKET:0.1 "$COMMAND" C-m
     fi
+
+    open "http://localhost/extjs/bugs/$TICKET"
 fi
 tmux attach -t $TICKET
 
