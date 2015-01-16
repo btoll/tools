@@ -30,7 +30,7 @@ if [[ $VER == *SDK* ]]; then
         CSS_HREF="${EXT_SDK:-$DEFAULT_SDK_LOCATION}/$VER/$DIR/resources/css/ext-all.css"
     else
         DIR="ext"
-        CSS_HREF="${EXT_SDK:-$DEFAULT_SDK_LOCATION}/$VER/ext/packages/ext-theme-classic/build/resources/ext-theme-classic-all.css"
+        CSS_HREF="${EXT_SDK:-$DEFAULT_SDK_LOCATION}/$VER/ext/packages/ext-theme-crisp/build/resources/ext-theme-crisp-all.css"
     fi
 
     # Link to the SDK.
@@ -70,7 +70,7 @@ else
     if [ $MAJOR_VER -lt 5 ]; then
         CSS_HREF="$SDK/resources/css/ext-all.css"
     else
-        CSS_HREF="$SDK/packages/ext-theme-classic/build/resources/ext-theme-classic-all.css"
+        CSS_HREF="$SDK/packages/ext-theme-crisp/build/resources/ext-theme-crisp-all.css"
     fi
 
     JS_SRC=$SDK/$DEBUG_SCRIPT
