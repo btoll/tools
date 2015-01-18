@@ -8,6 +8,10 @@ git goto
 
     git config --global alias.goto '!sh -c '"'git show \$0 | grep commit | cut -c8- | xargs git co'"
 
+git hub
+
+    git config --global alias.hub '!f()'" { Q=\$GIT_PREFIX; BR=\$(git rev-parse --abbrev-ref HEAD); if [[ \$# -eq 1 ]]; then Q+=\$1; fi; open https://github.com/extjs/SDK/blob/\$BR/\$Q; }; f"
+
 git open
 
     git config --global alias.open '!f()'" { SHA=\$(git get-hash \$1); open https://github.com/extjs/SDK/commit/\$SHA; }; f"
