@@ -117,16 +117,6 @@ The script will not force delete (`-D`) any branches!
 
 But as usual, make sure you know what you're doing! I am not responsible for lost branches!
 
-### git-goto
-    !!! This is deprecated. Use the git alias instead. !!!
-
-Example usages:
-
-    git goto 5.1.0
-    git goto extjs5.1.0
-
-This is most useful when needing to quickly check out a release without having to know the tagged hash.
-
 ### git-get-hash
 
     !!! This is deprecated. Use the git alias instead. !!!
@@ -152,7 +142,59 @@ When checking out a tagged version:
     git checkout $(git get-hash 4.2.2)
     git checkout `git get-hash 4.2.2`
 
+### git-goto
+
+    !!! This is deprecated. Use the git alias instead. !!!
+
+Example usages:
+
+    git goto 5.1.0
+    git goto extjs5.1.0
+
+This is most useful when needing to quickly check out a release without having to know the tagged hash.
+
+### git-hub
+
+Open any file, directory or commit on GitHub in regular view or blame view.
+
+It's best to show what this tool can do through examples.
+
+- Open the current working directory:
+
+    `git hub`
+
+- Open the file:
+
+    `git hub --file grid/filters/filter/List.js`
+
+- Open the file in a blame view:
+
+    `git hub -file grid/header/Container -blame`
+
+- Open the file in a remote branch other than the default:
+
+    `git hub -remote extjs-4.2.x -f Component.js`
+
+- Don't open the file in a browser, dump it to STDOUT:
+
+    `git hub -f Component.js --dry-run`
+
+- Open the commit hash:
+
+    `git hub -hash b51abf6f38902`
+
+- Open the commit hash to which the local topic branch points:
+
+    `git hub --branch EXTJS-15755`
+
+- Open the commit hash to which the tag points:
+
+    `git hub --tag extjs5.1.0`
+
+The file will be opened in the remote branch whose value is in the `GITHUB_DEFAULT_REMOTE_BRANCH` environment variable unless changed using the `--remote` flag.
+
 ### git-introduced
+
 Find the commit(s) that introduced or removed a method or other search pattern.
 
 Example usages:
@@ -185,6 +227,7 @@ It is basically a wrapper for ```git log -S``` and returns the same results, how
     - Will keep the auto-generated CSV file on disk by passing the ```--no-delete-file``` flag.
 
 ### git-ls
+
 Example usages:
 
     git ls
@@ -208,6 +251,7 @@ Example usages:
           in horizontally-split windows, limiting the number of files opened to the first three.
 
 ### git-review
+
 Example usages:
 
     git review
