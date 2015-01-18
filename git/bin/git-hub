@@ -4,6 +4,7 @@ BLAME=false
 BLOB_URL=https://github.com/extjs/SDK/blob/
 BLAME_URL=https://github.com/extjs/SDK/blame/
 COMMIT=
+DRY_RUN=false
 FILE=
 HASH=
 QUERY=
@@ -22,6 +23,9 @@ usage() {
     echo "--branch, -branch, -b : If given, will get the hash of the local topic branch."
     echo "                        Note that this should be thought of as the same as the"
     echo "                        hash option."
+    echo
+    echo "--dry-run, -d         : Will echo the full URL to STDOUT only and not attempt a"
+    echo "                        network request."
     echo
     echo "--file, -file, -f     : The file to lookup on GitHub. Accepts relative paths."
     echo
@@ -42,8 +46,9 @@ usage() {
 while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
-        --blame|-blame) BLAME=true ;;
+        --blame) BLAME=true ;;
         --branch|-branch|-b) shift; COMMIT=$1 ;;
+        --dry-run|-d) DRY_RUN=true ;;
         --file|-file|-f) shift; FILE=$1 ;;
         --hash|-hash|-h) shift; HASH=$1 ;;
         --remote|-remote|-r) shift; REMOTE_BRANCH=$1 ;;
@@ -78,4 +83,9 @@ else
     fi
 fi
 
-open $URL
+echo $URL
+
+if [ "$DRY_RUN" = false ]; then
+    open $URL
+fi
+
