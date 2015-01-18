@@ -1,0 +1,81 @@
+#!/bin/bash
+
+BLAME=false
+BLOB_URL=https://github.com/extjs/SDK/blob/
+BLAME_URL=https://github.com/extjs/SDK/blame/
+COMMIT=
+FILE=
+HASH=
+QUERY=
+REMOTE_BRANCH=${GIT_HUB_DEFAULT_REMOTE_BRANCH:-sencha-5.0.x}
+URL=
+
+usage() {
+    echo "GIT-HUB"
+    echo
+    echo "Usage: $0 [args]"
+    echo
+    echo "Args:"
+    echo "--blame, -blame       : If given will open the branch in the Blame view."
+    echo "                        Not applicable if given a topic branch or hash."
+    echo
+    echo "--branch, -branch, -b : If given, will get the hash of the local topic branch."
+    echo "                        Note that this should be thought of as the same as the"
+    echo "                        hash option."
+    echo
+    echo "--file, -file, -f     : The file to lookup on GitHub. Accepts relative paths."
+    echo
+    echo "--hash, -hash, -h     : The file to lookup on GitHub. Accepts relative paths."
+    echo
+    echo "--remote, -remote, -r : The branch to use as the base lookup branch on GitHub."
+    echo '                        Defaults to the value of $GIT_HUB_DEFAULT_REOMTE_BRANCH'
+    echo
+    echo "--tag, -tag, -t       : It given, will get the hash of the tag."
+    echo "                        Note that this should be thought of as the same as the"
+    echo "                        hash option."
+    echo
+    echo "--help, -help         : Help"
+    echo
+}
+
+# Swap out for user-provided options if given.
+while [ "$#" -gt 0 ]; do
+    OPT="$1"
+    case $OPT in
+        --blame|-blame) BLAME=true ;;
+        --branch|-branch|-b) shift; COMMIT=$1 ;;
+        --file|-file|-f) shift; FILE=$1 ;;
+        --hash|-hash|-h) shift; HASH=$1 ;;
+        --remote|-remote|-r) shift; REMOTE_BRANCH=$1 ;;
+        --tag|-tag|-t) shift; COMMIT=$1 ;;
+        --help|-help) usage; exit 0 ;;
+    esac
+    shift
+done
+
+if [[ ( -n "$HASH" ) || ( -n "$COMMIT" ) ]]; then
+    # If given a topic branch or tag, simply get its hash.
+    if [[ -n "$COMMIT" ]]; then
+        HASH=$(git show "$COMMIT" | grep commit | awk '{print $2}')
+    fi
+
+    URL="https://github.com/extjs/SDK/commit/$HASH"
+else
+    QUERY=$(git rev-parse --show-prefix)
+
+    if [ -n "$FILE" ]; then
+        QUERY+="$FILE"
+    fi
+
+    if [ -n "$REMOTE" ]; then
+        REMOTE_BRANCH="$REMOTE"
+    fi
+
+    if $BLAME; then
+        URL="$BLAME_URL$REMOTE_BRANCH/$QUERY"
+    else
+        URL="$BLOB_URL$REMOTE_BRANCH/$QUERY"
+    fi
+fi
+
+open $URL
