@@ -46,7 +46,7 @@ usage() {
 while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
-        --blame) BLAME=true ;;
+        --blame|-blame) BLAME=true ;;
         --branch|-branch|-b) shift; COMMIT=$1 ;;
         --dry-run|-d) DRY_RUN=true ;;
         --file|-file|-f) shift; FILE=$1 ;;
