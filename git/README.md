@@ -228,29 +228,41 @@ It is basically a wrapper for ```git log -S``` and returns the same results, how
 
 ### git-ls
 
-Example usages:
+List the files that are staged and modifed or that make up any given commit and optionally open in Vim for editing.
 
-    git ls
-        - List the files that make up the latest commit.
+It's best to show what this tool can do through examples.
 
-    git ls --edit v
-        - Opens all listed files in Vim in vertically-split windows.
+- List the files that make up the latest commit.
 
-    git ls --commit HEAD -e t
-        - Opens all listed files in Vim in tabs for the specified hash (note that it will default to HEAD).
+    `git ls`
 
-    git ls -edit b -limit 4
-        - Opens all listed files in Vim (in buffers), limiting the number of files opened to the first four.
+- List the files that are in the staged area and are modified in the workspace.
 
-    git ls -c cf457b6 -e h -l 3
-        - Opens all listed files for the specified hash (cf457b6) in horizontally-split windows, limiting the
-          number of files opened to the first three.
+    `git ls --dirty`
 
-    git ls -c cf457b6 -pattern debugger -e h -l 3
-        - Opens all listed files for the specified hash (cf457b6) that match that specified regular expression
-          in horizontally-split windows, limiting the number of files opened to the first three.
+- Opens all listed files in Vim in vertically-split windows.
+
+    `git ls --edit v`
+
+- Opens all listed files in Vim in tabs for the specified hash (note that it will default to HEAD).
+
+    `git ls --commit HEAD -e t`
+
+- Opens all listed files in Vim (in buffers).
+
+    `git ls -edit b`
+
+- Opens all listed files for the specified hash (cf457b6) in horizontally-split windows.
+
+    `git ls -c cf457b6 -e h`
+
+- Opens all listed files for the specified hash (cf457b6) that match that specified regular expression in horizontally-split windows.
+
+    `git ls -c cf457b6 -pattern debugger -e h`
 
 ### git-review
+
+    !!! This is deprecated. Use git-ls instead. !!!
 
 Example usages:
 

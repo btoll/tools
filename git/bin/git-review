@@ -6,7 +6,7 @@ LIMIT=
 VIM=
 
 usage() {
-    echo "GIT-LS"
+    echo "GIT-REVIEW"
     echo
     echo "Usage: $0 [args]"
     echo

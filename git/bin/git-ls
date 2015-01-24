@@ -1,10 +1,25 @@
-#!/bin/bash
-# https://stackoverflow.com/questions/424071/list-all-the-files-for-a-commit-in-git
+#!/bin/bash # https://stackoverflow.com/questions/424071/list-all-the-files-for-a-commit-in-git
+# https://stackoverflow.com/questions/3882838/whats-an-easy-way-to-detect-modified-files-in-a-git-workspace
 
+# TODO:
+# 1. Use an environment variable when checking if the cwd matches the top-level directory of the repo.
+#    Currently, it's assuming SDK.*
+
+CMD_DIRTY="git diff-index --name-only"
+CMD_LAST="git diff-tree --no-commit-id --name-only -r"
+CMD=
 COMMIT="HEAD"
+DIRTY=false
+MSG=
 PATTERN=
-LIMIT=
 VIM=
+
+check_pwd() {
+    if [[ ! ${PWD##*/} =~ ^SDK ]]; then
+        echo "You need to run this command from the toplevel of the working tree."
+        exit 1
+    fi
+}
 
 usage() {
     echo "GIT-LS"
@@ -12,20 +27,24 @@ usage() {
     echo "Usage: $0 [args]"
     echo
     echo "Args:"
-    echo "--commit, -commit, -c : List the files in this commit (defaults to HEAD)."
+    echo "--commit, -commit, -c     : Use this commit to determine which files are shown (defaults to HEAD)."
     echo
-    echo "--edit, -edit, -e     : Open all listed files in Vim using:"
-    echo "          b = no windows (just buffers)"
-    echo "          h = horizontally-split windows"
-    echo "          t = tabs"
-    echo "          v = vertically-split windows"
-    echo "Note that if a pattern is given that only the files that match this pattern will be opened in Vim."
+    echo "--dirty, -dirty, -d       : List the files that are currently staged and modified in the workspace."
+    echo "                            If not specified it will default to list the files that make up the last"
+    echo '                            commit (determined by $COMMIT).'
     echo
-    echo " -help, -h            : Help"
+    echo "--edit, -edit, -e         : Open all listed files in Vim using:"
+    echo "                                b = no windows (just buffers)"
+    echo "                                h = horizontally-split windows"
+    echo "                                t = tabs"
+    echo "                                v = vertically-split windows"
+    echo "                            Note that if a pattern is given that only the files that match this pattern"
+    echo "                            will be opened in Vim."
     echo
-    echo "--limit, -limit, -l   : Limit the number of files listed."
+    echo "--help, -help, -h         : Help"
     echo
-    echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the files that make up the commit."
+    echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the files that make"
+    echo "                            up the commit."
     echo
 }
 
@@ -34,6 +53,7 @@ while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
         --commit|-commit|-c) shift; COMMIT=$1 ;;
+        --dirty|-dirty|-d) DIRTY=true;;
         --edit|-edit|-e)
             shift
             case $1 in
@@ -43,14 +63,20 @@ while [ "$#" -gt 0 ]; do
                 v) VIM="-O" ;;
             esac
             ;;
-        -help|-h) usage; exit 0 ;;
-        --limit|-limit|-l) shift; LIMIT=$1 ;;
+        --help|-help|-h) usage; exit 0 ;;
         --pattern|-pattern|-p) shift; PATTERN=$1 ;;
     esac
     shift
 done
 
-CMD="git diff-tree --no-commit-id --name-only -r $COMMIT"
+# To get a list of the files that differ from HEAD (both staged and modified).
+if $DIRTY; then
+    CMD="$CMD_DIRTY $COMMIT"
+    MSG="Files that are staged or modified in your workspace:"
+else
+    CMD="$CMD_LAST $COMMIT"
+    MSG="Files that made up your last commit:"
+fi
 
 #if [ "$($CMD | wc -l)" -eq "0" ]; then
 #    echo "[git-ls] There is nothing to list."
@@ -58,23 +84,18 @@ CMD="git diff-tree --no-commit-id --name-only -r $COMMIT"
 #fi
 
 if [ -n "$PATTERN" ]; then
-    # Use the `-l` switch to only display the file name.
+    check_pwd
+
+    # The `-l` switch only displays the file name.
     CMD="$CMD | xargs grep -l $PATTERN"
 fi
 
-if [ -n "$LIMIT" ]; then
-    CMD="$CMD | head -$LIMIT"
-fi
-
 if [ -n "$VIM" ]; then
-    # http://stackoverflow.com/a/16579925
-    if [[ ! ${PWD##*/} =~ ^SDK ]]; then
-        echo "You need to run this command from the toplevel of the working tree."
-        exit 1
-    fi
+    check_pwd
 
+    # http://stackoverflow.com/a/16579925
     CMD='vim '"$VIM"' $('"$CMD"')'
 fi
 
+#echo $MSG
 eval $CMD
-
