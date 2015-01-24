@@ -74,8 +74,11 @@ do
     # We need to grab the hash to properly build the URL.
     URL="https://github.com/extjs/SDK/commit/${ARR[0]}"
 
+    # Add the search pattern.
+    FIELDS[5]="Search pattern  ->  $PATTERN"
+
     # We can only now add the last array element now that we have the SHA from each search result.
-    FIELDS[5]="Url             ->  $URL"
+    FIELDS[6]="Url             ->  $URL"
 
     # For formatting between search results.
     echo
