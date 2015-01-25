@@ -1,20 +1,21 @@
 #!/bin/bash
 # TODO: allow choice of split.
 # TODO: allow custom command to come from an env var?
-# TODO: cleanup!!
 
-# NOTE this script uses GNU tools like sed and tac.
+# NOTE this script uses GNU tools like gsed.
 # To install on Mac -> brew install coreutils.
 
 BASE_DIR=
-BRANCH=true
+CREATE_BRANCH=true
+BRANCH_EXISTS=false
 # Let's set a default command.
 COMMAND=
-CREATE_DIR=true
-EXISTS=false
+CREATE_BUG_DIR=true
 FIDDLE=
 SDK=
 TICKET=
+TICKET_DIR_EXISTS=false
+TMP=
 VERSION=
 
 usage() {
@@ -51,26 +52,35 @@ while [ "$#" -gt 0 ]; do
         -help|-h) usage; exit 0 ;;
         --command|-command|-c) shift; COMMAND=$1 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
-        --no-branch) BRANCH=false ;;
-        --no-dir) CREATE_DIR=false ;;
+        --no-branch) CREATE_BRANCH=false ;;
+        --no-bug-dir) CREATE_BUG_DIR=false ;;
         --ticket|-ticket|-t) shift; TICKET=$1 ;;
         --version|-version|-v) shift; VERSION=$1 ;;
     esac
     shift
 done
 
+if [ -z "$TICKET" ]; then
+    echo "Error: No ticket specified."
+    exit 1
+fi
+
 SDK=SDK${VERSION:-5}
 
-# If $FIDDLE is set, then let's go through the process of creating the bug dir,
-# downloading the Fiddle preview, extracting our best-guess-attempt at the code
-# body and finally slapping that into the new index.html.
-#
-# Note to only download a Fiddle if the flag is set, we're to create the bug dir AND there's no custom command!
-if [ -n "$FIDDLE" ] && $CREATE_DIR && [ -z "$COMMAND" ] ; then
-    # Let's re-use and re-define $FIDDLE.
-    #
-    # Let's accept either a regular Fiddle URL or a preview Fiddle URL.
+# We need to check right away if the ticket directory was already created b/c they will influence how we proceed.
+if [ -d "$BUGS$TICKET" ]; then
+    TICKET_DIR_EXISTS=true
+elif
+    # If there isn't a bug directory, then we can go ahead and honor the fiddle config, if set. (Of course, it doesn't
+    # make sense to download and process the fiddle if the bug directory isn't to be created.) If so, let's go through the
+    # process of creating the bug dir, downloading the Fiddle preview, extracting our best-guess-attempt at the code body
+    # (although it guesses very well) and finally slapping that into the new index.html.
+    [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
+
+    # Let's re-use $FIDDLE.
     BASE_DIR=$(basename $FIDDLE)
+
+    # Let's accept either a regular Fiddle URL or a preview Fiddle URL.
     if [ "$BASE_DIR" != "preview" ]; then
         # Rename in this form: https://fiddle.sencha.com/fiddle/da1/preview
         FIDDLE="https://fiddle.sencha.com/fiddle/$BASE_DIR/preview"
@@ -79,14 +89,14 @@ if [ -n "$FIDDLE" ] && $CREATE_DIR && [ -z "$COMMAND" ] ; then
     # Then download and extract just what we need.
     #
     # Here we will extract every line after the launch method and before the closing <script> tag.
-    # -n                       -> don't print
-    # '/launch/, /<\/script>/  -> match range, I guess you knew it already
-    # {                        -> if in this range
-    #     /launch/             -> and line matches /Screenshot/
-    #         {d;p;n};         -> do not print the first line (the match), print the next line and read next row
-    #     /<\/script>/         -> if line matches "<\/script>"
-    #         q;               -> quit, we have done all printing
-    #     p                    -> if we come to here, print the line
+    # -n                            -> don't print
+    # '/<script...>/, /<\/script>/  -> match range
+    # {                             -> if in this range
+    #     /<script...>/             -> and line matches /<script...>/
+    #         {d;p;n};              -> do not print the first line (the match), print the next line and read next row
+    #     /<\/script>/              -> if line matches "<\/script>"
+    #         q;                    -> quit, we have done all printing
+    #     p                         -> if we come to here, print the line
     # }
     #
     # http://stackoverflow.com/a/744093
@@ -94,20 +104,22 @@ if [ -n "$FIDDLE" ] && $CREATE_DIR && [ -z "$COMMAND" ] ; then
     #
     # Let's first cd to a dir where we know we have write permissions.
     pushd $BUGS
-    curl $FIDDLE | gsed -n '/launch/,/<\/script>/{/launch/{d;p;n};/<\/script>/{q};p}' > foo
 
-    # We still need to delete the last n lines in this file.
-    gtac foo | sed '1,4d' | gtac > tmp
+    # Let's create a temp file and set the name as the Unix timestamp to avoid any name collisions.
+    TMP=$(date +%s)
+    curl $FIDDLE | gsed -n '/<script type="text\/javascript">/,/<\/script>/{/<script type="text\/javascript">/{d;p;n};/<\/script>/{q};p}' > $TMP
 
     /usr/local/www/utils/bticket.sh $TICKET $SDK
     cd $TICKET
 
-    sed -i '' -e '/Ext.onReady/ {
-        r ../foo
-    }' index.html
+    sed -i '' -e "/<script type=\"text\/javascript\">/ {
+        r ../$TMP
+    }" index.html
 
-    rm ../foo
+    rm ../$TMP
     popd
+
+    TICKET_DIR_EXISTS=true
 fi
 
 ###############################################################
@@ -118,20 +130,21 @@ fi
 # 5. Attach to the session.
 ###############################################################
 tmux has-session -t $TICKET 2>/dev/null
+
 if [ $? -eq 1 ]; then
     tmux new-session -s $TICKET -d
     tmux send-keys -t $TICKET 'cd $'$SDK C-m
 
-    if $BRANCH; then
+    if $CREATE_BRANCH; then
         # Here we need to check if this branch already exists. If so, don't pass
         # the -b flag when the branch is checked out.
         #
         # We'll need to cd to the correct repo to check for existence.
         pushd /usr/local/www/$SDK
-        EXISTS="$(git show-ref refs/heads/"$TICKET")"
+        BRANCH_EXISTS="$(git show-ref refs/heads/"$TICKET")"
         popd
 
-        if [ -z "$EXISTS" ]; then
+        if [ -z "$BRANCH_EXISTS" ]; then
             NEW_BRANCH="-b"
         fi
 
@@ -140,28 +153,35 @@ if [ $? -eq 1 ]; then
 
     tmux send-keys 'clear' C-m
     tmux split-window -h -p 55 -t $TICKET
-    tmux send-keys -t $TICKET:0.1 "cd $BUGS" C-m
 
-    # Note if $FIDDLE is unset, we want a new ticket dir AND there's no custom command, then let's create the bug dir.
-    if [ -z "$FIDDLE" ] && $CREATE_DIR && [ -z "$COMMAND" ]; then
+    # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
+    if [ "$TICKET_DIR_EXISTS" = "false" ] && $CREATE_BUG_DIR; then
         tmux send-keys -t $TICKET:0.1 "bticket $TICKET $SDK" C-m
-        # cd back to the SDK and open the bug ticket from there.
-        tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
-        tmux send-keys -t $TICKET:0.1 "vim $BUGS/$TICKET/index.html" C-m
-    elif [ -n "$FIDDLE" ]; then
-    # Else if a fiddle was given, we can assume the bug dir and topic branch were already created. Go there and also
-    # open the ticket in the default browser.
-        # cd back to the SDK and open the bug ticket from there.
-        tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
-        tmux send-keys -t $TICKET:0.1 "vim $BUGS/$TICKET/index.html" C-m
-    else
-    # Else cd again to the appropriate SDK and run the $COMMAND.
-        COMMAND=${COMMAND:-"vim -c :CtrlP"}
-        tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
-        tmux send-keys -t $TICKET:0.1 "$COMMAND" C-m
     fi
 
-    open "http://localhost/extjs/bugs/$TICKET"
+    # In all cases, cd back to the SDK.
+    tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
+
+    # We need to determine the command to run in our editor pane.
+    if [ -n "$COMMAND" ]; then
+        COMMAND=$COMMAND
+    elif
+        # If the topic branch already exists, then a reasonable assumption is that this
+        # ticket is a WIP and there has already been work committed, so open the files
+        # from the last commit.
+        # https://github.com/btoll/utils/blob/master/git/bin/git-ls
+        [ -n "$BRANCH_EXISTS" ]; then
+        COMMAND="git ls -e t"
+    else
+        # Given no custom command and no topic branch, let's default to opening the test case.
+        COMMAND="vim $BUGS$TICKET/index.html"
+    fi
+
+    tmux send-keys -t $TICKET:0.1 "$COMMAND" C-m
 fi
+
+# Always browse to the test case.
+open "http://localhost/extjs/bugs/$TICKET"
+
 tmux attach -t $TICKET
 
