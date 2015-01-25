@@ -6,12 +6,14 @@
 # To install on Mac -> brew install coreutils.
 
 BASE_DIR=
+SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
+SED_RANGE_END="<\/script>"
+BRANCH_EXISTS=
 CREATE_BRANCH=true
-BRANCH_EXISTS=false
 # Let's set a default command.
-COMMAND=
 CREATE_BUG_DIR=true
 FIDDLE=
+RUN_COMMAND=
 SDK=
 TICKET=
 TICKET_DIR_EXISTS=false
@@ -50,7 +52,7 @@ while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
         -help|-h) usage; exit 0 ;;
-        --command|-command|-c) shift; COMMAND=$1 ;;
+        --command|-command|-c) shift; RUN_COMMAND=$1 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
         --no-branch) CREATE_BRANCH=false ;;
         --no-bug-dir) CREATE_BUG_DIR=false ;;
@@ -80,7 +82,7 @@ elif
     # Let's re-use $FIDDLE.
     BASE_DIR=$(basename $FIDDLE)
 
-    # Let's accept either a regular Fiddle URL or a preview Fiddle URL.
+    # Let's accept either a regular Fiddle URL or a Fiddle preview URL.
     if [ "$BASE_DIR" != "preview" ]; then
         # Rename in this form: https://fiddle.sencha.com/fiddle/da1/preview
         FIDDLE="https://fiddle.sencha.com/fiddle/$BASE_DIR/preview"
@@ -107,12 +109,12 @@ elif
 
     # Let's create a temp file and set the name as the Unix timestamp to avoid any name collisions.
     TMP=$(date +%s)
-    curl $FIDDLE | gsed -n '/<script type="text\/javascript">/,/<\/script>/{/<script type="text\/javascript">/{d;p;n};/<\/script>/{q};p}' > $TMP
+    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > $TMP
 
     /usr/local/www/utils/bticket.sh $TICKET $SDK
     cd $TICKET
 
-    sed -i '' -e "/<script type=\"text\/javascript\">/ {
+    sed -i '' -e "/$SED_RANGE_BEGIN/ {
         r ../$TMP
     }" index.html
 
@@ -140,6 +142,8 @@ if [ $? -eq 1 ]; then
         # the -b flag when the branch is checked out.
         #
         # We'll need to cd to the correct repo to check for existence.
+        # Note that if the branch exists the return value will be in the form of
+        # <SHA-1 ID> <space> <reference name> else it will be an empty string.
         pushd /usr/local/www/$SDK
         BRANCH_EXISTS="$(git show-ref refs/heads/"$TICKET")"
         popd
@@ -155,33 +159,44 @@ if [ $? -eq 1 ]; then
     tmux split-window -h -p 55 -t $TICKET
 
     # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
-    if [ "$TICKET_DIR_EXISTS" = "false" ] && $CREATE_BUG_DIR; then
+    if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
+        # Change to the bugs directory to create the bug ticket dir.
+        tmux send-keys -t $TICKET:0.1 "cd $BUGS" C-m
         tmux send-keys -t $TICKET:0.1 "bticket $TICKET $SDK" C-m
+
+        TICKET_DIR_EXISTS=true
     fi
 
     # In all cases, cd back to the SDK.
     tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
 
-    # We need to determine the command to run in our editor pane.
-    if [ -n "$COMMAND" ]; then
-        COMMAND=$COMMAND
-    elif
-        # If the topic branch already exists, then a reasonable assumption is that this
-        # ticket is a WIP and there has already been work committed, so open the files
-        # from the last commit.
-        # https://github.com/btoll/utils/blob/master/git/bin/git-ls
-        [ -n "$BRANCH_EXISTS" ]; then
-        COMMAND="git ls -e t"
-    else
-        # Given no custom command and no topic branch, let's default to opening the test case.
-        COMMAND="vim $BUGS$TICKET/index.html"
+    # We need to determine the command to run in our editor pane. A reasonable assumption is that if
+    # a custom command was given that it should trump everything and we'll use that (we're assuming
+    # that the user knows what they're doing).
+    if [ -z "$RUN_COMMAND" ]; then
+        # If no custom command, we only want to run either of the following commands if the bug ticket
+        # dir exists. Note that if the ticket dir exists then the --no-bug-dir flag is ignored if set.
+        if "$TICKET_DIR_EXISTS"; then
+            # Given no custom command and no topic branch, let's default to opening the test case.
+            if [ -z "$BRANCH_EXISTS" ]; then
+                RUN_COMMAND="vim $BUGS$TICKET/index.html"
+            else
+                # Note that this command will serve a dual purpose.  If there had been a previous
+                # commit, it will open all the files in tabs. If not, it will still open the editor.
+                #
+                # https://github.com/btoll/utils/blob/master/git/bin/git-ls
+                RUN_COMMAND="git ls -e t"
+            fi
+        fi
     fi
 
-    tmux send-keys -t $TICKET:0.1 "$COMMAND" C-m
+    tmux send-keys -t $TICKET:0.1 "$RUN_COMMAND" C-m
 fi
 
-# Always browse to the test case.
-open "http://localhost/extjs/bugs/$TICKET"
+# Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.
+if "$TICKET_DIR_EXISTS"; then
+    open "http://localhost/extjs/bugs/$TICKET"
+fi
 
 tmux attach -t $TICKET
 
