@@ -3,22 +3,46 @@
 # TODO: allow custom command to come from an env var?
 
 # NOTE this script uses GNU tools like gsed.
-# To install on Mac -> brew install coreutils.
 
 BASE_DIR=
-SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
-SED_RANGE_END="<\/script>"
 BRANCH_EXISTS=
 CREATE_BRANCH=true
 # Let's set a default command.
 CREATE_BUG_DIR=true
 FIDDLE=
+FAILED_DEPENDENCIES=
 RUN_COMMAND=
 SDK=
+SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
+SED_RANGE_END="<\/script>"
 TICKET=
 TICKET_DIR_EXISTS=false
 TMP=
 VERSION=
+
+# First, let's make sure that the system on which we are running has the dependencies installed.
+which bticket > /dev/null || {
+    FAILED_DEPENDENCIES="bticket\nhttps://github.com/btoll/utils/blob/master/bsession.sh\n\n"
+}
+
+which git-ls > /dev/null || {
+    FAILED_DEPENDENCIES+="git-ls\nhttps://github.com/btoll/utils/blob/master/git/bin/git-ls\n\n"
+}
+
+which gsed > /dev/null || {
+    FAILED_DEPENDENCIES+="gsed\nTo install on Mac, do 'brew install coreutils'\n\n"
+}
+
+which tmux > /dev/null || {
+    FAILED_DEPENDENCIES+="tmux\nhttp://tmux.sourceforge.net/\n"
+}
+
+if [ -n "$FAILED_DEPENDENCIES" ]; then
+    echo "This script has several dependencies that are not present on your system."
+    echo -e "Please install the following:\n"
+    echo -e $FAILED_DEPENDENCIES
+    exit 1
+fi
 
 usage() {
     echo "bsession"
@@ -111,7 +135,7 @@ elif
     TMP=$(date +%s)
     curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > $TMP
 
-    /usr/local/www/utils/bticket.sh $TICKET $SDK
+    bticket $TICKET $SDK
     cd $TICKET
 
     sed -i '' -e "/$SED_RANGE_BEGIN/ {
