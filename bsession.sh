@@ -2,8 +2,6 @@
 # TODO: allow choice of split.
 # TODO: allow custom command to come from an env var?
 
-# NOTE this script uses GNU tools like gsed.
-
 BASE_DIR=
 BRANCH_EXISTS=
 CREATE_BRANCH=true
@@ -18,7 +16,7 @@ SED_RANGE_END="<\/script>"
 TICKET=
 TICKET_DIR_EXISTS=false
 TMP=
-VERSION=
+VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 which bticket > /dev/null || {
@@ -58,7 +56,7 @@ usage() {
     echo
     echo "--no-branch             : Don't create a new git topic branch (by default it will)."
     echo
-    echo "--no-dir                : Don't create a new bug directory (by default it will)."
+    echo "--no-bug-dir            : Don't create a new bug directory (by default it will)."
     echo
     echo "--ticket, -ticket, -t   : The bug ticket number."
     echo
@@ -91,7 +89,7 @@ if [ -z "$TICKET" ]; then
     exit 1
 fi
 
-SDK=SDK${VERSION:-5}
+SDK=SDK$VERSION
 
 # We need to check right away if the ticket directory was already created b/c they will influence how we proceed.
 if [ -d "$BUGS$TICKET" ]; then
