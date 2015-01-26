@@ -1,14 +1,18 @@
 #!/bin/bash
 # TODO: allow choice of split.
 # TODO: allow custom command to come from an env var?
+# TODO: script assumes that the SDKs are names "SDK4", "SDK5", etc.
 
 BASE_DIR=
 BRANCH_EXISTS=
 CREATE_BRANCH=true
 # Let's set a default command.
 CREATE_BUG_DIR=true
+DEPENDENCIES=
+DEPENDENCY=
 FIDDLE=
 FAILED_DEPENDENCIES=
+PACKAGES=
 RUN_COMMAND=
 SDK=
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
@@ -19,29 +23,30 @@ TMP=
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
-which bticket > /dev/null || {
-    FAILED_DEPENDENCIES="bticket\nhttps://github.com/btoll/utils/blob/master/bsession.sh\n\n"
-}
+DEPENDENCIES=(bticket git-ls gsed tmux)
+PACKAGES=(
+    "https://github.com/btoll/utils/blob/master/bticket.sh"
+    "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
+    "To install on Mac, do 'brew install coreutils'"
+    "http://tmux.sourceforge.net"
+)
 
-which git-ls > /dev/null || {
-    FAILED_DEPENDENCIES+="git-ls\nhttps://github.com/btoll/utils/blob/master/git/bin/git-ls\n\n"
-}
+for n in ${!DEPENDENCIES[*]}; do
+    DEPENDENCY=${DEPENDENCIES[n]}
 
-which gsed > /dev/null || {
-    FAILED_DEPENDENCIES+="gsed\nTo install on Mac, do 'brew install coreutils'\n\n"
-}
-
-which tmux > /dev/null || {
-    FAILED_DEPENDENCIES+="tmux\nhttp://tmux.sourceforge.net/\n"
-}
+    which $DEPENDENCY > /dev/null || {
+        FAILED_DEPENDENCIES+="\n$DEPENDENCY\n${PACKAGES[n]}\n"
+    }
+done
 
 if [ -n "$FAILED_DEPENDENCIES" ]; then
     echo "This script has several dependencies that are not present on your system."
-    echo -e "Please install the following:\n"
+    echo "Please install the following:"
     echo -e $FAILED_DEPENDENCIES
     exit 1
 fi
 
+# Next, let's make sure we have what we need.
 usage() {
     echo "bsession"
     echo
@@ -50,7 +55,7 @@ usage() {
     echo "Args:"
     echo "--command, -command, -c : The command to run if a bug directory is not to be created. This will be run in the right pane."
     echo "                          Note that the presence of this flag trumps everything else."
-    echo "                          Defaults to 'vim -c :CtrlP'."
+    echo "                          Defaults to 'vim'."
     echo
     echo "--fiddle, -fiddle, -f   : Location of Fiddle to download using curl and paste into index.html in new bug dir."
     echo
@@ -66,7 +71,12 @@ usage() {
 
 if [ $# -eq 0 ]; then
     usage
-    exit 0
+    exit 1
+fi
+
+# Then, let's ask for the value of any environment vars that haven't already been set.
+if [ -z "$BUGS" ]; then
+    read -p 'Absolute path of bug directory (set a $BUGS environment variable to skip this check): ' BUGS
 fi
 
 # Swap out for user-provided options if given.
