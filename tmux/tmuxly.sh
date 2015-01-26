@@ -48,7 +48,7 @@ fi
 
 # Next, let's make sure we have what we need.
 usage() {
-    echo "bsession"
+    echo "tmuxly"
     echo
     echo "Usage: $0 [args]"
     echo
