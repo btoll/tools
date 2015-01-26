@@ -4,6 +4,8 @@
 # -I = ignore binary files
 # -l = prints just the filename
 # will open file at first occurence of word
+#
+# NOTE: this should be a bash function instead!
 
 if [ $# -ne 2 ]; then
     echo "Usage: $0 <regex> <dir_name>"

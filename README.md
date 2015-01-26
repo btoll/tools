@@ -1,5 +1,5 @@
 ### Installation
-To install the git scripts:
+To install the bash scripts:
 
     1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
     2. Make sure it's executable.
@@ -52,6 +52,12 @@ Example usage:
 
 ### bfind bash script
 
+    !!! This is deprecated. Use a bash function instead. !!!
+
+    bfind() {
+        vim -p $(find "$1" -type f -name "$2")
+    }
+
 Example usage:
 
     bfind . Component.js
@@ -63,6 +69,13 @@ This does the following:
 - vim then opens each file in a vertically split pane
 
 ### bgrep bash script
+
+    !!! This is deprecated. Use a bash function instead. !!!
+
+    bgrep() {
+        vim -p "+/$1" $(grep -riIl "$1" "$2" | uniq)
+    }
+
 Example usage:
 
     bgrep DEBUG[_]*SCRIPT .
@@ -77,6 +90,9 @@ This does the following:
 - the first file will be opened at the line where the regex is first found in the file
 
 ### brm bash script
+
+    !!! This is deprecated. Use a bash alias instead. !!!
+
 Example usage:
 
     brm .DS_STORE __MACOSX
