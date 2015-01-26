@@ -6,7 +6,6 @@
 BASE_DIR=
 BRANCH_EXISTS=
 CREATE_BRANCH=true
-# Let's set a default command.
 CREATE_BUG_DIR=true
 DEPENDENCIES=
 DEPENDENCY=
@@ -17,6 +16,7 @@ RUN_COMMAND=
 SDK=
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
 SED_RANGE_END="<\/script>"
+TESTCASE=
 TICKET=
 TICKET_DIR_EXISTS=false
 TMP=
@@ -83,7 +83,7 @@ fi
 while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
-        -help|-h) usage; exit 0 ;;
+        --help|-help|-h) usage; exit 0 ;;
         --command|-command|-c) shift; RUN_COMMAND=$1 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
         --no-branch) CREATE_BRANCH=false ;;
@@ -166,6 +166,8 @@ fi
 tmux has-session -t $TICKET 2>/dev/null
 
 if [ $? -eq 1 ]; then
+    TESTCASE="$BUGS$TICKET/index.html"
+
     tmux new-session -s $TICKET -d
     tmux send-keys -t $TICKET 'cd $'$SDK C-m
 
@@ -216,18 +218,26 @@ if [ $? -eq 1 ]; then
         if "$TICKET_DIR_EXISTS"; then
             # Given no custom command and no topic branch, let's default to opening the test case.
             if [ -z "$BRANCH_EXISTS" ]; then
-                RUN_COMMAND="vim $BUGS$TICKET/index.html"
+                tmux send-keys -t $TICKET:0.1 "vim $TESTCASE" C-m
             else
                 # Note that this command will serve a dual purpose.  If there had been a previous
                 # commit, it will open all the files in tabs. If not, it will still open the editor.
                 #
                 # https://github.com/btoll/utils/blob/master/git/bin/git-ls
-                RUN_COMMAND="git ls -e t"
+                tmux send-keys -t $TICKET:0.1 "git ls -e t" C-m
+
+                # If it exists, let's open the test case and make it the first tab.
+                if [ -f "$TESTCASE" ]; then
+                    # Yes, that's two returns at the end of the first command.
+                    tmux send-keys -t $TICKET:0.1 ":tabnew" C-m C-m
+                    tmux send-keys -t $TICKET:0.1 ":e $TESTCASE" C-m
+                    tmux send-keys -t $TICKET:0.1 ":tabm0" C-m
+                fi
             fi
         fi
+    else
+        tmux send-keys -t $TICKET:0.1 "$RUN_COMMAND" C-m
     fi
-
-    tmux send-keys -t $TICKET:0.1 "$RUN_COMMAND" C-m
 fi
 
 # Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.

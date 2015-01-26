@@ -1,5 +1,5 @@
 ### Installation
-To install the git scripts:
+To install the bash scripts:
 
     1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
     2. Make sure it's executable.
@@ -48,5 +48,5 @@ Use cases:
 
 Note that in all of the above cases it is possible to specify a Sencha Fiddle. This will download the Fiddle and make a best guess attempt to get the JavaScript within the `launch()` method, which will then be inserted into `index.html` in the new bug directory.
 
-For more information, view help (`-help`, `-h`).
+For more information, view help (`--help`, `-help`, `-h`).
 
