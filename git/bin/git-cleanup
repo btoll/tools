@@ -20,8 +20,6 @@ usage() {
     echo "Args:"
     echo "--file, -file, -f The file to which the commands will be written."
     echo
-    echo "-help, -h Help"
-    echo
     echo "-l Will operate in DRY RUN mode.  Will list all branches to be deleted."
     echo "   This is useful (and safe) when you are not sure which branches will be removed by the filter."
     echo

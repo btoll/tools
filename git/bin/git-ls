@@ -41,8 +41,6 @@ usage() {
     echo "                            Note that if a pattern is given that only the files that match this pattern"
     echo "                            will be opened in Vim."
     echo
-    echo "--help, -help, -h         : Help"
-    echo
     echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the files that make"
     echo "                            up the commit."
     echo
@@ -63,7 +61,7 @@ while [ "$#" -gt 0 ]; do
                 v) VIM="-O" ;;
             esac
             ;;
-        --help|-help|-h) usage; exit 0 ;;
+        -help|-h) usage; exit 0 ;;
         --pattern|-pattern|-p) shift; PATTERN=$1 ;;
     esac
     shift

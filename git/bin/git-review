@@ -18,8 +18,6 @@ usage() {
     echo "          v = vertically-split windows"
     echo "Note that if a pattern is given that only the files that match this pattern will be opened in Vim."
     echo
-    echo " -help, -h            : Help"
-    echo
     echo "--limit, -limit, -l   : Limit the number of files listed."
     echo
     echo "--pattern, -pattern, -p   : Specify a pattern that will be used to search through all the modified files in the workspace."

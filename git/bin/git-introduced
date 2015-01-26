@@ -22,8 +22,6 @@ usage() {
     echo "--format, -format, -f      : The format passed to internally to git log --pretty."
     echo "                             Defaults to '%h %an %ae %s %cd'."
     echo
-    echo " -help, -h                 : Help"
-    echo
     echo "--location, -location, -l  : The location of the file or directory to search. Note that the more specific the location the"
     echo                               faster the lookup. Default to the current working directory.
     echo

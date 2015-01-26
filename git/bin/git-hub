@@ -38,8 +38,6 @@ usage() {
     echo "                        Note that this should be thought of as the same as the"
     echo "                        hash option."
     echo
-    echo "--help, -help         : Help"
-    echo
 }
 
 # Swap out for user-provided options if given.
@@ -51,9 +49,9 @@ while [ "$#" -gt 0 ]; do
         --dry-run|-d) DRY_RUN=true ;;
         --file|-file|-f) shift; FILE=$1 ;;
         --hash|-hash|-h) shift; HASH=$1 ;;
+        -help) usage; exit 0 ;;
         --remote|-remote|-r) shift; REMOTE_BRANCH=$1 ;;
         --tag|-tag|-t) shift; COMMIT=$1 ;;
-        --help|-help) usage; exit 0 ;;
     esac
     shift
 done
