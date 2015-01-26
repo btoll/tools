@@ -76,7 +76,7 @@ fi
 
 # Then, let's ask for the value of any environment vars that haven't already been set.
 if [ -z "$BUGS" ]; then
-    read -p 'Absolute path of bug directory (set a $BUGS environment variable to skip this check): ' BUGS
+    read -p 'Absolute path of bug directory (export a $BUGS environment variable to skip this check): ' BUGS
 fi
 
 # Swap out for user-provided options if given.
@@ -186,6 +186,11 @@ if [ $? -eq 1 ]; then
 
         tmux send-keys -t $TICKET 'git checkout '$NEW_BRANCH' '$TICKET C-m
     fi
+
+    # Unfortunately, we need to pause here or the pane created below will not have checked out
+    # the appropriate git topic branch yet before the the $RUN_COMMAND is run (git ls -e t)
+    # (not sure why).
+    sleep 1
 
     tmux send-keys 'clear' C-m
     tmux split-window -h -p 55 -t $TICKET
