@@ -16,13 +16,13 @@ RUN_COMMAND=
 SDK=
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
 SED_RANGE_END="<\/script>"
-TESTCASE=
 TICKET=
 TICKET_DIR_EXISTS=false
 TMP=
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
+#type -t bootstrap_bug
 DEPENDENCIES=(bticket git-ls gsed tmux)
 PACKAGES=(
     "https://github.com/btoll/utils/blob/master/bticket.sh"
@@ -166,8 +166,6 @@ fi
 tmux has-session -t $TICKET 2>/dev/null
 
 if [ $? -eq 1 ]; then
-    TESTCASE="$BUGS$TICKET/index.html"
-
     tmux new-session -s $TICKET -d
     tmux send-keys -t $TICKET 'cd $'$SDK C-m
 
@@ -218,26 +216,18 @@ if [ $? -eq 1 ]; then
         if "$TICKET_DIR_EXISTS"; then
             # Given no custom command and no topic branch, let's default to opening the test case.
             if [ -z "$BRANCH_EXISTS" ]; then
-                tmux send-keys -t $TICKET:0.1 "vim $TESTCASE" C-m
+                RUN_COMMAND="vim $BUGS$TICKET/index.html"
             else
                 # Note that this command will serve a dual purpose.  If there had been a previous
                 # commit, it will open all the files in tabs. If not, it will still open the editor.
                 #
                 # https://github.com/btoll/utils/blob/master/git/bin/git-ls
-                tmux send-keys -t $TICKET:0.1 "git ls -e t" C-m
-
-                # If it exists, let's open the test case and make it the first tab.
-                if [ -f "$TESTCASE" ]; then
-                    # Yes, that's two returns at the end of the first command.
-                    tmux send-keys -t $TICKET:0.1 ":tabnew" C-m C-m
-                    tmux send-keys -t $TICKET:0.1 ":e $TESTCASE" C-m
-                    tmux send-keys -t $TICKET:0.1 ":tabm0" C-m
-                fi
+                RUN_COMMAND="bootstrap_bug $TICKET"
             fi
         fi
-    else
-        tmux send-keys -t $TICKET:0.1 "$RUN_COMMAND" C-m
     fi
+
+    tmux send-keys -t $TICKET:0.1 "$RUN_COMMAND" C-m
 fi
 
 # Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.
