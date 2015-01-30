@@ -22,9 +22,9 @@ TMP=
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
-#type -t bootstrap
-DEPENDENCIES=(bticket git-ls gsed tmux)
+DEPENDENCIES=(bootstrap bticket git-ls gsed tmux)
 PACKAGES=(
+    "https://github.com/btoll/utils/blob/master/bootstrap.sh"
     "https://github.com/btoll/utils/blob/master/bticket.sh"
     "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
     "To install on Mac, do 'brew install coreutils'"
@@ -222,7 +222,7 @@ if [ $? -eq 1 ]; then
                 # commit, it will open all the files in tabs. If not, it will still open the editor.
                 #
                 # https://github.com/btoll/utils/blob/master/git/bin/git-ls
-                RUN_COMMAND="bootstrap $TICKET"
+                RUN_COMMAND="bootstrap"
             fi
         fi
     fi
