@@ -10,7 +10,8 @@ SHA=
 TESTCASE=
 TICKET=$1
 
-if [[ ! ${PWD##*/} =~ ^SDK ]]; then
+# http://stackoverflow.com/a/14127035/125349
+if [ $PWD != $(git rev-parse --show-toplevel) ]; then
     echo "You need to run this command from the toplevel of the working tree."
 else
     if [ -z "$TICKET" ]; then
