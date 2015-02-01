@@ -211,7 +211,7 @@ if [ $? -eq 1 ]; then
     fi
 
     tmux send-keys 'clear' C-m
-    tmux split-window -h -p 70 -t $BRANCH
+    tmux split-window -h -p 60 -t $BRANCH
 
     # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
     if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
@@ -236,10 +236,10 @@ if [ $? -eq 1 ]; then
         #     2. If no topic brach, open the test case (if present).
         #     3. Will default to opening vim with not files loaded.
         #
-        # Note that we must specify the $TICKET as the argument to `bootstrap`. This is what forces it
-        # to lookup the correct test case even if there isn't a topic branch ($TICKET === branch name).
+        # Note that we must specify the $TICKET and $BRANCH the arguments to `bootstrap` b/c we can't
+        # assume that the branch name is the same as the ticket name!
         # https://github.com/btoll/utils/blob/master/bootstrap.sh
-        RUN_COMMAND="bootstrap $BRANCH"
+        RUN_COMMAND="bootstrap -t $TICKET -b $BRANCH"
     fi
 
     tmux send-keys -t $BRANCH:0.1 "$RUN_COMMAND" C-m
