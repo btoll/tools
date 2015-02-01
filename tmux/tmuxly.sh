@@ -11,6 +11,7 @@ DEPENDENCIES=
 DEPENDENCY=
 FIDDLE=
 FAILED_DEPENDENCIES=
+HEAD=
 PACKAGES=
 RUN_COMMAND=
 SDK=
@@ -178,19 +179,22 @@ if [ $? -eq 1 ]; then
         # <SHA-1 ID> <space> <reference name> else it will be an empty string.
         pushd /usr/local/www/$SDK
         BRANCH_EXISTS="$(git show-ref refs/heads/"$TICKET")"
-        popd
 
+        # We can't cd back to our calling directory yet b/c we need to make sure we check out
+        # our "master" branch so we don't have a topic branch as the parent of our new branch!
         if [ -z "$BRANCH_EXISTS" ]; then
             NEW_BRANCH="-b"
+
+            # When creating a new branch, it's extremely important to create off the "master"!
+            HEAD=$([ "$VERSION" -eq 5 ] && echo "sencha-5.0.x" || echo "extjs-4.2.x")
+            git checkout "$HEAD"
         fi
+
+        # Now it's safe to cd back to our calling directory.
+        popd
 
         tmux send-keys -t $TICKET 'git checkout '$NEW_BRANCH' '$TICKET C-m
     fi
-
-    # Unfortunately, we need to pause here or the pane created below will not have checked out
-    # the appropriate git topic branch yet before the the $RUN_COMMAND is run (git ls -e t)
-    # (not sure why).
-    sleep 1
 
     tmux send-keys 'clear' C-m
     tmux split-window -h -p 55 -t $TICKET
@@ -209,22 +213,19 @@ if [ $? -eq 1 ]; then
 
     # We need to determine the command to run in our editor pane. A reasonable assumption is that if
     # a custom command was given that it should trump everything and we'll use that (we're assuming
-    # that the user knows what they're doing).
-    if [ -z "$RUN_COMMAND" ]; then
-        # If no custom command, we only want to run either of the following commands if the bug ticket
-        # dir exists. Note that if the ticket dir exists then the --no-bug-dir flag is ignored if set.
-        if "$TICKET_DIR_EXISTS"; then
-            # Given no custom command and no topic branch, let's default to opening the test case.
-            if [ -z "$BRANCH_EXISTS" ]; then
-                RUN_COMMAND="vim $BUGS$TICKET/index.html"
-            else
-                # Note that this command will serve a dual purpose.  If there had been a previous
-                # commit, it will open all the files in tabs. If not, it will still open the editor.
-                #
-                # https://github.com/btoll/utils/blob/master/git/bin/git-ls
-                RUN_COMMAND="bootstrap"
-            fi
-        fi
+    # that the user knows what they're doing), else bootstrap the bug ticket.
+    #
+    # Note that if the ticket dir exists then the --no-bug-dir flag is ignored if set.
+    if [ -z "$RUN_COMMAND" ] && "$TICKET_DIR_EXISTS"; then
+        # `bootstrap` will work regardless if there's a branch (or not):
+        #     1. If there's a topic branch, open the test case (if present) and the committed files.
+        #     2. If no topic brach, open the test case (if present).
+        #     3. Will default to opening vim with not files loaded.
+        #
+        # Note that we must specify the $TICKET as the argument to `bootstrap`. This is what forces it
+        # to lookup the correct test case even if there isn't a topic branch ($TICKET === branch name).
+        # https://github.com/btoll/utils/blob/master/bootstrap.sh
+        RUN_COMMAND="bootstrap $TICKET"
     fi
 
     tmux send-keys -t $TICKET:0.1 "$RUN_COMMAND" C-m
