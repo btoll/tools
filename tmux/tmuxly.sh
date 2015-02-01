@@ -4,6 +4,7 @@
 # TODO: script assumes that the SDKs are names "SDK4", "SDK5", etc.
 
 BASE_DIR=
+BRANCH=
 BRANCH_EXISTS=
 CREATE_BRANCH=true
 CREATE_BUG_DIR=true
@@ -12,6 +13,7 @@ DEPENDENCY=
 FIDDLE=
 FAILED_DEPENDENCIES=
 HEAD=
+NEW_BRANCH_FLAG=
 PACKAGES=
 RUN_COMMAND=
 SDK=
@@ -54,6 +56,9 @@ usage() {
     echo "Usage: $0 [args]"
     echo
     echo "Args:"
+    echo "--branch, -branch, -b   : If the new branch uses an existing ticket, specify the new branch name using this flag."
+    echo '                          Note that this flag cannot be used alone, the $TICKET must always be specified.'
+    echo
     echo "--command, -command, -c : The command to run if a bug directory is not to be created. This will be run in the right pane."
     echo "                          Note that the presence of this flag trumps everything else."
     echo "                          Defaults to 'vim'."
@@ -85,6 +90,7 @@ while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
         --help|-help|-h) usage; exit 0 ;;
+        --branch|-branch|-b) shift; BRANCH=$1 ;;
         --command|-command|-c) shift; RUN_COMMAND=$1 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
         --no-branch) CREATE_BRANCH=false ;;
@@ -158,17 +164,25 @@ elif
 fi
 
 ###############################################################
-# 1. Name the session the same as the ticket number.
+# 1. Name the session the same as the branch.
 # 2. cd to the appropriate SDK and create the new topic branch.
-# 3. Split the window to be 55% of the total width.
-# 4. Target the new pane and create the new ticket dir.
+# 3. Split the window.
+# 4. Target the new pane and bootstrap the ticket.
 # 5. Attach to the session.
+# 6. Open the ticket in a browser window.
 ###############################################################
-tmux has-session -t $TICKET 2>/dev/null
+
+# If given a branch name, then we assume that the ticket directory already exists and this
+# is another topic branch to fix the same ticket, i.e., EXTJS-2009b, EXTJS-15329_4, etc.
+# From this point forward, TICKET only refers to the actual Jira ticket number and BRANCH
+# refers to the tmux session name and the new git topic branch that will be created.
+BRANCH=${BRANCH:-$TICKET}
+
+tmux has-session -t $BRANCH 2>/dev/null
 
 if [ $? -eq 1 ]; then
-    tmux new-session -s $TICKET -d
-    tmux send-keys -t $TICKET 'cd $'$SDK C-m
+    tmux new-session -s $BRANCH -d
+    tmux send-keys -t $BRANCH 'cd $'$SDK C-m
 
     if $CREATE_BRANCH; then
         # Here we need to check if this branch already exists. If so, don't pass
@@ -178,12 +192,12 @@ if [ $? -eq 1 ]; then
         # Note that if the branch exists the return value will be in the form of
         # <SHA-1 ID> <space> <reference name> else it will be an empty string.
         pushd /usr/local/www/$SDK
-        BRANCH_EXISTS="$(git show-ref refs/heads/"$TICKET")"
+        BRANCH_EXISTS="$(git show-ref refs/heads/"$BRANCH")"
 
         # We can't cd back to our calling directory yet b/c we need to make sure we check out
         # our "master" branch so we don't have a topic branch as the parent of our new branch!
         if [ -z "$BRANCH_EXISTS" ]; then
-            NEW_BRANCH="-b"
+            NEW_BRANCH_FLAG="-b"
 
             # When creating a new branch, it's extremely important to create off the "master"!
             HEAD=$([ "$VERSION" -eq 5 ] && echo "sencha-5.0.x" || echo "extjs-4.2.x")
@@ -193,23 +207,23 @@ if [ $? -eq 1 ]; then
         # Now it's safe to cd back to our calling directory.
         popd
 
-        tmux send-keys -t $TICKET 'git checkout '$NEW_BRANCH' '$TICKET C-m
+        tmux send-keys -t $BRANCH 'git checkout '$NEW_BRANCH_FLAG' '$BRANCH C-m
     fi
 
     tmux send-keys 'clear' C-m
-    tmux split-window -h -p 55 -t $TICKET
+    tmux split-window -h -p 70 -t $BRANCH
 
     # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
     if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
         # Change to the bugs directory to create the bug ticket dir.
-        tmux send-keys -t $TICKET:0.1 "cd $BUGS" C-m
-        tmux send-keys -t $TICKET:0.1 "bticket $TICKET $SDK" C-m
+        tmux send-keys -t $BRANCH:0.1 "cd $BUGS" C-m
+        tmux send-keys -t $BRANCH:0.1 "bticket $TICKET $SDK" C-m
 
         TICKET_DIR_EXISTS=true
     fi
 
     # In all cases, cd back to the SDK.
-    tmux send-keys -t $TICKET:0.1 'cd $'$SDK C-m
+    tmux send-keys -t $BRANCH:0.1 'cd $'$SDK C-m
 
     # We need to determine the command to run in our editor pane. A reasonable assumption is that if
     # a custom command was given that it should trump everything and we'll use that (we're assuming
@@ -225,10 +239,10 @@ if [ $? -eq 1 ]; then
         # Note that we must specify the $TICKET as the argument to `bootstrap`. This is what forces it
         # to lookup the correct test case even if there isn't a topic branch ($TICKET === branch name).
         # https://github.com/btoll/utils/blob/master/bootstrap.sh
-        RUN_COMMAND="bootstrap $TICKET"
+        RUN_COMMAND="bootstrap $BRANCH"
     fi
 
-    tmux send-keys -t $TICKET:0.1 "$RUN_COMMAND" C-m
+    tmux send-keys -t $BRANCH:0.1 "$RUN_COMMAND" C-m
 fi
 
 # Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.
@@ -236,5 +250,5 @@ if "$TICKET_DIR_EXISTS"; then
     open "http://localhost/extjs/bugs/$TICKET"
 fi
 
-tmux attach -t $TICKET
+tmux attach -t $BRANCH
 
