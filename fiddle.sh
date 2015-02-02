@@ -3,7 +3,7 @@
 # Note this needs to be global so all functions can access it.
 FIDDLE_TIMESTAMP=
 
-fiddle-cleanup() {
+fiddle_cleanup() {
     # If there were no function arguments passed, we assume that the function was called from a script.
     local SOURCE=${1:-$FIDDLE_TIMESTAMP}
 
@@ -12,7 +12,7 @@ fiddle-cleanup() {
     FIDDLE_TIMESTAMP=
 }
 
-fiddle-download() {
+fiddle_download() {
     if [ "$#" -eq 0 ]; then
         echo "You must provide a url."
         exit 1
@@ -56,7 +56,7 @@ fiddle-download() {
     echo -e "\nDownloaded $FIDDLE to /tmp/$FIDDLE_TIMESTAMP"
 }
 
-fiddle-read() {
+fiddle_read() {
     # If there were no function arguments passed, we assume that the function was called from a script.
     local SOURCE=${1:-$FIDDLE_TIMESTAMP}
     local DESTINATION=${2:-"index.html"}

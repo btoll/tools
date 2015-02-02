@@ -121,9 +121,9 @@ elif
 
     # https://github.com/btoll/utils/blob/master/fiddle.sh
     . /usr/local/www/utils/fiddle.sh
-    fiddle-download "$FIDDLE"
-    fiddle-read
-    fiddle-cleanup
+    fiddle_download "$FIDDLE"
+    fiddle_read
+    fiddle_cleanup
 
     TICKET_DIR_EXISTS=true
 fi
@@ -204,11 +204,11 @@ if [ $? -eq 1 ]; then
         # Note that we must specify the $TICKET and $BRANCH the arguments to `bootstrap` b/c we can't
         # assume that the branch name is the same as the ticket name!
         # https://github.com/btoll/utils/blob/master/bootstrap.sh
-        if "$CREATE_BRANCH"; then
-            RUN_COMMAND=" -b $BRANCH"
-        fi
+        RUN_COMMAND="bootstrap -t $TICKET"
 
-        RUN_COMMAND+="bootstrap -t $TICKET"
+        if "$CREATE_BRANCH"; then
+            RUN_COMMAND+=" -b $BRANCH"
+        fi
     fi
 
     tmux send-keys -t $BRANCH:0.1 "$RUN_COMMAND" C-m
