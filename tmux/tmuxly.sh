@@ -3,7 +3,6 @@
 # TODO: allow custom command to come from an env var?
 # TODO: script assumes that the SDKs are names "SDK4", "SDK5", etc.
 
-BASE_DIR=
 BRANCH=
 BRANCH_EXISTS=
 CREATE_BRANCH=true
@@ -18,10 +17,8 @@ PACKAGES=
 RUN_COMMAND=
 SDK=
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
-SED_RANGE_END="<\/script>"
 TICKET=
 TICKET_DIR_EXISTS=false
-TMP=
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
@@ -118,47 +115,15 @@ elif
     # (although it guesses very well) and finally slapping that into the new index.html.
     [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
 
-    # Let's re-use $FIDDLE.
-    BASE_DIR=$(basename $FIDDLE)
-
-    # Let's accept either a regular Fiddle URL or a Fiddle preview URL.
-    if [ "$BASE_DIR" != "preview" ]; then
-        # Rename in this form: https://fiddle.sencha.com/fiddle/da1/preview
-        FIDDLE="https://fiddle.sencha.com/fiddle/$BASE_DIR/preview"
-    fi
-
-    # Then download and extract just what we need.
-    #
-    # Here we will extract every line after the launch method and before the closing <script> tag.
-    # -n                            -> don't print
-    # '/<script...>/, /<\/script>/  -> match range
-    # {                             -> if in this range
-    #     /<script...>/             -> and line matches /<script...>/
-    #         {d;p;n};              -> do not print the first line (the match), print the next line and read next row
-    #     /<\/script>/              -> if line matches "<\/script>"
-    #         q;                    -> quit, we have done all printing
-    #     p                         -> if we come to here, print the line
-    # }
-    #
-    # http://stackoverflow.com/a/744093
-    # There's probably a better way to do this than creating a temporary file.
-    #
-    # Let's first cd to a dir where we know we have write permissions.
-    pushd $BUGS
-
-    # Let's create a temp file and set the name as the Unix timestamp to avoid any name collisions.
-    TMP=$(date +%s)
-    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > $TMP
-
+    cd $BUGS
     bticket $TICKET $SDK
     cd $TICKET
 
-    sed -i '' -e "/$SED_RANGE_BEGIN/ {
-        r ../$TMP
-    }" index.html
-
-    rm ../$TMP
-    popd
+    # https://github.com/btoll/utils/blob/master/fiddle.sh
+    . /usr/local/www/utils/fiddle.sh
+    fiddle-download "$FIDDLE"
+    fiddle-read
+    fiddle-cleanup
 
     TICKET_DIR_EXISTS=true
 fi
@@ -239,7 +204,11 @@ if [ $? -eq 1 ]; then
         # Note that we must specify the $TICKET and $BRANCH the arguments to `bootstrap` b/c we can't
         # assume that the branch name is the same as the ticket name!
         # https://github.com/btoll/utils/blob/master/bootstrap.sh
-        RUN_COMMAND="bootstrap -t $TICKET -b $BRANCH"
+        if "$CREATE_BRANCH"; then
+            RUN_COMMAND=" -b $BRANCH"
+        fi
+
+        RUN_COMMAND+="bootstrap -t $TICKET"
     fi
 
     tmux send-keys -t $BRANCH:0.1 "$RUN_COMMAND" C-m
