@@ -4,7 +4,10 @@
 FIDDLE_TIMESTAMP=
 
 fiddle-cleanup() {
-    rm /tmp/"$FIDDLE_TIMESTAMP"
+    # If there were no function arguments passed, we assume that the function was called from a script.
+    local SOURCE=${1:-$FIDDLE_TIMESTAMP}
+
+    rm /tmp/"$SOURCE"
     #unset $FIDDLE_TIMESTAMP
     FIDDLE_TIMESTAMP=
 }
@@ -50,11 +53,16 @@ fiddle-download() {
 
     # Download to a dir where we know we'll have write permissions.
     curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > /tmp/$FIDDLE_TIMESTAMP
+    echo -e "\nDownloaded $FIDDLE to /tmp/$FIDDLE_TIMESTAMP"
 }
 
 fiddle-read() {
+    # If there were no function arguments passed, we assume that the function was called from a script.
+    local SOURCE=${1:-$FIDDLE_TIMESTAMP}
+    local DESTINATION=${2:-"index.html"}
+
     sed -i '' -e "/<script type=\"text\/javascript\">/ {
-        r /tmp/$FIDDLE_TIMESTAMP
-    }" index.html
+        r /tmp/$SOURCE
+    }" "$DESTINATION"
 }
 
