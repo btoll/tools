@@ -5,9 +5,12 @@
 # Note the dependencies on the `git-get-hash` alias and the `git-ls` extension:
 # https://github.com/btoll/utils/tree/master/git
 
+# TODO fix errors when non-existent branch
+
 BRANCH=
 FILES=
 SHA=
+SHORT_FORM=
 TESTCASE=
 TICKET=
 
@@ -33,7 +36,7 @@ fi
 
 # Allow `bootstrap` to be called w/o any args, will assume the current topic branch name as the ticket.
 if [ "$#" -eq 0 ]; then
-    TICKET=$(git rev-parse --abbrev-ref HEAD)
+    SHORT_FORM=true
 else
     while [ "$#" -gt 0 ]; do
         OPT="$1"
@@ -52,8 +55,12 @@ else
     fi
 fi
 
-if [ -z "$BRANCH" ]; then
-    BRANCH="$TICKET"
+# If no branch, let's assume the current one.
+if [ "$SHORT_FORM" ] || [ -z "$BRANCH" ]; then
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+    # If using the short form, there will be no $TICKET, make it the same as $BRANCH.
+    TICKET=${TICKET:-"$BRANCH"}
 fi
 
 # Check for the existence of a test case in the bugs dir.
