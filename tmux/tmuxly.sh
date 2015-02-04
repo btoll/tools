@@ -175,20 +175,17 @@ if [ $? -eq 1 ]; then
         tmux send-keys -t $BRANCH 'git checkout '$NEW_BRANCH_FLAG' '$BRANCH C-m
     fi
 
-    tmux send-keys 'clear' C-m
-    tmux split-window -h -p 60 -t $BRANCH
-
     # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
     if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
         # Change to the bugs directory to create the bug ticket dir.
-        tmux send-keys -t $BRANCH:0.1 "cd $BUGS" C-m
-        tmux send-keys -t $BRANCH:0.1 "bticket $TICKET $SDK" C-m
+        tmux send-keys -t $BRANCH "cd $BUGS" C-m
+        tmux send-keys -t $BRANCH "bticket $TICKET $SDK" C-m
 
         TICKET_DIR_EXISTS=true
     fi
 
     # In all cases, cd back to the SDK.
-    tmux send-keys -t $BRANCH:0.1 'cd $'$SDK C-m
+    tmux send-keys -t $BRANCH 'cd $'$SDK C-m
 
     # We need to determine the command to run in our editor pane. A reasonable assumption is that if
     # a custom command was given that it should trump everything and we'll use that (we're assuming
@@ -211,7 +208,11 @@ if [ $? -eq 1 ]; then
         fi
     fi
 
-    tmux send-keys -t $BRANCH:0.1 "$RUN_COMMAND" C-m
+    tmux send-keys 'clear' C-m
+    tmux send-keys -t $BRANCH "$RUN_COMMAND" C-m
+
+    # Finally, open a new pane for cli stuff.
+    tmux split-window -h -p 45 -t $BRANCH
 fi
 
 # Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.
