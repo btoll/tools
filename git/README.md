@@ -142,6 +142,10 @@ When checking out a tagged version:
     git checkout $(git get-hash 4.2.2)
     git checkout `git get-hash 4.2.2`
 
+When cherry picking:
+
+    git cherry-pick $(git get-hash listfilter_prototype)
+
 ### git-goto
 
     !!! This is deprecated. Use the git alias instead. !!!
