@@ -105,14 +105,14 @@ This does the following:
 - recursively deletes everything that matches
 - suppresses STDERR
 
-### bticket bash script (for ExtJS)
+### make_ticket bash script (for ExtJS)
 Example usage:
-    `bticket 5671 3.4.0`
+    `make_ticket 5671 3.4.0`
 
 Example usage:
-    `bticket EXTJSIV-11987 SDK4`
+    `make_ticket EXTJSIV-11987 SDK4`
 
-    bticket ticket_dir_name ext_version
+    make_ticket ticket_dir_name ext_version
 
 Run the script wherever your ticket directories are located.
 
