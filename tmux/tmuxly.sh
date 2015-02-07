@@ -22,12 +22,13 @@ TICKET_DIR_EXISTS=false
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
-DEPENDENCIES=(bootstrap bticket git-ls gsed tmux)
+DEPENDENCIES=(bootstrap fiddler git-ls gsed make_ticket tmux)
 PACKAGES=(
     "https://github.com/btoll/utils/blob/master/bootstrap.sh"
-    "https://github.com/btoll/utils/blob/master/bticket.sh"
+    "https://github.com/btoll/utils/blob/master/fiddler.sh"
     "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
     "To install on Mac, do 'brew install coreutils'"
+    "https://github.com/btoll/utils/blob/master/make_ticket.sh"
     "http://tmux.sourceforge.net"
 )
 
@@ -35,7 +36,7 @@ for n in ${!DEPENDENCIES[*]}; do
     DEPENDENCY=${DEPENDENCIES[n]}
 
     which $DEPENDENCY > /dev/null || {
-        FAILED_DEPENDENCIES+="\n$DEPENDENCY\n${PACKAGES[n]}\n"
+        FAILED_DEPENDENCIES+="\nName: $DEPENDENCY\nPackage: ${PACKAGES[n]}\n"
     }
 done
 
@@ -116,14 +117,10 @@ elif
     [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
 
     cd $BUGS
-    bticket $TICKET $SDK
+    make_ticket $TICKET $SDK
     cd $TICKET
 
-    # https://github.com/btoll/utils/blob/master/fiddle.sh
-    . /usr/local/www/utils/fiddle.sh
-    fiddle_download "$FIDDLE"
-    fiddle_read
-    fiddle_cleanup
+    fiddler "$FIDDLE"
 
     TICKET_DIR_EXISTS=true
 fi
@@ -179,7 +176,7 @@ if [ $? -eq 1 ]; then
     if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
         # Change to the bugs directory to create the bug ticket dir.
         tmux send-keys -t $BRANCH "cd $BUGS" C-m
-        tmux send-keys -t $BRANCH "bticket $TICKET $SDK" C-m
+        tmux send-keys -t $BRANCH "make_ticket $TICKET $SDK" C-m
 
         TICKET_DIR_EXISTS=true
     fi
