@@ -7,9 +7,14 @@ fi
 
 FIDDLE="$1"
 BASENAME=$(basename $FIDDLE)
-DESTINATION=${2:-"index.html"}
+DESTINATION=${2:-"$PWD/index.html"}
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
 SED_RANGE_END="<\/script>"
+
+if [ ! -f "$DESTINATION" ]; then
+    echo "Error: $DESTINATION file does not exist!"
+    exit 1
+fi
 
 # Let's accept either a regular Fiddle URL or a Fiddle preview URL.
 if [ "$BASENAME" != "preview" ]; then
@@ -33,13 +38,12 @@ fi
 # http://stackoverflow.com/a/744093
 # There's probably a better way to do this than creating a temporary file.
 #
-
-# Download to a dir where we know we'll have write permissions.
-curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > /tmp/"$BASENAME"
+if [ ! -f "/tmp/$BASENAME" ]; then
+    # Download to a dir where we know we'll have write permissions.
+    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > "/tmp/$BASENAME"
+fi
 
 sed -i '' -e "/$SED_RANGE_BEGIN/ {
     r /tmp/$BASENAME
 }" "$DESTINATION"
-
-# TODO: automatically delete download?
 
