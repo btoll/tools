@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script EXPECTS that you have already determined the location of the new document (the FILE funarg).
+#
 # This assumes that your git repos are SDK5, SDK5, etc.
 # If $VERSION contains the string "SDK", then get the 4th char which will be the major version number.
 # https://stackoverflow.com/questions/229551/string-contains-in-bash
@@ -81,6 +83,6 @@ fi
 HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n$ADAPTER<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\n</script>\n</head>\n\n<body>\n</body>\n</html>"
 
 # Echo HTML honoring the new lines (-e flag).
-echo -e "$HTML" > "$PWD/$FILE"
+echo -e "$HTML" > "$FILE"
 exit 0
 
