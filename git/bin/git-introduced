@@ -8,7 +8,6 @@ LOCATION=
 DELETE_FILE=true
 OPEN_IN_BROWSER=false
 PATTERN=
-PREV_IFS=
 SHA=
 TMP_FILE=
 URL=
@@ -60,11 +59,7 @@ TMP_FILE="$PATTERN.csv"
 git log --pretty="$FORMAT" -S"$PATTERN" -- "$LOCATION" > $TMP_FILE
 wait
 
-# Save previous (global) IFS.
-PREV_IFS="$IFS"
-IFS="$D"
-
-while read LINE
+while IFS="$D" read LINE
 do
     # Disable backslash escaping and read words into an array.
     read -r -a ARR <<<"$LINE"
@@ -92,9 +87,6 @@ do
         open $URL
     fi
 done < $TMP_FILE
-
-# Restore previous IFS.
-IFS="$PREV_IFS"
 
 # Add a final blank line for formatting, i.e., a blank line before the prompt.
 echo

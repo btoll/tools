@@ -20,6 +20,11 @@ MAJOR_VERSION=
 TITLE=
 FIDDLE=
 
+# First, let's make sure that the system on which we are running has the dependencies installed.
+if which check_dependencies > /dev/null; then
+    check_dependencies -d "fiddler" -p "https://github.com/btoll/utils/blob/master/fiddler.sh"
+fi
+
 usage() {
     echo "make_file"
     echo

@@ -7,13 +7,9 @@ BRANCH=
 BRANCH_EXISTS=
 CREATE_BRANCH=true
 CREATE_BUG_DIR=true
-DEPENDENCIES=
-DEPENDENCY=
-FAILED_DEPENDENCIES=
 FIDDLE=
 HEAD=
 NEW_BRANCH_FLAG=
-PACKAGES=
 RUN_COMMAND=
 SDK=
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
@@ -22,30 +18,8 @@ TICKET_DIR_EXISTS=false
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
-DEPENDENCIES=(bootstrap fiddler git-ls gsed make_file make_ticket tmux)
-PACKAGES=(
-    "https://github.com/btoll/utils/blob/master/bootstrap.sh"
-    "https://github.com/btoll/utils/blob/master/fiddler.sh"
-    "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
-    "To install on Mac, do 'brew install coreutils'"
-    "https://github.com/btoll/utils/blob/master/make_file.sh"
-    "https://github.com/btoll/utils/blob/master/make_ticket.sh"
-    "http://tmux.sourceforge.net"
-)
-
-for n in ${!DEPENDENCIES[*]}; do
-    DEPENDENCY=${DEPENDENCIES[n]}
-
-    which $DEPENDENCY > /dev/null || {
-        FAILED_DEPENDENCIES+="\nName: $DEPENDENCY\nPackage: ${PACKAGES[n]}\n"
-    }
-done
-
-if [ -n "$FAILED_DEPENDENCIES" ]; then
-    echo "This script has several dependencies that are not present on your system."
-    echo "Please install the following:"
-    echo -e $FAILED_DEPENDENCIES
-    exit 1
+if which check_dependencies > /dev/null; then
+    check_dependencies -d "bootstrap;fiddler;git-ls;gsed;make_file;make_ticket;tmux" -p "https://github.com/btoll/utils/blob/master/bootstrap.sh;https://github.com/btoll/utils/blob/master/fiddler.sh;https://github.com/btoll/utils/blob/master/git/bin/git-ls';\"To install on Mac, do 'brew install coreutils'\";https://github.com/btoll/utils/blob/master/make_file.sh;https://github.com/btoll/utils/blob/master/make_ticket.sh;http://tmux.sourceforge.net"
 fi
 
 # Next, let's make sure we have what we need.
@@ -88,10 +62,10 @@ fi
 while [ "$#" -gt 0 ]; do
     OPT="$1"
     case $OPT in
-        --help|-help|-h) usage; exit 0 ;;
         --branch|-branch|-b) shift; BRANCH=$1 ;;
         --command|-command|-c) shift; RUN_COMMAND=$1 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
+        --help|-help|-h) usage; exit 0 ;;
         --no-branch) CREATE_BRANCH=false ;;
         --no-bug-dir) CREATE_BUG_DIR=false ;;
         --ticket|-ticket|-t) shift; TICKET=$1 ;;

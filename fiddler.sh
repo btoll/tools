@@ -8,11 +8,7 @@ if [ "$#" -eq 0 ]; then
     exit 1
 fi
 
-DEPENDENCIES=
-DEPENDENCY=
-FAILED_DEPENDENCIES=
 FIDDLE="$1"
-PACKAGES=
 # If exists, the TARGET could be an absolute or relative path.
 TARGET="$2"
 BASENAME=$(basename $FIDDLE)
@@ -20,25 +16,8 @@ SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
 SED_RANGE_END="<\/script>"
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
-DEPENDENCIES=(gsed make_file)
-PACKAGES=(
-    "To install on Mac, do 'brew install coreutils'"
-    "https://github.com/btoll/utils/blob/master/make_file.sh"
-)
-
-for n in ${!DEPENDENCIES[*]}; do
-    DEPENDENCY=${DEPENDENCIES[n]}
-
-    which $DEPENDENCY > /dev/null || {
-        FAILED_DEPENDENCIES+="\nName: $DEPENDENCY\nPackage: ${PACKAGES[n]}\n"
-    }
-done
-
-if [ -n "$FAILED_DEPENDENCIES" ]; then
-    echo "This script has several dependencies that are not present on your system."
-    echo "Please install the following:"
-    echo -e $FAILED_DEPENDENCIES
-    exit 1
+if which check_dependencies > /dev/null; then
+    check_dependencies -d "gsed;make_file" -p "\"To install on Mac, do 'brew install coreutils'\";https://github.com/btoll/utils/blob/master/make_file.sh"
 fi
 
 create_file() {
