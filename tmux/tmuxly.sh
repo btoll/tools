@@ -9,8 +9,8 @@ CREATE_BRANCH=true
 CREATE_BUG_DIR=true
 DEPENDENCIES=
 DEPENDENCY=
-FIDDLE=
 FAILED_DEPENDENCIES=
+FIDDLE=
 HEAD=
 NEW_BRANCH_FLAG=
 PACKAGES=
@@ -22,12 +22,13 @@ TICKET_DIR_EXISTS=false
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
-DEPENDENCIES=(bootstrap fiddler git-ls gsed make_ticket tmux)
+DEPENDENCIES=(bootstrap fiddler git-ls gsed make_file make_ticket tmux)
 PACKAGES=(
     "https://github.com/btoll/utils/blob/master/bootstrap.sh"
     "https://github.com/btoll/utils/blob/master/fiddler.sh"
     "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
     "To install on Mac, do 'brew install coreutils'"
+    "https://github.com/btoll/utils/blob/master/make_file.sh"
     "https://github.com/btoll/utils/blob/master/make_ticket.sh"
     "http://tmux.sourceforge.net"
 )
@@ -117,7 +118,7 @@ elif
     [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
 
     cd $BUGS
-    make_ticket $TICKET $SDK
+    make_ticket -f $TICKET -v $SDK
     cd $TICKET
 
     fiddler "$FIDDLE"

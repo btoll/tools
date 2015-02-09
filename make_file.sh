@@ -5,10 +5,6 @@
 # This assumes that your git repos are SDK5, SDK5, etc.
 # If $VERSION contains the string "SDK", then get the 4th char which will be the major version number.
 # https://stackoverflow.com/questions/229551/string-contains-in-bash
-if [ "$#" -lt 2 ]; then
-    echo "Usage: $0 FILE VERSION [ OPTIONS ]"
-    exit 1
-fi
 
 ADAPTER=
 CSS_HREF=
@@ -17,13 +13,45 @@ DEBUG_SCRIPT="ext.js"
 DEFAULT_SDK_LOCATION="../../.."
 DEFAULT_BUILDS_LOCATION="../../builds"
 DIR=
-FILE="$1"
+FILE=
 HTML=
 JS_SRC=
 MAJOR_VERSION=
-# Note that scripts can call this and add extra args. Assume if there is a third funarg that it's a ticket (i.e., called from make_ticket).
-TITLE=${3:-$FILE}
-VERSION="$2"
+TITLE=
+FIDDLE=
+
+usage() {
+    echo "make_file"
+    echo
+    echo "Usage: $0 [args]"
+    echo
+    echo "Args:"
+    echo "--fiddle                : The url of the Fiddle to whose JavaScript will be inserted into the new file."
+    echo
+    echo "--file, -file, -f       : The name of the new file to create. Can be an absolute or relative path."
+    echo
+    echo "--title, -title, -t     : The value of the HTML <title> node."
+    echo
+    echo "--version, -version, -v : The Ext version to use (or SDK)."
+    echo
+}
+
+if [ "$#" -eq 0 ]; then
+    usage
+    exit 1
+fi
+
+while [ "$#" -gt 0 ]; do
+    OPT="$1"
+    case $OPT in
+        --fiddle) shift; FIDDLE=$1 ;;
+        --file|-file|-f) shift; FILE=$1 ;;
+        --help|-help|-h) usage; exit 0 ;;
+        --title|-title|-t) shift; TITLE=$1 ;;
+        --version|-version|-v) shift; VERSION=$1 ;;
+    esac
+    shift
+done
 
 if [[ $VERSION == *SDK* ]]; then
     # Extract the last character of the SDK version.
@@ -84,5 +112,8 @@ HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"tex
 
 # Echo HTML honoring the new lines (-e flag).
 echo -e "$HTML" > "$FILE"
-exit 0
+
+if [ -n "$FIDDLE" ]; then
+    fiddler "$FIDDLE" "$FILE"
+fi
 
