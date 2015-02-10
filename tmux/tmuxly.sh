@@ -92,10 +92,9 @@ elif
     [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
 
     cd $BUGS
-    make_ticket -f $TICKET -v $SDK
+    make_ticket $TICKET $SDK
     cd $TICKET
-
-    fiddler "$FIDDLE"
+    fiddler "$FIDDLE" index.html
 
     TICKET_DIR_EXISTS=true
 fi
