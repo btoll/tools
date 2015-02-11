@@ -2,20 +2,22 @@
 # TODO: allow choice of split.
 # TODO: allow custom command to come from an env var?
 # TODO: script assumes that the SDKs are names "SDK4", "SDK5", etc.
+# TODO: it's probably best to specify the parent branch on the cli.
 
 BRANCH=
 BRANCH_EXISTS=
-CREATE_BRANCH=true
 CREATE_BUG_DIR=true
 FIDDLE=
 HEAD=
 NEW_BRANCH_FLAG=
 RUN_COMMAND=
 SDK=
+SEARCH_FOR_BRANCH=false
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
 TICKET=
 TICKET_DIR_EXISTS=false
-VERSION=5
+USE_BRANCH=true
+VERSION=
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
@@ -66,7 +68,7 @@ while [ "$#" -gt 0 ]; do
         --command|-command|-c) shift; RUN_COMMAND=$1 ;;
         --fiddle|-fiddle|-f) shift; FIDDLE=$1 ;;
         --help|-help|-h) usage; exit 0 ;;
-        --no-branch) CREATE_BRANCH=false ;;
+        --no-branch) USE_BRANCH=false ;;
         --no-bug-dir) CREATE_BUG_DIR=false ;;
         --ticket|-ticket|-t) shift; TICKET=$1 ;;
         --version|-version|-v) shift; VERSION=$1 ;;
@@ -79,7 +81,13 @@ if [ -z "$TICKET" ]; then
     exit 1
 fi
 
-SDK=SDK$VERSION
+# If no version was specified, then we'll default to version 5 and start our search for topic branches there.
+if [ -z "$VERSION" ]; then
+    SEARCH_FOR_BRANCH=true
+    VERSION=5
+fi
+
+SDK="SDK$VERSION"
 
 # We need to check right away if the ticket directory was already created b/c they will influence how we proceed.
 if [ -d "$BUGS$TICKET" ]; then
@@ -91,9 +99,9 @@ elif
     # (although it guesses very well) and finally slapping that into the new index.html.
     [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
 
-    cd $BUGS
-    make_ticket $TICKET $SDK
-    cd $TICKET
+    cd "$BUGS"
+    make_ticket "$TICKET" "$SDK"
+    cd "$TICKET"
     fiddler "$FIDDLE" index.html
 
     TICKET_DIR_EXISTS=true
@@ -112,51 +120,79 @@ fi
 # is another topic branch to fix the same ticket, i.e., EXTJS-2009b, EXTJS-15329_4, etc.
 # From this point forward, TICKET only refers to the actual Jira ticket number and BRANCH
 # refers to the tmux session name and the new git topic branch that will be created.
-BRANCH=${BRANCH:-$TICKET}
+BRANCH=${BRANCH:-"$TICKET"}
+
+prepare_new_branch() {
+    NEW_BRANCH_FLAG="-b"
+
+    if [ "$VERSION" -eq 5 ]; then
+        SDK="SDK5"
+        cd /usr/local/www/"$SDK"
+        HEAD="sencha-5.0.x"
+    else
+        SDK="SDK4"
+        cd /usr/local/www/"$SDK"
+        HEAD="extjs-4.2.x"
+    fi
+
+    # When creating a new branch, it's extremely important to create off the "master" so we
+    # MUST checkout that out before making the new topic branch.
+    git checkout "$HEAD"
+}
 
 tmux has-session -t $BRANCH 2>/dev/null
 
-if [ $? -eq 1 ]; then
-    tmux new-session -s $BRANCH -d
-    tmux send-keys -t $BRANCH 'cd $'$SDK C-m
-
-    if $CREATE_BRANCH; then
+if [ "$?" -eq 1 ]; then
+    if "$USE_BRANCH"; then
         # Here we need to check if this branch already exists. If so, don't pass
         # the -b flag when the branch is checked out.
         #
         # We'll need to cd to the correct repo to check for existence.
         # Note that if the branch exists the return value will be in the form of
         # <SHA-1 ID> <space> <reference name> else it will be an empty string.
-        pushd /usr/local/www/$SDK
-        BRANCH_EXISTS="$(git show-ref refs/heads/"$BRANCH")"
+        cd /usr/local/www/"$SDK"
+        BRANCH_EXISTS=$(git show-ref refs/heads/"$BRANCH")
+
+        # If still no branch and SEARCH_FOR_BRANCH is true, then we know the following things:
+        #   1. No version was specified when the command was run.
+        #   2. The current value of SDK is "SDK5".
+        #   3. The topic branch doesn't "exist" in the SDK5 dir.
+        #   4. We need to now search for the branch in the SDK4 dir.
+        if [ -z "$BRANCH_EXISTS" ] && "$SEARCH_FOR_BRANCH"; then
+            cd /usr/local/www/SDK4
+            BRANCH_EXISTS=$(git show-ref refs/heads/"$BRANCH")
+
+            if [ -z "$BRANCH_EXISTS" ]; then
+                prepare_new_branch
+            else
+                VERSION=4
+            fi
+        fi
 
         # We can't cd back to our calling directory yet b/c we need to make sure we check out
         # our "master" branch so we don't have a topic branch as the parent of our new branch!
         if [ -z "$BRANCH_EXISTS" ]; then
-            NEW_BRANCH_FLAG="-b"
-
-            # When creating a new branch, it's extremely important to create off the "master"!
-            HEAD=$([ "$VERSION" -eq 5 ] && echo "sencha-5.0.x" || echo "extjs-4.2.x")
-            git checkout "$HEAD"
+            prepare_new_branch
         fi
 
-        # Now it's safe to cd back to our calling directory.
-        popd
-
-        tmux send-keys -t $BRANCH 'git checkout '$NEW_BRANCH_FLAG' '$BRANCH C-m
+        if [ -n "$NEW_BRANCH_FLAG" ]; then
+            git checkout "$NEW_BRANCH_FLAG" "$BRANCH"
+        else
+            git checkout "$BRANCH"
+        fi
     fi
 
     # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
     if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
         # Change to the bugs directory to create the bug ticket dir.
-        tmux send-keys -t $BRANCH "cd $BUGS" C-m
-        tmux send-keys -t $BRANCH "make_ticket $TICKET $SDK" C-m
+        cd "$BUGS"
+        make_ticket "$TICKET" "$SDK"
 
         TICKET_DIR_EXISTS=true
     fi
 
     # In all cases, cd back to the SDK.
-    tmux send-keys -t $BRANCH 'cd $'$SDK C-m
+    cd /usr/local/www/"SDK$VERSION"
 
     # We need to determine the command to run in our editor pane. A reasonable assumption is that if
     # a custom command was given that it should trump everything and we'll use that (we're assuming
@@ -174,17 +210,16 @@ if [ $? -eq 1 ]; then
         # https://github.com/btoll/utils/blob/master/bootstrap.sh
         RUN_COMMAND="bootstrap -t $TICKET"
 
-        if "$CREATE_BRANCH"; then
+        if "$USE_BRANCH"; then
             RUN_COMMAND+=" -b $BRANCH"
         fi
     fi
 
-    tmux send-keys 'clear' C-m
+    tmux new-session -s $BRANCH -d
     tmux send-keys -t $BRANCH "$RUN_COMMAND" C-m
 
-    # Finally, open a new pane for cli stuff and cd to the proper SDK.
+    # Finally, open a new pane for cli stuff (will already have been cd'd to the proper SDK).
     tmux split-window -h -p 45 -t $BRANCH
-    tmux send-keys -t $BRANCH:0.1 'cd $'$SDK C-m
     tmux send-keys -t $BRANCH:0.1 'clear' C-m
 fi
 
