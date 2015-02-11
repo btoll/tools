@@ -182,8 +182,10 @@ if [ $? -eq 1 ]; then
     tmux send-keys 'clear' C-m
     tmux send-keys -t $BRANCH "$RUN_COMMAND" C-m
 
-    # Finally, open a new pane for cli stuff.
+    # Finally, open a new pane for cli stuff and cd to the proper SDK.
     tmux split-window -h -p 45 -t $BRANCH
+    tmux send-keys -t $BRANCH:0.1 'cd $'$SDK C-m
+    tmux send-keys -t $BRANCH:0.1 'clear' C-m
 fi
 
 # Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.
