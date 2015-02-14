@@ -122,7 +122,7 @@ fi
 # refers to the tmux session name and the new git topic branch that will be created.
 BRANCH=${BRANCH:-"$TICKET"}
 
-prepare_new_branch() {
+checkout_parent_branch() {
     NEW_BRANCH_FLAG="-b"
 
     if [ "$VERSION" -eq 5 ]; then
@@ -163,7 +163,7 @@ if [ "$?" -eq 1 ]; then
             BRANCH_EXISTS=$(git show-ref refs/heads/"$BRANCH")
 
             if [ -z "$BRANCH_EXISTS" ]; then
-                prepare_new_branch
+                checkout_parent_branch
             else
                 VERSION=4
             fi
@@ -172,7 +172,7 @@ if [ "$?" -eq 1 ]; then
         # We can't cd back to our calling directory yet b/c we need to make sure we check out
         # our "master" branch so we don't have a topic branch as the parent of our new branch!
         if [ -z "$BRANCH_EXISTS" ]; then
-            prepare_new_branch
+            checkout_parent_branch
         fi
 
         if [ -n "$NEW_BRANCH_FLAG" ]; then
@@ -180,6 +180,8 @@ if [ "$?" -eq 1 ]; then
         else
             git checkout "$BRANCH"
         fi
+    else
+        checkout_parent_branch
     fi
 
     # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
