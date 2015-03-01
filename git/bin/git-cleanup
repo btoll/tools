@@ -7,13 +7,11 @@ COUNTER=0
 DELETE_SWITCH="-d"
 DRY_RUN=false
 FOUND=false
-GO=true
 HEAD=$(git rev-parse --abbrev-ref HEAD)
 IMODE=false
 NO_REMOTE_DELETE=false
-PATTERN=${GIT_DEFAULT_PATTERN:-"EXTJS.*"}
+PATTERN=${GIT_CLEANUP_PATTERN:-"."}
 REPO=${GIT_DEFAULT_REPO:-"origin"}
-WARN="\n!!!WARNING!!! The current branch will be deleted remotely!"
 
 delete_branch() {
     git branch "$DELETE_SWITCH" "$BRANCH"
@@ -33,15 +31,15 @@ usage() {
     echo
     echo "-i Interactive mode."
     echo
-    echo "-l Will operate in DRY RUN mode.  Will list all branches to be deleted."
+    echo "--dry-run, -l Will operate in DRY RUN mode.  Will list all branches to be deleted."
     echo "   This is useful (and safe) when you are not sure which branches will be removed by the filter."
     echo
-    echo "--no-merged List the unmerged branches instead of the merged branches (the default)."
+    echo "--no-merged Operate on unmerged branches instead."
     echo
     echo "--no-remote-delete Don't delete the branch from the remote repository."
     echo
     echo "--pattern, -pattern, -p The regex to use for existing local branches."
-    echo "   Defaults to 'EXTJS*'"
+    echo "   Defaults to '.'"
     echo
     echo "--repo, -repo, -r The name of the remote repository from which to delete the branch."
     echo "   Defaults to 'origin'"
@@ -54,7 +52,7 @@ while [ "$#" -gt 0 ]; do
         --file|-file|-f) shift; FILE=$1 ;;
         --help|-help|-h) usage; exit 0 ;;
         -i) IMODE=true ;;
-        -l) DRY_RUN=true ;;
+        --dry-run|-l) DRY_RUN=true ;;
         --no-merged) BRANCH_SWITCH="--no-merged"; DELETE_SWITCH="-D" ;;
         --no-remote-delete) NO_REMOTE_DELETE=true ;;
         --pattern|-pattern|-p) shift; PATTERN=$1 ;;
@@ -66,7 +64,7 @@ done
 # http://stackoverflow.com/a/3846451
 BRANCHES=$(git branch "$BRANCH_SWITCH" | cut -c 3-)
 
-echo -e "Match pattern: $PATTERN\n"
+echo "Match pattern: $PATTERN"
 
 if "$DRY_RUN"; then
     echo -e "[[DRY RUN MODE]] The following branches will be removed:\n"
@@ -76,10 +74,6 @@ for BRANCH in $BRANCHES; do
     # Let's operate on only the desired branches.
     if [[ "$BRANCH" =~ ^$PATTERN ]]; then
         FOUND=true
-
-        if [[ -z "$FILE" && "$HEAD" = "$BRANCH" ]]; then
-            MATCHED="$WARN"
-        fi
 
         if "$DRY_RUN"; then
             echo $BRANCH
@@ -94,32 +88,19 @@ for BRANCH in $BRANCHES; do
                 COUNTER=$((COUNTER + 1))
             fi
         else
-            if [[ -n "$MATCHED" && "$NO_REMOTE_DELETE" = false ]]; then
-                echo -e $WARN
-                read -p "Continue anyway? [y/n] " CONTINUE
-                if [ "$CONTINUE" = "n" ]; then
-                    GO=false
-                fi
-
-                # Unset so the warning message doesn't display again below.
-                unset MATCHED
-            fi
-
-            if "$GO"; then
-                if "$IMODE"; then
-                    echo -e "\n$BRANCH contains the following UNMERGED commits:"
-                    echo -e "\n-----------------------------------------------"
-                    # http://stackoverflow.com/a/4207176
-                    git log "$BRANCH" ^"$HEAD" --no-merges
-                    echo -e "-----------------------------------------------\n"
-                    read -p "Delete branch "$BRANCH" anyway? [y/N] " CONTINUE
-                    if [ "$CONTINUE" = "y" ]; then
-                        delete_branch
-                        echo -e "================================================\n"
-                    fi
-                else
+            if "$IMODE"; then
+                echo -e "\n\"$BRANCH\" contains the following UNMERGED commits:"
+                echo -e "\n-----------------------------------------------"
+                # http://stackoverflow.com/a/4207176
+                git log "$BRANCH" ^"$HEAD" --no-merges
+                echo -e "-----------------------------------------------\n"
+                read -p "Delete branch \"$BRANCH\" anyway? [y/N] " CONTINUE
+                if [ "$CONTINUE" = "y" ]; then
                     delete_branch
+                    echo -e "================================================\n"
                 fi
+            else
+                delete_branch
             fi
         fi
     fi
@@ -134,10 +115,6 @@ if [ -n "$FILE" ]; then
     exit 0
 fi
 
-if [ -n "$MATCHED" ]; then
-    echo -e $MATCHED
-fi
-
 if [ "$FOUND" = false ]; then
-    echo "No matches found."
+    echo "git-cleanup: No matches found."
 fi

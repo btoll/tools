@@ -8,7 +8,7 @@ DRY_RUN=false
 FILE=
 HASH=
 QUERY=
-REMOTE_BRANCH=${GITHUB_DEFAULT_REMOTE_BRANCH:-sencha-5.0.x}
+REMOTE_BRANCH=${GIT_HUB_REMOTE_BRANCH:-sencha-5.0.x}
 URL=
 
 usage() {
@@ -32,7 +32,7 @@ usage() {
     echo "--hash, -hash, -h     : The commit hash to lookup on GitHub."
     echo
     echo "--remote, -remote, -r : The branch to use as the base lookup branch on GitHub."
-    echo '                        Defaults to the value of $GIT_HUB_DEFAULT_REOMTE_BRANCH'
+    echo '                        Defaults to the value of $GIT_HUB_REMOTE_BRANCH'
     echo
     echo "--tag, -tag, -t       : It given, will get the hash of the tag."
     echo "                        Note that this should be thought of as the same as the"

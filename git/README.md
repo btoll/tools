@@ -35,8 +35,7 @@ To install the git man pages:
 
 ### git-cleanup
 
-This script will delete any git branch, both locally and remotely, that has been merged and that
-matches the filtered search.
+This script will delete any git branch, both locally and remotely, that has been merged or unmerged and that matches the filtered search.
 
 If unsure about which branches your fuzzy search will match and delete, it is recommended to first
 do a dry run using the `-l` switch.
@@ -45,10 +44,12 @@ This uses the git command `git branch --merged` under the covers.
 
 Example usage:
 
-    git cleanup [defaults to -r origin -f EXTJS*]
-    git cleanup -r origin
-    git cleanup -f HELLO*
-    git cleanup -f WORLD* -r btoll
+    git cleanup [defaults to -r origin -p "."]
+    git cleanup -r upstream
+    git cleanup -p "HELLO*"
+    git cleanup -p "WORLD*" -r btoll
+    git cleanup --no-merged
+    git cleanup --no-merged -i
 
 Usage:
 
@@ -58,8 +59,12 @@ Usage:
         This will not delete any branches. It's intention is to allow for further inspection of all the
         deletion candidates. The file will be executable.
 
-    -l  Will operate in DRY RUN mode.  Will list all branches to be deleted.
+    -i  Interactive mode.
+
+    --dry-run, -l  Will operate in DRY RUN mode.  Will list all branches to be deleted.
         This is useful (and safe) when you are not sure which branches will be removed by the filter.
+
+    --no-merged Operate on unmerged branches instead.
 
     --no-remote-delete Do not delete the branches remotely.
 
@@ -76,8 +81,8 @@ This does the following:
 
 Note that you can also define the following environment variables used by the script:
 
-    GIT_DEFAULT_PATTERN
-    GIT_DEFAULT_REPO
+    GIT_CLEANUP_PATTERN
+    GIT_CLEANUP_REPO
 
 The biggest fear is of accidentally deleting a branch that hasn't been merged yet, and the most
 likely scenario for this is that of an unpushed branch. To help ease that fear, the following
@@ -113,7 +118,7 @@ pushed to a remote repo, the branch will not be deleted locally but will be dele
 
 The only scenarios in which a local branch will be deleted is when it contains no commits.
 
-The script will not force delete (`-D`) any branches!
+The script will not force delete (`-D`) any branches unless in --no-merged mode!
 
 But as usual, make sure you know what you're doing! I am not responsible for lost branches!
 
@@ -195,7 +200,7 @@ It's best to show what this tool can do through examples.
 
     `git hub --tag extjs5.1.0`
 
-The file will be opened in the remote branch whose value is in the `GITHUB_DEFAULT_REMOTE_BRANCH` environment variable unless changed using the `--remote` flag.
+The file will be opened in the remote branch whose value is in the `GIT_HUB_REMOTE_BRANCH` environment variable unless changed using the `--remote` flag.
 
 ### git-introduced
 
