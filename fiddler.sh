@@ -23,7 +23,7 @@ fi
 create_file() {
     if which make_file > /dev/null; then
         set_abs_path
-        make_file "$TARGET" SDK5
+        make_file -f "$TARGET" -v SDK5
     else
         echo "Error: $TARGET target file does not exist."
         exit 1
@@ -75,7 +75,20 @@ fi
 #
 if [ ! -f "/tmp/$BASENAME" ]; then
     # Download to a dir where we know we'll have write permissions.
-    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > "/tmp/$BASENAME"
+    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > /tmp/"$BASENAME"
+
+    # Check to make sure it downloaded correctly.
+    read SIZE _ <<<$(du /tmp/"$BASENAME")
+    if [[ "$SIZE" -eq 0 ]]; then
+        echo -e "\nThere was a problem with the download! Chances are you are trying to download a Fiddle with a premium build.\n"
+
+        read -p "Delete temp file? [Y/n] " CONTINUE
+        if [ "$CONTINUE" != "n" ]; then
+            rm /tmp/"$BASENAME"
+        fi
+
+        exit 1
+    fi
 fi
 
 sed -i '' -e "/$SED_RANGE_BEGIN/ {
