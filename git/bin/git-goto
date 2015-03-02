@@ -1,8 +1,0 @@
-#!/bin/bash
-
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 <TAG NAME>"
-    exit 1
-fi
-
-git show $1 | grep commit | awk '{print $2}' | xargs git checkout
