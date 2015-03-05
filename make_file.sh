@@ -22,7 +22,7 @@ FIDDLE=
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
-    check_dependencies -d "fiddler" -p "https://github.com/btoll/utils/blob/master/fiddler.sh"
+    check_dependencies -d "get_fiddle" -p "https://github.com/btoll/utils/blob/master/get_fiddle.sh"
 fi
 
 usage() {
@@ -119,6 +119,6 @@ HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"tex
 echo -e "$HTML" > "$FILE"
 
 if [ -n "$FIDDLE" ]; then
-    fiddler "$FIDDLE" "$FILE"
+    get_fiddle "$FIDDLE" "$FILE"
 fi
 
