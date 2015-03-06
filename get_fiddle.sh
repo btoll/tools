@@ -75,7 +75,7 @@ fi
 #
 if [ ! -f "/tmp/$BASENAME" ]; then
     # Download to a dir where we know we'll have write permissions.
-    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/{q};p}" > /tmp/"$BASENAME"
+    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/q;p}" > /tmp/"$BASENAME"
 
     # Check to make sure it downloaded correctly.
     read SIZE _ <<<$(du /tmp/"$BASENAME")
