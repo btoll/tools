@@ -17,7 +17,7 @@ SED_RANGE_END="<\/script>"
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
-    check_dependencies -d "gsed;make_file" -p "\"To install on Mac, do 'brew install coreutils'\";https://github.com/btoll/utils/blob/master/make_file.sh"
+    check_dependencies -d "make_file" -p "https://github.com/btoll/utils/blob/master/make_file.sh"
 fi
 
 create_file() {
@@ -59,6 +59,9 @@ fi
 
 # Then download and extract just what we need.
 #
+####################################################################################################################
+# Using sed:
+#
 # Here we will extract every line after the launch method and before the closing <script> tag.
 # -n                            -> don't print
 # '/<script...>/, /<\/script>/  -> match range
@@ -73,9 +76,18 @@ fi
 # http://stackoverflow.com/a/744093
 # Perhaps a better way to do this than creating a temporary file?
 #
+####################################################################################################################
+# Using awk:
+#
+# http://stackoverflow.com/a/16587412
+# /<\/script>/ { p--        # Subtract one from the section counter.
+# /window.onload/ { p=1 }   # Set section counter if current line has window.onload.
+# p>0                       # Print line if section counter greater than 0.
+####################################################################################################################
 if [ ! -f "/tmp/$BASENAME" ]; then
     # Download to a dir where we know we'll have write permissions.
-    curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/q;p}" > /tmp/"$BASENAME"
+    #curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/q;p}" > /tmp/"$BASENAME"
+    curl $FIDDLE | awk '/<\/script>/ { p-- } /window.onload/ { p=1 } p>0' > /tmp/"$BASENAME"
 
     # Check to make sure it downloaded correctly.
     read SIZE _ <<<$(du /tmp/"$BASENAME")
