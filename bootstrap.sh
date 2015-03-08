@@ -16,6 +16,12 @@ SHORT_FORM=
 TESTCASE=
 TICKET=
 
+# First, let's make sure that the system on which we are running has the dependencies installed.
+if which check_dependencies > /dev/null; then
+    check_dependencies -d "git-ls" -p "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
+fi
+exit
+
 usage() {
     echo "bootstrap"
     echo

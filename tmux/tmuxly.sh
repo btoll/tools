@@ -21,7 +21,7 @@ VERSION=
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
-    check_dependencies -d "bootstrap;get_fiddle;git-ls;make_file;make_ticket;tmux" -p "https://github.com/btoll/utils/blob/master/bootstrap.sh;https://github.com/btoll/utils/blob/master/get_fiddle.sh;https://github.com/btoll/utils/blob/master/git/bin/git-ls';https://github.com/btoll/utils/blob/master/make_file.sh;https://github.com/btoll/utils/blob/master/make_ticket.sh;http://tmux.sourceforge.net"
+    check_dependencies -d "bootstrap;get_fiddle;git-ls;make_file;make_ticket;tmux" -p "https://github.com/btoll/utils/blob/master/bootstrap.sh;https://github.com/btoll/utils/blob/master/get_fiddle.sh;https://github.com/btoll/utils/blob/master/git/bin/git-ls;https://github.com/btoll/utils/blob/master/make_file.sh;https://github.com/btoll/utils/blob/master/make_ticket.sh;http://tmux.sourceforge.net"
 fi
 
 # Next, let's make sure we have what we need.
