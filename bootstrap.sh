@@ -8,6 +8,8 @@
 # TODO fix errors when non-existent branch
 
 BRANCH=
+DIR=
+FILE=
 FILES=
 SHA=
 SHORT_FORM=
@@ -63,10 +65,13 @@ if [ "$SHORT_FORM" ] || [ -z "$BRANCH" ]; then
     TICKET=${TICKET:-"$BRANCH"}
 fi
 
-# Check for the existence of a test case in the bugs dir.
-TESTCASE="$BUGS$TICKET/index.html"
-if [ -f "$TESTCASE" ]; then
-    FILES="$TESTCASE"
+# If the bug directory exists, get every html file in it (they should all be test cases).
+DIR="$BUGS$TICKET"
+if [ -d "$DIR" ]; then
+    for FILE in "$DIR"/*.html; do
+        # We need a space here to separate the files.
+        FILES+=" $FILE"
+    done
 fi
 
 SHA=$(git get-hash "$BRANCH")

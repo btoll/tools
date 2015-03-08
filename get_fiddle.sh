@@ -74,7 +74,6 @@ fi
 # }
 #
 # http://stackoverflow.com/a/744093
-# Perhaps a better way to do this than creating a temporary file?
 #
 ####################################################################################################################
 # Using awk:
