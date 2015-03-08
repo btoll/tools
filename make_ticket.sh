@@ -7,6 +7,11 @@ VERSION=$2
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
     check_dependencies -d "make_file;get_fiddle" -p "https://github.com/btoll/utils/blob/master/make_file.sh;https://github.com/btoll/utils/blob/master/get_fiddle.sh"
+
+    if [ -f /tmp/failed_dependencies ]; then
+        rm /tmp/failed_dependencies
+        exit 1
+    fi
 fi
 
 # First establish some conditions that must be met or exit early.

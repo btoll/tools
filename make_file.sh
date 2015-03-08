@@ -23,6 +23,11 @@ FIDDLE=
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
     check_dependencies -d "get_fiddle" -p "https://github.com/btoll/utils/blob/master/get_fiddle.sh"
+
+    if [ -f /tmp/failed_dependencies ]; then
+        rm /tmp/failed_dependencies
+        exit 1
+    fi
 fi
 
 usage() {

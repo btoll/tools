@@ -19,8 +19,12 @@ TICKET=
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
     check_dependencies -d "git-ls" -p "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
+
+    if [ -f /tmp/failed_dependencies ]; then
+        rm /tmp/failed_dependencies
+        exit 1
+    fi
 fi
-exit
 
 usage() {
     echo "bootstrap"
@@ -40,6 +44,17 @@ usage() {
 if [ $PWD != $(git rev-parse --show-toplevel) ]; then
     echo "You need to run this command from the toplevel of the working tree."
     exit 1
+fi
+
+if [ -z "$BUGS" ]; then
+    read -p "Location of bugs directory (set a \$BUGS env var to skip this step): " LOCATION
+
+    if [ -n "$LOCATION" ]; then
+        BUGS="$LOCATION"
+    else
+        echo "No location given, exiting."
+        exit 1
+    fi
 fi
 
 # Allow `bootstrap` to be called w/o any args, will assume the current topic branch name as the ticket.

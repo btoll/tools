@@ -18,6 +18,11 @@ SED_RANGE_END="<\/script>"
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
     check_dependencies -d "make_file" -p "https://github.com/btoll/utils/blob/master/make_file.sh"
+
+    if [ -f /tmp/failed_dependencies ]; then
+        rm /tmp/failed_dependencies
+        exit 1
+    fi
 fi
 
 create_file() {
