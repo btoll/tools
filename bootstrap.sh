@@ -87,7 +87,7 @@ if [ "$SHORT_FORM" ] || [ -z "$BRANCH" ]; then
 fi
 
 # If the bug directory exists, get every html file in it (they should all be test cases).
-DIR="$BUGS$TICKET"
+DIR="$BUGS/$TICKET"
 if [ -d "$DIR" ]; then
     for FILE in "$DIR"/*.html; do
         # We need a space here to separate the files.
