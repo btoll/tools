@@ -110,17 +110,18 @@ Example usage:
     `make_ticket 5671 3.4.0`
 
 Example usage:
-    `make_ticket EXTJSIV-11987 SDK4`
+    `make_ticket -t EXTJSIV-11987 -v 4`
 
     make_ticket ticket_dir_name ext_version
 
 Run the script wherever your ticket directories are located.
 
-It will ask for the location of your SDK or build directory if the proper environment variables have not been set (`$EXT_SDK` and `$EXT_BUILDS`). If prompted for a location, hit enter to accept the default path (preset in the script).
+It will ask for the location of your SDK or build directory if the proper environment variables have not been set (`$SDK4`, `$SDK5` `$SDK6`).
 
 This does the following:
 
 - makes the directory in which the new ticket will live (in this example, `5671`).
 - creates an `index.html` document within the new directory which properly references the JavaScript and CSS resources it needs to load.
 
-The script properly handles versions 2.x, 3.x, 4.x, 5.x and any git repos that follow the naming convention of SDK*, i.e., SDK5.
+The script properly handles sencha ExtJS versions 4, 5 and 6.
+

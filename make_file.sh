@@ -1,24 +1,16 @@
 #!/bin/bash
 
-# This script EXPECTS that you have already determined the location of the new document (the FILE funarg).
-#
-# This assumes that your git repos are SDK5, SDK5, etc.
-# If $VERSION contains the string "SDK", then get the 4th char which will be the major version number.
-# https://stackoverflow.com/questions/229551/string-contains-in-bash
+# This assumes that any environment variables will follow the pattern of SDK5, SDK5, SDK6, etc.
 
-ADAPTER=
 CSS_HREF=
-DEBUG_SCRIPT="ext.js"
-# Note no trailing forward slashes for the dir locations.
-DEFAULT_SDK_LOCATION="../../.."
-DEFAULT_BUILDS_LOCATION="../../builds"
 DIR=
 FILE=
 HTML=
 JS_SRC=
-MAJOR_VERSION=
+LOCATION=
 TITLE=
 FIDDLE=
+VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
@@ -42,7 +34,8 @@ usage() {
     echo
     echo "--title, -title, -t     : The value of the HTML <title> node."
     echo
-    echo "--version, -version, -v : The Ext version to use (or SDK)."
+    echo "--version, -version, -v : The version of Ext."
+    echo "                          Defaults to most current major release."
     echo
 }
 
@@ -63,67 +56,56 @@ while [ "$#" -gt 0 ]; do
     shift
 done
 
-if [[ $VERSION == *SDK* ]]; then
-    # Extract the last character of the SDK version.
-    MAJOR_VERSION=${VERSION:3}
-
-    if [ $MAJOR_VERSION -lt 5 ]; then
-        DIR="extjs"
-        CSS_HREF="${EXT_SDK:-$DEFAULT_SDK_LOCATION}/$VERSION/$DIR/resources/css/ext-all.css"
-    else
-        DIR="ext"
-        CSS_HREF="${EXT_SDK:-$DEFAULT_SDK_LOCATION}/$VERSION/ext/packages/ext-theme-crisp/build/resources/ext-theme-crisp-all.css"
-    fi
-
-    # Link to the SDK.
-    if [ -z $EXT_SDK ]; then
-        # Get preset environment variable or set a default location (logical OR ----> ":-").
-        read -p "Location of SDK: [$DEFAULT_SDK_LOCATION] " SDK
-        # If user accepted default location then SDK var will be unset.
-        SDK=${SDK:-$DEFAULT_SDK_LOCATION}
-    else
-        SDK="$EXT_SDK/$VERSION"
-    fi
-
-    JS_SRC="$SDK/$DIR/$DEBUG_SCRIPT"
-else
-    # Extract the first character of the Ext version.
-    MAJOR_VERSION=${VERSION:0:1}
-
-    # Link to the SDK.
-    # If the env var hasn't been set for the EXT_BUILDS, then prompt for its location.
-    if [ -z $EXT_BUILDS ]; then
-        # Get preset environment variable or set a default location (logical OR ----> ":-").
-        read -p "Location of build: [$DEFAULT_BUILDS_LOCATION] " SDK
-        # If user accepted default location then SDK var will be unset.
-        SDK="${SDK:-$DEFAULT_BUILDS_LOCATION}/$VERSION"
-    else
-        SDK="$EXT_BUILDS/$VERSION"
-    fi
-
-    # If the version number is 2.x or 3.x then change the debug script.
-    if [ $MAJOR_VERSION -eq 4 ]; then
-        DEBUG_SCRIPT="ext-debug.js"
-    elif [ $MAJOR_VERSION -lt 4 ]; then
-        DEBUG_SCRIPT="ext-all-debug.js"
-        ADAPTER="<script type=\"text/javascript\" src=\"$SDK/adapter/ext/ext-base.js\"></script>\n"
-    fi
-
-    if [ $MAJOR_VERSION -lt 5 ]; then
-        CSS_HREF="$SDK/resources/css/ext-all.css"
-    else
-        CSS_HREF="$SDK/packages/ext-theme-crisp/build/resources/ext-theme-crisp-all.css"
-    fi
-
-    JS_SRC=$SDK/$DEBUG_SCRIPT
+if [ -z "$FILE" ]; then
+    echo "No file specified, exiting."
+    exit 1
 fi
 
-HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n$ADAPTER<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\n</script>\n</head>\n\n<body>\n</body>\n</html>"
+case "$VERSION" in
+    6)
+        # TODO
+        SDK="$SDK6"
+        ;;
 
-# Echo HTML honoring the new lines (-e flag).
+    5)
+        SDK="$SDK5"
+        DIR="ext"
+        CSS_HREF="packages/ext-theme-neptune/build/resources/ext-theme-neptune-all.css"
+        ;;
+
+    4)
+        SDK="$SDK4"
+        DIR="extjs"
+        CSS_HREF="resources/css/ext-all.css"
+        ;;
+esac
+
+# Link to the SDK.
+if [ -z $SDK ]; then
+    read -p "Absolute path location of version $VERSION SDK (skip this step by exporting an \$SDK$VERSION env var): " LOCATION
+    SDK="$LOCATION"
+fi
+
+if [ -z "$WEB_SERVER" ]; then
+    read -p "Absolute path location of web server (skip this step by exporting a \$WEB_SERVER env var): " LOCATION
+    WEB_SERVER="$LOCATION"
+fi
+
+# Here we're getting the length of the $WEB_SERVER string value (# is the length operator) to use as the offset to get the substring value.
+# We're using it like a bitmask to get at the relative path of the SDK to the web server's public directory. We need to do this to construct
+# the URIs for the test page
+# For example, "/usr/local/www/SDK5" will become "/SDK5" if the $WEB_SERVER value is "/usr/local/www".
+CSS_HREF="http://localhost${SDK:${#WEB_SERVER}}/$DIR/$CSS_HREF"
+JS_SRC="http://localhost${SDK:${#WEB_SERVER}}/$DIR/ext.js"
+
+HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\n</script>\n</head>\n\n<body>\n</body>\n</html>"
+
 echo -e "$HTML" > "$FILE"
 
 if [ -n "$FIDDLE" ]; then
     get_fiddle "$FIDDLE" "$FILE"
 fi
+
+echo "File creation successful."
+exit 0
 
