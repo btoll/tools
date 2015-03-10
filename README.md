@@ -50,9 +50,7 @@ Example usage:
     bash csv.bash psa.csv cards 2-5
 
 
-### bfind bash script
-
-    !!! This is deprecated. Use a bash function instead. !!!
+### bfind bash function
 
     bfind() {
         vim -p $(find "$1" -type f -name "$2")
@@ -68,9 +66,7 @@ This does the following:
 - finds every file that matches file_name in dir_name
 - vim then opens each file in a vertically split pane
 
-### bgrep bash script
-
-    !!! This is deprecated. Use a bash function instead. !!!
+### bgrep bash function
 
     bgrep() {
         vim -p "+/$1" $(grep -riIl "$1" "$2" | uniq)
@@ -88,22 +84,6 @@ This does the following:
 - pipes the result to uniq which filters out duplicates
 - vim then opens each file in a vertically split pane
 - the first file will be opened at the line where the regex is first found in the file
-
-### brm bash script
-
-    !!! This is deprecated. Use a bash alias instead. !!!
-
-Example usage:
-
-    brm .DS_STORE __MACOSX
-    brm file_or_dir_to_remove file_or_dir_to_remove
-
-This does the following:
-
-- searches every file in the cwd
-- if more than one arg, it loops over the args and constructs the names to find
-- recursively deletes everything that matches
-- suppresses STDERR
 
 ### make_ticket bash script (for ExtJS)
 Example usage:
