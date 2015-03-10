@@ -91,7 +91,7 @@ if [ $? -eq 0 ]; then
     SDK="SDK$VERSION"
 
     # We need to check right away if the ticket directory was already created b/c they will influence how we proceed.
-    if [ -d "$BUGS$TICKET" ]; then
+    if [ -d "$BUGS/$TICKET" ]; then
         TICKET_DIR_EXISTS=true
     elif
         # If there isn't a bug directory, then we can go ahead and honor the fiddle config, if set. (Of course, it doesn't
@@ -228,10 +228,10 @@ if [ $? -eq 0 ]; then
 
     # Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.
     if "$TICKET_DIR_EXISTS"; then
-        open "http://localhost/extjs/bugs/$ticket"
+        open "http://localhost/extjs/bugs/$TICKET"
     fi
 
-    tmux attach -t $branch
+    tmux attach -t $BRANCH
 fi
 
 exit
