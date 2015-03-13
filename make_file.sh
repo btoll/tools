@@ -103,6 +103,9 @@ if [ $? -eq 0 ]; then
     fi
 
     echo "File creation successful."
+
+    open "http://localhost${PWD:${#WEB_SERVER}}/$FILE"
 fi
 
 exit
+

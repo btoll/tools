@@ -10,6 +10,8 @@ CREATE_BUG_DIR=true
 FIDDLE=
 HEAD=
 NEW_BRANCH_FLAG=
+# Note that creating a new bug ticket dir will also open the new test case in a browser, so by default we don't open it here.
+OPEN_IN_BROWSER=false
 RUN_COMMAND=
 SDK=
 SEARCH_FOR_BRANCH=false
@@ -93,6 +95,7 @@ if [ $? -eq 0 ]; then
     # We need to check right away if the ticket directory was already created b/c they will influence how we proceed.
     if [ -d "$BUGS/$TICKET" ]; then
         TICKET_DIR_EXISTS=true
+        OPEN_IN_BROWSER=true
     elif
         # If there isn't a bug directory, then we can go ahead and honor the fiddle config, if set. (Of course, it doesn't
         # make sense to download and process the fiddle if the bug directory isn't to be created.) If so, let's go through the
@@ -227,7 +230,7 @@ if [ $? -eq 0 ]; then
     fi
 
     # Browse to the test case unless we're not creating a bug dir, then it doesn't make sense to.
-    if "$TICKET_DIR_EXISTS"; then
+    if "$OPEN_IN_BROWSER"; then
         open "http://localhost/extjs/bugs/$TICKET"
     fi
 
