@@ -11,6 +11,8 @@ LOCATION=
 TITLE=
 FIDDLE=
 VERSION=5
+BROWSER=
+BROWSER_NAME=
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
@@ -33,6 +35,9 @@ if [ $? -eq 0 ]; then
         echo "--version, -version, -v : The version of Ext."
         echo "                          Defaults to most current major release."
         echo
+        echo "--browser, -browser, -b : The browser to use to open this fiddle automatically."
+        echo "                          C=Chrome, F=Firefox, S=Safari, O=Opera, V=Vivaldi"
+        echo
     }
 
     if [ "$#" -eq 0 ]; then
@@ -48,6 +53,7 @@ if [ $? -eq 0 ]; then
             --help|-help|-h) usage; exit 0 ;;
             --title|-title|-t) shift; TITLE=$1 ;;
             --version|-version|-v) shift; VERSION=$1 ;;
+            --browser|-browser|-b) shift; BROWSER=$1 ;;
         esac
         shift
     done
@@ -76,6 +82,31 @@ if [ $? -eq 0 ]; then
             ;;
     esac
 
+    case "$BROWSER" in
+        C)
+            BROWSER_LOCATION="$CHROME_LOCATION"
+            BROWSER_NAME="Chrome"
+            ;;
+
+        F)
+            BROWSER_LOCATION="$FIREFOX_LOCATION"
+            BROWSER_NAME="Firefox"
+            ;;
+        S)
+            BROWSER_LOCATION="$SAFARI_LOCATION"
+            BROWSER_NAME="Safari"
+            ;;
+        O)
+            BROWSER_LOCATION="$OPERA_LOCATION"
+            BROWSER_NAME="Opera"
+            ;;
+        V)
+            BROWSER_LOCATION="$VIVALDI_LOCATION"
+            BROWSER_NAME="Vivaldi"
+            ;;
+    esac
+
+
     # Link to the SDK.
     if [ -z $SDK ]; then
         read -p "Absolute path location of version $VERSION SDK (skip this step by exporting an \$SDK$VERSION env var): " LOCATION
@@ -86,6 +117,7 @@ if [ $? -eq 0 ]; then
         read -p "Absolute path location of web server (skip this step by exporting a \$WEB_SERVER env var): " LOCATION
         WEB_SERVER="$LOCATION"
     fi
+
 
     # Here we're getting the length of the $WEB_SERVER string value (# is the length operator) to use as the offset to get the substring value.
     # We're using it like a bitmask to get at the relative path of the SDK to the web server's public directory. We need to do this to construct
@@ -103,6 +135,12 @@ if [ $? -eq 0 ]; then
     fi
 
     echo "File creation successful."
+
+    if [ -n "$BROWSER_LOCATION" ] && [ -n "$LOCAL_FIDDLE_URL" ]; then
+        echo "Opening $(basename $FILE) in $BROWSER_NAME"
+        /usr/bin/open -a "$BROWSER_LOCATION" "$LOCAL_FIDDLE_URL"$(basename $FILE)
+
+    fi
 fi
 
 exit
