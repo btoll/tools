@@ -101,7 +101,7 @@ if [ $? -eq 0 ]; then
         [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
 
         cd "$BUGS"
-        make_ticket "$TICKET" "$SDK"
+        make_ticket "$TICKET" "$VERSION"
         cd "$TICKET"
         get_fiddle "$FIDDLE" index.html
 
@@ -189,7 +189,7 @@ if [ $? -eq 0 ]; then
         if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
             # Change to the bugs directory to create the bug ticket dir.
             cd "$BUGS"
-            make_ticket "$TICKET" "$SDK"
+            make_ticket "$TICKET" "$VERSION"
 
             TICKET_DIR_EXISTS=true
         fi
