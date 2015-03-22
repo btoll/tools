@@ -23,7 +23,7 @@ def usage(level):
   -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.''')
 
 def main(argv):
-    try:   
+    try:
         opts, args = getopt(argv, 'hn:s:d:r:c:', ['help', 'silent', 'name=', 'src=', 'dest=', 'root=', 'config='])
     except GetoptError:
         usage(0)
