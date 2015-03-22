@@ -15,12 +15,18 @@ def usage(level):
         print('''Usage:
 
   Optional flags:
-  -h, --help    Help.
-  -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
-  -s, --src     The location of the assets to archive. Defaults to cwd.
+  -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
   -d, --dest    The location of where the assets should be archived. Defaults to cwd.
+  -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
   -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
-  -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.''')
+  -s, --src     The location of the assets to archive. Defaults to cwd.
+  -h, --help    Help.''')
+
+def pushToServer():
+    print('Pushing to server...')
+    p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
+    sts = waitpid(p.pid, 0)
+    print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
 
 def main(argv):
     try:
@@ -80,16 +86,14 @@ def main(argv):
             except (ValueError, FileNotFoundError) as e:
                 print(e)
                 sys.exit(1)
-        elif opt in ('--silent'):
-            silent = True
 
     if not silent:
         resp = input('''Choose an archive format:
-0 = tar.gz
-1 = tar.bz2
-2 = tar
-3 = zip
-? [0]: ''')
+    0 = tar.gz
+    1 = tar.bz2
+    2 = tar
+    3 = zip
+    ? [0]: ''')
         if resp in ['1', '2', '3']:
             if resp == '1':
                 format = 'bztar'
@@ -113,6 +117,7 @@ def main(argv):
             archive = make_archive(tmp_name, format, root_dir, src_dir)
         except FileNotFoundError as e:
             print(e)
+
             if (path.isfile(tarball)):
                 remove(tarball)
                 print('Cleaning up...')
@@ -127,10 +132,11 @@ def main(argv):
                 print(e)
                 sys.exit(1)
 
-        print('\nCreated new archive ' + tarball + ' in ' + path.abspath(dest_dir) + '.')
+        print('Created new archive ' + tarball + ' in ' + path.abspath(dest_dir) + '.')
 
         if not silent:
             resp = input('Push to remote server? [y|N]: ')
+
             if resp in ['Y', 'y']:
                 resp = input('Username [' + username + ']: ')
                 if resp != '':
@@ -148,10 +154,9 @@ def main(argv):
                 if resp != '':
                     dest_remote = resp
 
-        print('Pushing to server...')
-        p = Popen(['scp', '-P', port, dest_dir + '/' + tarball, username + '@' + hostname + ':' + dest_remote])
-        sts = waitpid(p.pid, 0)
-        print('Archive ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
+                pushToServer()
+        else:
+                pushToServer()
 
         print('Done!')
 
@@ -172,3 +177,4 @@ if __name__ == '__main__':
         #sys.exit(2)
 
     main(sys.argv[1:])
+
