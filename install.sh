@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installation script for custom CLI tools.
 
-echo "[Install] Creating symbolic links for utils..."
+echo "[Install] Creating symbolic links for tools..."
 
 ln -s "$PWD"/bash/bootstrap.sh /usr/local/bin/bootstrap
 ln -s "$PWD"/bash/check-dependencies.sh /usr/local/bin/check-dependencies

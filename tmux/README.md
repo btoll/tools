@@ -1,12 +1,3 @@
-### Installation
-To install the bash scripts:
-
-    1. Put the script anywhere in your PATH. For instance, `/usr/local/bin`.
-    2. Make sure it's executable.
-    3. Done.
-
-----------------------------------------------------------------------------------------
-
 ### tmuxly bash script
 
 Example usage:
