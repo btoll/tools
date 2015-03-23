@@ -2,6 +2,7 @@ import getopt, getpass, json, os, re, shutil, socket, subprocess, sys, time
 
 # Define some variables.
 archive = ''
+dry_run = False
 src_dir = '.'
 root_dir = '.'
 silent = False
@@ -31,6 +32,7 @@ def usage(level):
 Optional flags:
     -c, -config, --config      A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
     -d, -dest, --dest          The location of where the assets should be archived. Defaults to YYYYMMDDHHMMSS.
+    -l, --dry-run              Do a dry run.
     -n, -name, --name          An optional archive name. The default is YYYYMMDDHHMMSS.
     -p, -pattern, --pattern
     -r, -root, --root          The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to '.'
@@ -38,8 +40,10 @@ Optional flags:
     -h, -help, --help          Help.''')
 
 def main(argv):
+    global dry_run, format, hostname, pattern, port, username
+
     try:
-        opts, args = getopt.getopt(argv, 'hn:p:s:d:r:c:', ['help', 'silent', 'name=', 'pattern=', 'src=', 'dest=', 'root=', 'config='])
+        opts, args = getopt.getopt(argv, 'hln:p:s:d:r:c:', ['help', 'dry-run', 'silent', 'name=', 'pattern=', 'src=', 'dest=', 'root=', 'config='])
     except getopt.GetoptError:
         usage(0)
         sys.exit(2)
@@ -48,6 +52,8 @@ def main(argv):
         if opt in ('-h', '-help', '--help'):
             usage(1)
             sys.exit(0)
+        elif opt in ('-l', '--dry-run'):
+            dry_run = True
         elif opt in ('-n', '-name', '--name'):
             tmp_name = arg
         elif opt in ('-s', '-src', '--src'):
@@ -100,7 +106,7 @@ def main(argv):
                 format = 'bztar'
 
             try:
-                archive = create_archive()
+                create_archive()
             except FileNotFoundError as e:
                 print(e)
 
@@ -108,33 +114,37 @@ def main(argv):
                     os.remove(archive)
                     print('Cleaning up...')
 
-            resp = input('Push to remote server? [y|N]: ')
+            if not dry_run:
+                resp = input('Push to remote server? [y|N]: ')
 
-            if resp in ['Y', 'y']:
-                resp = input('Username [' + username + ']: ')
-                if resp != '':
-                    username = resp
+                if resp in ['Y', 'y']:
+                    resp = input('Username [' + username + ']: ')
+                    if resp != '':
+                        username = resp
 
-                resp = input('Port [' + port + ']: ')
-                if resp != '':
-                    port = resp
+                    resp = input('Port [' + port + ']: ')
+                    if resp != '':
+                        port = resp
 
-                resp = input('Hostname [' + hostname + ']: ')
-                if resp != '':
-                    hostname = resp
+                    resp = input('Hostname [' + hostname + ']: ')
+                    if resp != '':
+                        hostname = resp
 
-                resp = input('Remote filepath [' + dest_remote + ']: ')
-                if resp != '':
-                    dest_remote = resp
+                    resp = input('Remote filepath [' + dest_remote + ']: ')
+                    if resp != '':
+                        dest_remote = resp
 
-                push_to_server(archive)
+                    push_to_server()
 
         else:
             # Non-interactive session.
-            archive = create_archive()
-            push_to_server(archive)
+            create_archive()
 
-        print('Done!')
+            if not dry_run:
+                push_to_server()
+
+        if not dry_run:
+            print('Done!')
 
     except KeyboardInterrupt:
         # Control-C sent a SIGINT to the process, handle it.
@@ -148,21 +158,28 @@ def main(argv):
         sys.exit(1)
 
 def create_archive():
+    global archive
+
     # Create the destination directory if it doesn't exist.
-    if not os.path.exists(dest_dir):
-        os.makedirs(dest_dir)
+    if not dry_run:
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
 
-    #[shutil.move(f, dest_dir) for f in next(os.walk(src_dir))[1] + next(os.walk(src_dir))[2] if re.match(pattern, f)]
-    [shutil.move(f, dest_dir) for f in os.listdir(src_dir) if re.match(pattern, f)]
-    shutil.make_archive(tmp_name, format, root_dir, src_dir)
+        #[shutil.move(f, dest_dir) for f in next(os.walk(src_dir))[1] + next(os.walk(src_dir))[2] if re.match(pattern, f)]
+        [shutil.move(f, dest_dir) for f in os.listdir(src_dir) if re.match(pattern, f)]
+        shutil.make_archive(tmp_name, format, root_dir, src_dir)
 
-    print('Created new archive in ' + os.path.abspath(archive))
+        # This is the archive file name, i.e., "2015323153949.tar.bz2"
+        archive = tmp_name + formats[format]
 
-    # This is the archive file name, i.e., "2015323153949.tar.bz2"
-    archive = tmp_name + formats[format]
+        print('Created new archive in ' + os.path.abspath(archive))
 
+    else:
+        files = [f for f in os.listdir(src_dir) if re.match(pattern, f)]
+        print('The following files/directories will be archived:\n')
+        print(files)
 
-def push_to_server(archive):
+def push_to_server():
     print('Pushing to server...')
 
     #p = subprocess.Popen(['scp', '-P', port, dest_dir + '/' + archive, username + '@' + hostname + ':' + dest_remote])
