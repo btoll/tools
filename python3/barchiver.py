@@ -1,5 +1,25 @@
 import getopt, getpass, json, os, re, shutil, socket, subprocess, sys, time
 
+# Define some variables.
+archive = ''
+src_dir = '.'
+root_dir = '.'
+silent = False
+pattern = '^.*$'
+today = time.localtime()
+dest_dir = tmp_name = str(today.tm_year) + str(today.tm_mon) + str(today.tm_mday) + str(today.tm_hour) + str(today.tm_min) + str(today.tm_sec)
+port = '22'
+dest_remote = '~'
+hostname = socket.gethostname()
+username = getpass.getuser()
+format = 'gztar'
+formats = {
+    'gztar': '.tar.gz',
+    'bztar': '.tar.bz2',
+    'tar': '.tar',
+    'zip': '.zip'
+}
+
 def usage(level):
 #    if level == 0:
 #        print('Usage: python3 tar_jslite.py [-h | --help [[-n | --name] [-s | --src] [-d | --dest] [-r | --root] [-c | --config] [--silent]]]\nTry `python3 barchiver.py --help` for more information.')
@@ -17,38 +37,12 @@ Optional flags:
     -s, -src, --src            The location of the assets to archive. Defaults to cwd.
     -h, -help, --help          Help.''')
 
-def pushToServer():
-    print('Pushing to server...')
-    p = subprocess.Popen(['scp', '-P', port, dest_dir + '/' + archive, username + '@' + hostname + ':' + dest_remote])
-    sts = os.waitpid(p.pid, 0)
-    print('Archive ' + archive + ' pushed to ' + dest_remote + ' on remote server.')
-
 def main(argv):
     try:
         opts, args = getopt.getopt(argv, 'hn:p:s:d:r:c:', ['help', 'silent', 'name=', 'pattern=', 'src=', 'dest=', 'root=', 'config='])
     except getopt.GetoptError:
         usage(0)
         sys.exit(2)
-
-    # Define some variables.
-    archive = ''
-    src_dir = '.'
-    root_dir = '.'
-    silent = False
-    pattern = '^.*$'
-    today = time.localtime()
-    dest_dir = tmp_name = str(today.tm_year) + str(today.tm_mon) + str(today.tm_mday) + str(today.tm_hour) + str(today.tm_min) + str(today.tm_sec)
-    port = '22'
-    dest_remote = '~'
-    hostname = socket.gethostname()
-    username = getpass.getuser()
-    format = 'gztar'
-    formats = {
-        'gztar': '.tar.gz',
-        'bztar': '.tar.bz2',
-        'tar': '.tar',
-        'zip': '.zip'
-    }
 
     for opt, arg in opts:
         if opt in ('-h', '-help', '--help'):
@@ -106,25 +100,13 @@ def main(argv):
                 format = 'bztar'
 
             try:
-                # Create the destination directory if it doesn't exist.
-                if not os.path.exists(dest_dir):
-                    os.makedirs(dest_dir)
-
-                #[shutil.move(f, dest_dir) for f in next(os.walk(src_dir))[1] + next(os.walk(src_dir))[2] if re.match(pattern, f)]
-                [shutil.move(f, dest_dir) for f in os.listdir(src_dir) if re.match(pattern, f)]
-#                print(pattern)
-#                files = [f for f in os.listdir(src_dir) if re.match(pattern, f)]
-#                print(files)
-#                return;
-                archive = shutil.make_archive(tmp_name, format, root_dir, src_dir)
+                archive = create_archive()
             except FileNotFoundError as e:
                 print(e)
 
                 if (os.path.isfile(archive)):
                     os.remove(archive)
                     print('Cleaning up...')
-
-            print('Created new archive in ' + os.path.abspath(dest_dir) + '.')
 
             resp = input('Push to remote server? [y|N]: ')
 
@@ -145,10 +127,12 @@ def main(argv):
                 if resp != '':
                     dest_remote = resp
 
-                pushToServer()
+                push_to_server(archive)
 
         else:
-            pushToServer()
+            # Non-interactive session.
+            archive = create_archive()
+            push_to_server(archive)
 
         print('Done!')
 
@@ -162,6 +146,30 @@ def main(argv):
             print('Cleaning up...')
 
         sys.exit(1)
+
+def create_archive():
+    # Create the destination directory if it doesn't exist.
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    #[shutil.move(f, dest_dir) for f in next(os.walk(src_dir))[1] + next(os.walk(src_dir))[2] if re.match(pattern, f)]
+    [shutil.move(f, dest_dir) for f in os.listdir(src_dir) if re.match(pattern, f)]
+    shutil.make_archive(tmp_name, format, root_dir, src_dir)
+
+    print('Created new archive in ' + os.path.abspath(archive))
+
+    # This is the archive file name, i.e., "2015323153949.tar.bz2"
+    archive = tmp_name + formats[format]
+
+
+def push_to_server(archive):
+    print('Pushing to server...')
+
+    #p = subprocess.Popen(['scp', '-P', port, dest_dir + '/' + archive, username + '@' + hostname + ':' + dest_remote])
+    p = subprocess.Popen(['scp', '-P', port, archive, username + '@' + hostname + ':' + dest_remote])
+    sts = os.waitpid(p.pid, 0)
+
+    print('Archive ' + archive + ' pushed to ' + dest_remote + ' on host ' + hostname + '.')
 
 if __name__ == '__main__':
     #if len(sys.argv) == 1:
