@@ -59,8 +59,9 @@ if [ $? -eq 0 ]; then
 
     case "$VERSION" in
         6)
-            # TODO
             SDK="$SDK6"
+            DIR="ext"
+            CSS_HREF="build/classic/theme-classic/resources/theme-classic-all-debug.css"
             ;;
 
         5)

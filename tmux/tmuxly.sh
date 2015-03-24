@@ -129,15 +129,18 @@ if [ $? -eq 0 ]; then
     checkout_parent_branch() {
         NEW_BRANCH_FLAG="-b"
 
-        if [ "$VERSION" -eq 5 ]; then
+        if [ "$VERSION" -eq 6 ]; then
+            SDK="SDK6"
+            HEAD="sencha-6.0.x"
+        elif [ "$VERSION" -eq 5 ]; then
             SDK="SDK5"
-            cd /usr/local/www/"$SDK"
             HEAD="sencha-5.0.x"
         else
             SDK="SDK4"
-            cd /usr/local/www/"$SDK"
             HEAD="extjs-4.2.x"
         fi
+
+        cd /usr/local/www/"$SDK"
 
         # When creating a new branch, it's extremely important to create off the "master" so we
         # MUST checkout that out before making the new topic branch.
