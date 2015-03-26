@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installation script for custom CLI tools.
 
-echo "[Install] Creating symbolic links for tools..."
+echo "$(tput setaf 2)[INFO]$(tput sgr0) Creating symbolic links for tools..."
 
 ln -s "$PWD"/bash/bootstrap.sh /usr/local/bin/bootstrap
 ln -s "$PWD"/bash/check-dependencies.sh /usr/local/bin/check-dependencies
@@ -13,5 +13,5 @@ ln -s "$PWD"/bash/make_ticket.sh /usr/local/bin/make_ticket
 ln -s "$PWD"/tmux/tmuxly.sh /usr/local/bin/tmuxly
 
 echo
-echo "[Install] Installation complete."
+echo "$(tput setaf 2)[INFO]$(tput sgr0) Installation complete."
 
