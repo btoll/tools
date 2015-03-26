@@ -101,6 +101,7 @@ if [ $? -eq 0 ]; then
 
     if [ -n "$FIDDLE" ]; then
         get_fiddle "$FIDDLE" "$FILE"
+        sleep 2
     fi
 
     echo "File creation successful."
