@@ -80,7 +80,7 @@ if [ $? -eq 0 ]; then
     done
 
     if [ -z "$TICKET" ]; then
-        echo "Error: No ticket specified."
+        echo "$(tput setaf 1)[ERROR]$(tput sgr0) No ticket specified."
         exit 1
     fi
 

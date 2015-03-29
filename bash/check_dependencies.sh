@@ -30,7 +30,7 @@ for n in ${!DEPENDENCIES[*]}; do
 done
 
 if [ -n "$FAILED_DEPENDENCIES" ]; then
-    echo -e "\nThis script has several dependencies that are not present on your system."
+    echo -e "\n$(tput setaf 3)[WARNING]$(tput sgr0) This script has several dependencies that are not present on your system."
     echo "Please install the following:"
     echo -e $FAILED_DEPENDENCIES
     touch /tmp/failed_dependencies

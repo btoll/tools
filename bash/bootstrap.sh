@@ -38,7 +38,7 @@ if [ $? -eq 0 ]; then
 
     # http://stackoverflow.com/a/14127035/125349
     if [ $PWD != $(git rev-parse --show-toplevel) ]; then
-        echo "You need to run this command from the toplevel of the working tree."
+        echo "$(tput setaf 3)[WARNING]$(tput sgr0) You need to run this command from the toplevel of the working tree."
         exit 1
     fi
 
@@ -48,7 +48,7 @@ if [ $? -eq 0 ]; then
         if [ -n "$LOCATION" ]; then
             BUGS="$LOCATION"
         else
-            echo "No location given, exiting."
+            echo "$(tput setaf 1)[ERROR]$(tput sgr0) No location given."
             exit 1
         fi
     fi
@@ -69,7 +69,7 @@ if [ $? -eq 0 ]; then
 
         # Note that if the long form of the command is used that $TICKET must be specified.
         if [ -z "$TICKET" ]; then
-            echo "Error: No ticket specified."
+            echo "$(tput setaf 1)[ERROR]$(tput sgr0) No ticket specified."
             exit 1
         fi
     fi

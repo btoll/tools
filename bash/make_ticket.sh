@@ -13,10 +13,10 @@ if [ $? -eq 0 ]; then
     # First establish some conditions that must be met or exit early.
     if [ $# -ne 2 ]; then
         echo "Usage: $0 TICKET VERSION"
-        exit 1
+        exit
     else
         if [ -d $1 ]; then
-            echo "Warning: Directory already exists, exiting..."
+            echo "$(tput setaf 3)[WARNING]$(tput sgr0) Directory already exists, exiting..."
             exit 1
         fi
     fi
@@ -26,8 +26,8 @@ if [ $? -eq 0 ]; then
     # ...make the document.
     make_file -f "$FILE" -v "$VERSION" -t "$TICKET"
 
-    echo "Created new ticket in directory $TICKET."
-    echo "Resources are pointing to $VERSION"
+    echo "$(tput setaf 2)[INFO]$(tput sgr0) Created new ticket in directory $TICKET."
+    echo "$(tput setaf 2)[INFO]$(tput sgr0) Resources are pointing to $VERSION"
 fi
 
 exit

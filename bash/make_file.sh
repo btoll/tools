@@ -37,7 +37,7 @@ if [ $? -eq 0 ]; then
 
     if [ "$#" -eq 0 ]; then
         usage
-        exit 1
+        exit
     fi
 
     while [ "$#" -gt 0 ]; do
@@ -53,7 +53,7 @@ if [ $? -eq 0 ]; then
     done
 
     if [ -z "$FILE" ]; then
-        echo "No file specified, exiting."
+        echo "$(tput setaf 1)[ERROR]$(tput sgr0) No file specified."
         exit 1
     fi
 
@@ -104,7 +104,7 @@ if [ $? -eq 0 ]; then
         sleep 2
     fi
 
-    echo "File creation successful."
+    echo "$(tput setaf 2)[INFO]$(tput sgr0) File creation successful."
 
     open "http://localhost${PWD:${#WEB_SERVER}}/$FILE"
 fi

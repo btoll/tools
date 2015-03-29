@@ -26,7 +26,7 @@ if [ $? -eq 0 ]; then
             set_abs_path
             make_file -f "$TARGET" -v SDK5
         else
-            echo "Error: $TARGET target file does not exist."
+            echo "$(tput setaf 1)[ERROR]$(tput sgr0) $TARGET target file does not exist."
             exit 1
         fi
     }
@@ -92,7 +92,7 @@ if [ $? -eq 0 ]; then
         # Check to make sure it downloaded correctly.
         read SIZE _ <<<$(du /tmp/"$BASENAME")
         if [[ "$SIZE" -eq 0 ]]; then
-            echo -e "\nThere was a problem with the download! Chances are you are trying to download a Fiddle with a premium build.\n"
+            echo -e "\n$(tput setaf 1)[ERROR]$(tput sgr0) There was a problem with the download! Chances are you are trying to download a Fiddle with a premium build.\n"
 
             read -p "Delete temp file? [Y/n] " CONTINUE
             if [ "$CONTINUE" != "n" ]; then
