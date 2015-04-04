@@ -4,12 +4,12 @@
 
 CSS_HREF=
 DIR=
+FIDDLE=
 FILE=
 HTML=
 JS_SRC=
 LOCATION=
 TITLE=
-FIDDLE=
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
@@ -101,7 +101,6 @@ if [ $? -eq 0 ]; then
 
     if [ -n "$FIDDLE" ]; then
         get_fiddle "$FIDDLE" "$FILE"
-        sleep 2
     fi
 
     echo "$(tput setaf 2)[INFO]$(tput sgr0) File creation successful."

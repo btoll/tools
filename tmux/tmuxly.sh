@@ -58,6 +58,58 @@ if [ $? -eq 0 ]; then
         exit 1
     fi
 
+    # TODO: clean this up!
+    branch_search() {
+        cd /usr/local/www/SDK4
+        BRANCH_EXISTS=$(git show-ref refs/heads/"$BRANCH")
+
+        if [ -z "$BRANCH_EXISTS" ]; then
+            cd /usr/local/www/SDK5
+            BRANCH_EXISTS=$(git show-ref refs/heads/"$BRANCH")
+
+            if [ -z "$BRANCH_EXISTS" ]; then
+                checkout_parent_branch
+            else
+                VERSION=5
+            fi
+        else
+            VERSION=4
+        fi
+    }
+
+    checkout_parent_branch() {
+        NEW_BRANCH_FLAG="-b"
+
+        case "$VERSION" in
+            6)
+                SDK="SDK6"
+                HEAD="sencha-6.0.x"
+                ;;
+            5)
+                SDK="SDK5"
+                HEAD="sencha-5.0.x"
+                ;;
+            *)
+                SDK="SDK4"
+                HEAD="extjs-4.2.x"
+                ;;
+        esac
+
+        cd /usr/local/www/"$SDK"
+
+        # When creating a new branch, it's extremely important to create off the "master" so we
+        # MUST checkout that out before making the new topic branch.
+        git checkout "$HEAD"
+    }
+
+    make_bug_dir() {
+        cd "$BUGS"
+        mkdir -m 0755 -p "$TICKET"
+        cd "$TICKET"
+        make_file -f "index.html" -v "$VERSION" -t "$TICKET" --fiddle "$FIDDLE"
+        TICKET_DIR_EXISTS=true
+    }
+
     # Then, let's ask for the value of any environment vars that haven't already been set.
     if [ -z "$BUGS" ]; then
         read -p 'Absolute path of bug directory (export a $BUGS environment variable to skip this check): ' BUGS
@@ -84,10 +136,10 @@ if [ $? -eq 0 ]; then
         exit 1
     fi
 
-    # If no version was specified, then we'll default to version 5 and start our search for topic branches there.
+    # If no version was specified, then we'll default to the latest version and start our search for topic branches there.
     if [ -z "$VERSION" ]; then
         SEARCH_FOR_BRANCH=true
-        VERSION=5
+        VERSION=6
     fi
 
     SDK="SDK$VERSION"
@@ -96,19 +148,12 @@ if [ $? -eq 0 ]; then
     if [ -d "$BUGS/$TICKET" ]; then
         TICKET_DIR_EXISTS=true
         OPEN_IN_BROWSER=true
-    elif
+    elif [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
         # If there isn't a bug directory, then we can go ahead and honor the fiddle config, if set. (Of course, it doesn't
         # make sense to download and process the fiddle if the bug directory isn't to be created.) If so, let's go through the
         # process of creating the bug dir, downloading the Fiddle preview, extracting our best-guess-attempt at the code body
         # (although it guesses very well) and finally slapping that into the new index.html.
-        [ -n "$FIDDLE" ] && "$CREATE_BUG_DIR"; then
-
-        cd "$BUGS"
-        mkdir -m 0755 -p "$TICKET"
-        cd "$TICKET"
-        make_file -f "index.html" -v "$VERSION" -t "$TICKET"
-
-        TICKET_DIR_EXISTS=true
+        make_bug_dir
     fi
 
     ###############################################################
@@ -126,29 +171,7 @@ if [ $? -eq 0 ]; then
     # refers to the tmux session name and the new git topic branch that will be created.
     BRANCH=${BRANCH:-"$TICKET"}
 
-    checkout_parent_branch() {
-        NEW_BRANCH_FLAG="-b"
-
-        if [ "$VERSION" -eq 6 ]; then
-            SDK="SDK6"
-            HEAD="sencha-6.0.x"
-        elif [ "$VERSION" -eq 5 ]; then
-            SDK="SDK5"
-            HEAD="sencha-5.0.x"
-        else
-            SDK="SDK4"
-            HEAD="extjs-4.2.x"
-        fi
-
-        cd /usr/local/www/"$SDK"
-
-        # When creating a new branch, it's extremely important to create off the "master" so we
-        # MUST checkout that out before making the new topic branch.
-        git checkout "$HEAD"
-    }
-
     tmux has-session -t $BRANCH 2>/dev/null
-
     if [ "$?" -eq 1 ]; then
         if "$USE_BRANCH"; then
             # Here we need to check if this branch already exists. If so, don't pass
@@ -162,24 +185,11 @@ if [ $? -eq 0 ]; then
 
             # If still no branch and SEARCH_FOR_BRANCH is true, then we know the following things:
             #   1. No version was specified when the command was run.
-            #   2. The current value of SDK is "SDK5".
-            #   3. The topic branch doesn't "exist" in the SDK5 dir.
-            #   4. We need to now search for the branch in the SDK4 dir.
+            #   2. The current value of SDK is the latest version, i.e., "SDK6".
+            #   3. The topic branch doesn't "exist" in the local repo of the latest version.
+            #   4. We need to now search for the branch in other local repos.
             if [ -z "$BRANCH_EXISTS" ] && "$SEARCH_FOR_BRANCH"; then
-                cd /usr/local/www/SDK4
-                BRANCH_EXISTS=$(git show-ref refs/heads/"$BRANCH")
-
-                if [ -z "$BRANCH_EXISTS" ]; then
-                    checkout_parent_branch
-                else
-                    VERSION=4
-                fi
-            fi
-
-            # We can't cd back to our calling directory yet b/c we need to make sure we check out
-            # our "master" branch so we don't have a topic branch as the parent of our new branch!
-            if [ -z "$BRANCH_EXISTS" ]; then
-                checkout_parent_branch
+                branch_search
             fi
 
             if [ -n "$NEW_BRANCH_FLAG" ]; then
@@ -187,21 +197,21 @@ if [ $? -eq 0 ]; then
             else
                 git checkout "$BRANCH"
             fi
-        else
+        fi
+
+        # If we haven't yet, let's cd to our appropriate local repo.
+        cd /usr/local/www/"SDK$VERSION"
+
+        # We can't cd back to our calling directory yet b/c we need to make sure we check out
+        # our "master" branch so we don't have a topic branch as the parent of our new branch!
+        if [ -z "$BRANCH_EXISTS" ]; then
             checkout_parent_branch
         fi
 
         # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
         if [ "$TICKET_DIR_EXISTS" = "false" ] && "$CREATE_BUG_DIR"; then
-            # Change to the bugs directory to create the bug ticket dir.
-            cd "$BUGS"
-            make_ticket "$TICKET" "$VERSION"
-
-            TICKET_DIR_EXISTS=true
+            make_bug_dir
         fi
-
-        # In all cases, cd back to the SDK.
-        cd /usr/local/www/"SDK$VERSION"
 
         # We need to determine the command to run in our editor pane. A reasonable assumption is that if
         # a custom command was given that it should trump everything and we'll use that (we're assuming
