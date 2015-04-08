@@ -14,7 +14,6 @@ NEW_BRANCH_FLAG=
 OPEN_IN_BROWSER=false
 RUN_COMMAND=
 SDK=
-SEARCH_FOR_BRANCH=false
 SED_RANGE_BEGIN="<script type=\"text\/javascript\">"
 TICKET=
 TICKET_DIR_EXISTS=false
@@ -69,6 +68,7 @@ if [ $? -eq 0 ]; then
 
             if [ -z "$BRANCH_EXISTS" ]; then
                 checkout_parent_branch
+                NEW_BRANCH_FLAG="-b"
             else
                 VERSION=5
             fi
@@ -78,8 +78,6 @@ if [ $? -eq 0 ]; then
     }
 
     checkout_parent_branch() {
-        NEW_BRANCH_FLAG="-b"
-
         case "$VERSION" in
             6)
                 SDK="SDK6"
@@ -138,7 +136,6 @@ if [ $? -eq 0 ]; then
 
     # If no version was specified, then we'll default to the latest version and start our search for topic branches there.
     if [ -z "$VERSION" ]; then
-        SEARCH_FOR_BRANCH=true
         VERSION=6
     fi
 
@@ -174,6 +171,10 @@ if [ $? -eq 0 ]; then
     tmux has-session -t $BRANCH 2>/dev/null
     if [ "$?" -eq 1 ]; then
         if "$USE_BRANCH"; then
+            # Here we need to make sure we check out our "master" branch so we don't have a
+            # topic branch as the parent of our new branch!
+            checkout_parent_branch
+
             # Here we need to check if this branch already exists. If so, don't pass
             # the -b flag when the branch is checked out.
             #
@@ -183,12 +184,12 @@ if [ $? -eq 0 ]; then
             cd /usr/local/www/"$SDK"
             BRANCH_EXISTS=$(git show-ref refs/heads/"$BRANCH")
 
-            # If still no branch and SEARCH_FOR_BRANCH is true, then we know the following things:
+            # If still no branch, then we know the following things:
             #   1. No version was specified when the command was run.
             #   2. The current value of SDK is the latest version, i.e., "SDK6".
             #   3. The topic branch doesn't "exist" in the local repo of the latest version.
             #   4. We need to now search for the branch in other local repos.
-            if [ -z "$BRANCH_EXISTS" ] && "$SEARCH_FOR_BRANCH"; then
+            if [ -z "$BRANCH_EXISTS" ]; then
                 branch_search
             fi
 
@@ -197,15 +198,6 @@ if [ $? -eq 0 ]; then
             else
                 git checkout "$BRANCH"
             fi
-        fi
-
-        # If we haven't yet, let's cd to our appropriate local repo.
-        cd /usr/local/www/"SDK$VERSION"
-
-        # We can't cd back to our calling directory yet b/c we need to make sure we check out
-        # our "master" branch so we don't have a topic branch as the parent of our new branch!
-        if [ -z "$BRANCH_EXISTS" ]; then
-            checkout_parent_branch
         fi
 
         # If the bug ticket dir still doesn't exist when we reach here, create it if allowed.
@@ -233,6 +225,9 @@ if [ $? -eq 0 ]; then
                 RUN_COMMAND+=" -b $BRANCH"
             fi
         fi
+
+        # Let's cd to our appropriate local repo before scripting tmux.
+        cd /usr/local/www/"SDK$VERSION"
 
         tmux new-session -s $BRANCH -d
         tmux send-keys -t $BRANCH "$RUN_COMMAND" C-m
