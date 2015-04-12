@@ -1,4 +1,4 @@
-import getopt, getpass, json, os, re, shutil, socket, subprocess, sys, time
+import getopt, getpass, json, os, re, shutil, server, socket, sys, time
 
 # Define some variables.
 archive = ''
@@ -134,14 +134,14 @@ def main(argv):
                     if resp != '':
                         dest_remote = resp
 
-                    push_to_server()
+                    server.push_archive(archive, hostname, username, port, dest_remote)
 
         else:
             # Non-interactive session.
             create_archive()
 
             if not dry_run:
-                push_to_server()
+                server.push_archive(archive, hostname, username, port, dest_remote)
 
         if not dry_run:
             print('Done!')
@@ -178,15 +178,6 @@ def create_archive():
         files = [f for f in os.listdir(src_dir) if re.match(pattern, f)]
         print('The following files/directories will be archived:\n')
         print(files)
-
-def push_to_server():
-    print('Pushing to server...')
-
-    #p = subprocess.Popen(['scp', '-P', port, dest_dir + '/' + archive, username + '@' + hostname + ':' + dest_remote])
-    p = subprocess.Popen(['scp', '-P', port, archive, username + '@' + hostname + ':' + dest_remote])
-    sts = os.waitpid(p.pid, 0)
-
-    print('Archive ' + archive + ' pushed to ' + dest_remote + ' on host ' + hostname + '.')
 
 if __name__ == '__main__':
     #if len(sys.argv) == 1:
