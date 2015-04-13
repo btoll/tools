@@ -134,14 +134,14 @@ def main(argv):
                     if resp != '':
                         dest_remote = resp
 
-                    server.push_archive(archive, hostname, username, port, dest_remote)
+                    server.put(archive, hostname, username, port, dest_remote)
 
         else:
             # Non-interactive session.
             create_archive()
 
             if not dry_run:
-                server.push_archive(archive, hostname, username, port, dest_remote)
+                server.put(archive, hostname, username, port, dest_remote)
 
         if not dry_run:
             print('Done!')
