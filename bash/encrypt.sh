@@ -14,7 +14,7 @@ if [ $? -eq 0 ]; then
         echo "Usage: $0 [args]"
         echo
         echo "Args:"
-        echo "--binary, -binary, -b  : Create an encrypted binary file instead of the default armored one."
+        echo "--binary, -binary, -b  : Create an encrypted binary file instead of the default ASCII armored one."
         echo "--file, -file, -f      : The name of the new file to encrypt. Can be an absolute or relative path."
         echo "--no-sign              : Don't sign by default."
         echo
