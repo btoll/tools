@@ -1,28 +1,28 @@
 import getopt, getpass, gnupg, json, server, sys
 
-def usage(level):
-     if level ==0:
-        print('Something bad happened!')
-     if level == 1:
+def usage():
         print('''Usage:
 
 Optional flags:
-    -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
+    -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
+                                    Useful for automation.
     -f, -file, --file               The file to encrypt.
     -n, -name, --name               An optional archive name. The default is YYYYMMDDHHMMSS.
     -r, -recipients, --recipients   A comma-separated string of recipients.
     -h, -help, --help               Help.''')
 
 def main(argv):
+    filename = '';
+
     try:
         opts, args = getopt.getopt(argv, 'hc:f:n:r:', ['help', 'config=', 'file=', 'name=', 'recipients='])
     except getopt.GetoptError:
-        usage(0)
+        print('Something bad happened.')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt in ('-h', '-help', '--help'):
-            usage(1)
+            usage()
             sys.exit(0)
         elif opt in ('-f', '-file', '--file'):
             filename = arg
@@ -97,5 +97,9 @@ def decrypt_file(filename):
         sys.exit(1)
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    if (len(sys.argv) > 1):
+        main(sys.argv[1:])
+    else:
+        usage()
+        sys.exit(0)
 
