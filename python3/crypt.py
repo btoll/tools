@@ -1,4 +1,9 @@
-import getopt, getpass, gnupg, json, server, sys
+import getopt
+import getpass
+import gnupg
+import json
+import server
+import sys
 
 def usage():
     print('''Usage:
