@@ -8,29 +8,34 @@ def usage():
                                         Useful for automation.
         -d, -decrypt, --decrypt         Signals the specified operation should be decryption rather than the default encryption.
         -f, -file, --file               The file on which to operate.
-        -n, -name, --name               An optional archive name. The default is YYYYMMDDHHMMSS.
         -r, -recipients, --recipients   A comma-separated string of recipients.
+        -s, -sign, --sign               The user ID with which to sign the encrypted file.
         -h, -help, --help               Help.''')
 
 def main(argv):
-    filename = '';
+    decrypt = False
+    filename = ''
+    recipients = None
+    sign = None
 
     try:
-        opts, args = getopt.getopt(argv, 'hc:f:n:r:', ['help', 'config=', 'file=', 'name=', 'recipients='])
+        opts, args = getopt.getopt(argv, 'hdc:f:r:s:', ['help', 'decrypt', 'config=', 'file=', 'recipients=', 'sign='])
     except getopt.GetoptError:
-        print('Something bad happened.')
+        print('Error: Unrecognized function argument.')
         sys.exit(2)
 
     for opt, arg in opts:
         if opt in ('-h', '-help', '--help'):
             usage()
             sys.exit(0)
+        elif opt in ('-d', '-decrypt', '--decrypt'):
+            decrypt = True
         elif opt in ('-f', '-file', '--file'):
             filename = arg
-        elif opt in ('-n', '-name', '--name'):
-            tmp_name = arg
         elif opt in ('-r', '-recipients', '--recipients'):
             recipients = arg
+        elif opt in ('-s', '-sign', '--sign'):
+            sign = arg
         elif opt in ('-c', '-config', '--config'):
             try:
                 # This can read 'username hostname port'.
@@ -53,11 +58,25 @@ def main(argv):
                 sys.exit(1)
 
     if (filename):
-        encrypt_file(filename, recipients)
+        if not decrypt:
+            encrypt_file(filename, recipients=recipients, sign=sign)
+        else:
+            decrypt_file(filename)
+    else:
+        print('Error: You must specify a file.')
+        sys.exit(1)
 
-def encrypt_file(filename, recipients='benjam72@yahoo.com', sign='benjam72@yahoo.com'):
-    gpg = gnupg.GPG(gnupghome='/Users/btoll/.gnupg', gpgbinary='gpg')
-    stream = open(filename, 'rb');
+def encrypt_file(filename, **kwargs):
+    recipients = kwargs.get('recipients')
+    if not recipients:
+        recipients = 'benjam72@yahoo.com'
+
+    sign = kwargs.get('sign')
+    if not sign:
+        sign = 'benjam72@yahoo.com'
+
+    gpg = _setup()
+    stream = _stream(filename)
 
     passphrase = _get_passphrase()
     encrypted = gpg.encrypt_file(stream, [recipients], sign=sign, passphrase=passphrase, output=filename + '.asc')
@@ -66,21 +85,21 @@ def encrypt_file(filename, recipients='benjam72@yahoo.com', sign='benjam72@yahoo
         print('File encryption successful.')
         sys.exit(0)
     else:
-        print('There was a problem!: ' + encrypted.stderr)
+        print('Error: ' + encrypted.stderr)
         sys.exit(1)
 
 def decrypt_file(filename):
-    gpg = gnupg.GPG(gnupghome='/Users/btoll/.gnupg', gpgbinary='gpg')
-    stream = open(filename, 'rb');
+    gpg = _setup()
+    stream = _stream(filename)
 
     passphrase = _get_passphrase()
-    decrypted = gpg.decrypt_file(encrypted_string, passphrase=passphrase)
+    decrypted = gpg.decrypt_file(stream, passphrase=passphrase)
 
     if decrypted.ok:
         print('File decryption successful.')
         sys.exit(0)
     else:
-        print('There was a problem!: ' + decrypted.stderr)
+        print('Error: ' + decrypted.stderr)
         sys.exit(1)
 
 def _get_passphrase():
@@ -91,6 +110,12 @@ def _get_passphrase():
         # Control-C sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
         sys.exit(1)
+
+def _setup():
+    return gnupg.GPG(gnupghome='/Users/btoll/.gnupg', gpgbinary='gpg')
+
+def _stream(filename):
+    return open(filename, 'rb');
 
 if __name__ == '__main__':
     if (len(sys.argv) > 1):
