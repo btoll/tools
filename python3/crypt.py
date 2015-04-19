@@ -1,15 +1,16 @@
 import getopt, getpass, gnupg, json, server, sys
 
 def usage():
-        print('''Usage:
+    print('''Usage:
 
-Optional flags:
-    -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
-                                    Useful for automation.
-    -f, -file, --file               The file to encrypt.
-    -n, -name, --name               An optional archive name. The default is YYYYMMDDHHMMSS.
-    -r, -recipients, --recipients   A comma-separated string of recipients.
-    -h, -help, --help               Help.''')
+    Optional flags:
+        -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
+                                        Useful for automation.
+        -d, -decrypt, --decrypt         Signals the specified operation should be decryption rather than the default encryption.
+        -f, -file, --file               The file on which to operate.
+        -n, -name, --name               An optional archive name. The default is YYYYMMDDHHMMSS.
+        -r, -recipients, --recipients   A comma-separated string of recipients.
+        -h, -help, --help               Help.''')
 
 def main(argv):
     filename = '';
@@ -58,14 +59,7 @@ def encrypt_file(filename, recipients='benjam72@yahoo.com', sign='benjam72@yahoo
     gpg = gnupg.GPG(gnupghome='/Users/btoll/.gnupg', gpgbinary='gpg')
     stream = open(filename, 'rb');
 
-    try:
-        passphrase = getpass.getpass('Please enter your passphrase: ')
-
-    except KeyboardInterrupt:
-        # Control-C sent a SIGINT to the process, handle it.
-        print('\nProcess aborted!')
-        sys.exit(1)
-
+    passphrase = _get_passphrase()
     encrypted = gpg.encrypt_file(stream, [recipients], sign=sign, passphrase=passphrase, output=filename + '.asc')
 
     if encrypted.ok:
@@ -79,21 +73,23 @@ def decrypt_file(filename):
     gpg = gnupg.GPG(gnupghome='/Users/btoll/.gnupg', gpgbinary='gpg')
     stream = open(filename, 'rb');
 
+    passphrase = _get_passphrase()
+    decrypted = gpg.decrypt_file(encrypted_string, passphrase=passphrase)
+
+    if decrypted.ok:
+        print('File decryption successful.')
+        sys.exit(0)
+    else:
+        print('There was a problem!: ' + decrypted.stderr)
+        sys.exit(1)
+
+def _get_passphrase():
     try:
-        passphrase = getpass.getpass('Please enter your passphrase: ')
+        return getpass.getpass('Please enter your passphrase: ')
 
     except KeyboardInterrupt:
         # Control-C sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
-        sys.exit(1)
-
-    decrypted = gpg.decrypt_file(encrypted_string, passphrase=passphrase)
-
-    if decrypted.ok:
-        print('File encryption successful.')
-        sys.exit(0)
-    else:
-        print('There was a problem!: ' + decrypted.stderr)
         sys.exit(1)
 
 if __name__ == '__main__':
