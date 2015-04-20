@@ -3,6 +3,7 @@ import getpass
 import gnupg
 import json
 import server
+import socket
 import sys
 
 def usage():
@@ -18,6 +19,7 @@ def usage():
         -h, -help, --help               Help.''')
 
 def main(argv):
+    json = False
     decrypt = False
     filename = ''
     recipients = None
@@ -42,29 +44,11 @@ def main(argv):
         elif opt in ('-s', '-sign', '--sign'):
             sign = arg
         elif opt in ('-c', '-config', '--config'):
-            try:
-                # This can read 'username hostname port'.
-                # username, hostname, port = open(arg, encoding='utf-8').readline().split()
-
-                # TODO: Is there a better way to get the values from the Json?
-                with open(arg, mode='r', encoding='utf-8') as f:
-                    json_data = json.loads(f.read())
-
-                username = json_data.get('username')
-                hostname = json_data.get('hostname')
-                port = str(json_data.get('port'))
-                format = json_data.get('format')
-
-                silent = True
-
-            # Exceptions could be bad Json or file not found.
-            except (ValueError, FileNotFoundError) as e:
-                print(e)
-                sys.exit(1)
+            json = arg
 
     if (filename):
         if not decrypt:
-            encrypt_file(filename, recipients=recipients, sign=sign)
+            encrypt_file(filename, recipients=recipients, sign=sign, json=json)
         else:
             decrypt_file(filename)
     else:
@@ -80,6 +64,8 @@ def encrypt_file(filename, **kwargs):
     if not sign:
         sign = 'benjam72@yahoo.com'
 
+    json = kwargs.get('json')
+
     gpg = _setup()
     stream = _stream(filename)
 
@@ -87,7 +73,56 @@ def encrypt_file(filename, **kwargs):
     encrypted = gpg.encrypt_file(stream, [recipients], sign=sign, passphrase=passphrase, output=filename + '.asc')
 
     if encrypted.ok:
+        destination = '~'
+        hostname = socket.gethostname()
+        port = '80'
+        username = getpass.getuser()
+
         print('File encryption successful.')
+
+        if json:
+            try:
+                # This can read 'username hostname port'.
+                # username, hostname, port = open(arg, encoding='utf-8').readline().split()
+
+                # TODO: Is there a better way to get the values from the Json?
+                with open(json, mode='r', encoding='utf-8') as f:
+                    json_data = json.loads(f.read())
+
+                username = json_data.get('username')
+                hostname = json_data.get('hostname')
+                port = str(json_data.get('port'))
+
+            # Exceptions could be bad Json or file not found.
+            except (ValueError, FileNotFoundError) as e:
+                print(e)
+                sys.exit(1)
+
+            server.put(archive, hostname, username, port, destination)
+        else:
+            resp = input('Push to remote server? [y|N]: ')
+
+            if resp in ['Y', 'y']:
+                port = 80
+
+                resp = input('Username [' + username + ']: ')
+                if resp != '':
+                    username = resp
+
+                resp = input('Port [' + port + ']: ')
+                if resp != '':
+                    port = resp
+
+                resp = input('Hostname [' + hostname + ']: ')
+                if resp != '':
+                    hostname = resp
+
+                resp = input('Remote filepath [' + destination + ']: ')
+                if resp != '':
+                    destination = resp
+
+                server.put(archive, hostname, username, port, destination)
+
         sys.exit(0)
     else:
         print('Error: ' + encrypted.stderr)
