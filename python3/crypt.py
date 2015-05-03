@@ -2,6 +2,7 @@ import getopt
 import getpass
 import gnupg
 import json
+import os
 import server
 import socket
 import sys
@@ -155,7 +156,7 @@ def _get_passphrase():
         sys.exit(1)
 
 def _setup():
-    return gnupg.GPG(gnupghome='/Users/btoll/.gnupg', gpgbinary='gpg')
+    return gnupg.GPG(gnupghome=os.getenv('CRYPT_GNUPGHOME', '/Users/btoll/.gnupg'), gpgbinary=os.getenv('CRYPT_GPGBINARY', 'gpg'))
 
 def _stream(filename):
     return open(filename, 'rb');
