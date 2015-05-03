@@ -5,18 +5,22 @@ import json
 import server
 import socket
 import sys
+import textwrap
 
 def usage():
-    print('''Usage:
+    str = '''\
+        Usage:
+        Optional flags:
+            -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
+                                            Useful for automation.
+            -d, -decrypt, --decrypt         Signals the specified operation should be decryption rather than the default encryption.
+            -f, -file, --file               The file on which to operate.
+            -r, -recipients, --recipients   A comma-separated string of recipients.
+            -s, -sign, --sign               The user ID with which to sign the encrypted file.
+            -h, -help, --help               Help.
+    '''
 
-    Optional flags:
-        -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
-                                        Useful for automation.
-        -d, -decrypt, --decrypt         Signals the specified operation should be decryption rather than the default encryption.
-        -f, -file, --file               The file on which to operate.
-        -r, -recipients, --recipients   A comma-separated string of recipients.
-        -s, -sign, --sign               The user ID with which to sign the encrypted file.
-        -h, -help, --help               Help.''')
+    print(textwrap.dedent(str))
 
 def main(argv):
     json = False
