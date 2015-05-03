@@ -8,7 +8,7 @@ import sys
 import textwrap
 
 def usage():
-    str = '''\
+    str = '''
         Usage:
         Optional flags:
             -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
@@ -19,7 +19,6 @@ def usage():
             -s, -sign, --sign               The user ID with which to sign the encrypted file.
             -h, -help, --help               Help.
     '''
-
     print(textwrap.dedent(str))
 
 def main(argv):
@@ -77,11 +76,6 @@ def encrypt_file(filename, **kwargs):
     encrypted = gpg.encrypt_file(stream, [recipients], sign=sign, passphrase=passphrase, output=filename + '.asc')
 
     if encrypted.ok:
-        destination = '~'
-        hostname = socket.gethostname()
-        port = '80'
-        username = getpass.getuser()
-
         print('File encryption successful.')
 
         if json:
@@ -102,10 +96,15 @@ def encrypt_file(filename, **kwargs):
                 print(e)
                 sys.exit(1)
 
-            server.put(archive, hostname, username, port, destination)
+            server.put(output, hostname, username, port, destination)
         else:
-            resp = input('Push to remote server? [y|N]: ')
+            # Establish default values.
+            destination = '~'
+            hostname = socket.gethostname()
+            port = '80'
+            username = getpass.getuser()
 
+            resp = input('Push to remote server? [y|N]: ')
             if resp in ['Y', 'y']:
                 port = 80
 
@@ -125,7 +124,7 @@ def encrypt_file(filename, **kwargs):
                 if resp != '':
                     destination = resp
 
-                server.put(archive, hostname, username, port, destination)
+                server.put(output, hostname, username, port, destination)
 
         sys.exit(0)
     else:
