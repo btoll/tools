@@ -3,6 +3,7 @@ import getpass
 import glob
 import os
 import re
+import server
 import subprocess
 import sys
 import textwrap
@@ -62,14 +63,10 @@ def compress(version, src, output='min.css', dest='.'):
         print('Error: You must provide the location of the source files.')
         sys.exit(2)
 
-    port = '22'
-    dest_remote = '~'
-    username = getpass.getuser()
-    buff = []
-
     try:
         print('Creating minified script...\n')
 
+        buff = []
         genny = ([os.path.basename(filepath) for filepath in glob.glob(src + '*.css') if os.path.basename(filepath)])
 
         if not len(genny):
@@ -106,23 +103,8 @@ def compress(version, src, output='min.css', dest='.'):
             # Flush the buffer (only perform I/O once).
             fp.write(''.join(buff))
 
-        resp = input('\nPush to server? [y|N]: ')
-        if resp in ['Y', 'y']:
-            resp = input('Username [' + username + ']:')
-            if resp != '':
-                username = resp
-            resp = input('Port [' + port + ']:')
-            if resp != '':
-                port = resp
-            resp = input('Remote destination [' + dest_remote + ']:')
-            if resp != '':
-                dest_remote = resp
-
-            p = subprocess.Popen(['scp', '-P', port, dest + '/' + output, username + '@example.com:' + dest_remote])
-            sts = os.waitpid(p.pid, 0)
-            print('Minified file ' + output + ' pushed to ' + dest_remote + ' on remote server.')
-        else:
-            print('Created minified file ' + output + ' in ' + dest)
+        if server.prepare(output):
+            print('Created minified script ' + output + ' in ' + dest)
 
     except (KeyboardInterrupt):
         # Control-c sent a SIGINT to the process, handle it.

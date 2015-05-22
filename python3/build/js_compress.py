@@ -4,6 +4,7 @@ import getopt
 import getpass
 import glob
 import os
+import server
 import subprocess
 import sys
 import textwrap
@@ -79,14 +80,10 @@ def compress(version, src, output='min.js', dest='.', dependencies=[], jar=None)
                 print('Error: You must provide the location of YUI Compressor jar.')
                 sys.exit(2)
 
-    port = '22'
-    dest_remote = '~'
-    username = getpass.getuser()
-    buff = []
-
     try:
         print('Creating minified script...\n')
 
+        buff = []
         genny = (dependencies + [os.path.basename(filepath) for filepath in glob.glob(src + '*.js') if os.path.basename(filepath) not in dependencies])
 
         if (len(genny) - len(dependencies) <= 0):
@@ -104,22 +101,7 @@ def compress(version, src, output='min.js', dest='.', dependencies=[], jar=None)
             # Flush the buffer (only perform I/O once).
             fp.write(''.join(buff))
 
-        resp = input('\nPush to server? [y|N]: ')
-        if resp in ['Y', 'y']:
-            resp = input('Username [' + username + ']:')
-            if resp != '':
-                username = resp
-            resp = input('Port [' + port + ']:')
-            if resp != '':
-                port = resp
-            resp = input('Remote destination [' + dest_remote + ']:')
-            if resp != '':
-                dest_remote = resp
-
-            p = subprocess.Popen(['scp', '-P', port, dest + '/' + output, username + '@example.com:' + dest_remote])
-            sts = os.waitpid(p.pid, 0)
-            print('Minified script ' + output + ' pushed to ' + dest_remote + ' on remote server.')
-        else:
+        if server.prepare(output):
             print('Created minified script ' + output + ' in ' + dest)
 
     except (KeyboardInterrupt):

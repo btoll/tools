@@ -1,6 +1,7 @@
 import getopt
 import getpass
 import os
+import server
 import shutil
 import subprocess
 import sys
@@ -78,22 +79,7 @@ def tar(version, src, dest='.'):
         print('Cleaning up...')
         shutil.rmtree(tmp_dir)
 
-        resp = input('Push to server? [y|N]:')
-        if resp in ['Y', 'y']:
-            resp = input('Username [' + username + ']:')
-            if resp != '':
-                username = resp
-            resp = input('Port [' + port + ']:')
-            if resp != '':
-                port = resp
-            resp = input('Remote destination [' + dest_remote + ']:')
-            if resp != '':
-                dest_remote = resp
-
-            p = subprocess.Popen(['scp', '-P', port, dest + '/' + tarball, username + '@example.com:' + dest_remote])
-            sts = os.waitpid(p.pid, 0)
-            print('Tarball ' + tarball + ' pushed to ' + dest_remote + ' on remote server.')
-        else:
+        if server.prepare(tarball):
             print('Created tarball ' + tarball + ' in ' + dest + '/')
 
     except (KeyboardInterrupt):
