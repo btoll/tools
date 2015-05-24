@@ -146,8 +146,8 @@ def main(argv):
         if not dry_run:
             print('Done!')
 
-    except KeyboardInterrupt:
-        # Control-C sent a SIGINT to the process, handle it.
+    except (KeyboardInterrupt, EOFError):
+        # Control-C or Control-D sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
 
         # If aborted at input() then tmp_name would have already been removed so first check for its existence.

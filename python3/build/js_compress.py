@@ -104,8 +104,8 @@ def compress(version, src, output='min.js', dest='.', dependencies=[], jar=None)
         if server.prepare(output):
             print('Created minified script ' + output + ' in ' + dest)
 
-    except (KeyboardInterrupt):
-        # Control-c sent a SIGINT to the process, handle it.
+    except (KeyboardInterrupt, EOFError):
+        # Control-C or Control-D sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
         sys.exit(1)
 

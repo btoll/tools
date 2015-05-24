@@ -82,8 +82,8 @@ def tar(version, src, dest='.'):
         if server.prepare(tarball):
             print('Created tarball ' + tarball + ' in ' + dest + '/')
 
-    except (KeyboardInterrupt):
-        # Control-C sent a SIGINT to the process, handle it.
+    except (KeyboardInterrupt, EOFError):
+        # Control-C or Control-D sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
 
         # If aborted at input() then tmp_dir would have already been removed so first check for its existence.

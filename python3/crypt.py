@@ -150,8 +150,8 @@ def _get_passphrase():
     try:
         return getpass.getpass('Please enter your passphrase: ')
 
-    except KeyboardInterrupt:
-        # Control-C sent a SIGINT to the process, handle it.
+    except (KeyboardInterrupt, EOFError):
+        # Control-C or Control-D sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
         sys.exit(1)
 
