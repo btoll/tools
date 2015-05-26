@@ -103,9 +103,11 @@ if [ $? -eq 0 ]; then
         get_fiddle "$FIDDLE" "$FILE"
     fi
 
-    echo "$(tput setaf 2)[INFO]$(tput sgr0) File creation successful."
-
-    open "http://localhost${PWD:${#WEB_SERVER}}/$FILE"
+    # Only proceed if the Fiddle was downloaded successfully.
+    if [ $? -eq 0 ]; then
+        echo "$(tput setaf 2)[INFO]$(tput sgr0) File creation successful."
+        open "http://localhost${PWD:${#WEB_SERVER}}/$FILE"
+    fi
 fi
 
 exit
