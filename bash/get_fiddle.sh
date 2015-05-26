@@ -87,7 +87,8 @@ if [ $? -eq 0 ]; then
     if [ ! -f "/tmp/$BASENAME" ]; then
         # Download to a dir where we know we'll have write permissions.
         #curl $FIDDLE | gsed -n "/$SED_RANGE_BEGIN/,/$SED_RANGE_END/{/$SED_RANGE_BEGIN/{d;p;n};/$SED_RANGE_END/q;p}" > /tmp/"$BASENAME"
-        curl $FIDDLE | awk '/<\/script>/ { p-- } /window.onload/ { p=1 } p>0' > /tmp/"$BASENAME"
+        # Use the -k flag to allow for insecure SSL connections since Fiddle doesn't have a valid certification.
+        curl -k $FIDDLE | awk '/<\/script>/ { p-- } /window.onload/ { p=1 } p>0' > /tmp/"$BASENAME"
 
         # Check to make sure it downloaded correctly.
         read SIZE _ <<<$(du /tmp/"$BASENAME")
