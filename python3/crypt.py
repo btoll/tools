@@ -63,6 +63,29 @@ def main(argv):
         print('Error: No file given.')
         sys.exit(1)
 
+def decrypt_file(filename, output):
+    gpg = _setup()
+
+    try:
+        if not output:
+            output = input('Name of decrypted file: ')
+
+        passphrase = _get_passphrase()
+
+        with open(filename, 'rb') as f:
+            decrypted = gpg.decrypt_file(f, passphrase=passphrase, output=output)
+
+        if decrypted.ok:
+            print('File decryption successful.')
+            sys.exit(0)
+        else:
+            #print('Error: ' + decrypted.stderr)
+            print('Bad passphrase!')
+            sys.exit(1)
+
+    except (KeyboardInterrupt, EOFError):
+        _abort()
+
 def encrypt_file(filename, **kwargs):
     output = kwargs.get('output')
     if not output:
@@ -122,39 +145,17 @@ def encrypt_file(filename, **kwargs):
         print('Error: ' + encrypted.stderr)
         sys.exit(1)
 
-def decrypt_file(filename, output):
-    gpg = _setup()
-
-    try:
-        if not output:
-            output = input('Name of decrypted file: ')
-
-        passphrase = _get_passphrase()
-
-        with open(filename, 'rb') as f:
-            decrypted = gpg.decrypt_file(f, passphrase=passphrase, output=output)
-
-        if decrypted.ok:
-            print('File decryption successful.')
-            sys.exit(0)
-        else:
-            #print('Error: ' + decrypted.stderr)
-            print('Bad passphrase!')
-            sys.exit(1)
-
-    except (KeyboardInterrupt, EOFError):
-        # Control-C or Control-D sent a SIGINT to the process, handle it.
-        print('\nProcess aborted!')
-        sys.exit(1)
+def _abort():
+    # Control-C or Control-D sent a SIGINT to the process, handle it.
+    print('\nProcess aborted!')
+    sys.exit(1)
 
 def _get_passphrase():
     try:
         return getpass.getpass('Enter your passphrase: ')
 
     except (KeyboardInterrupt, EOFError):
-        # Control-C or Control-D sent a SIGINT to the process, handle it.
-        print('\nProcess aborted!')
-        sys.exit(1)
+        _abort()
 
 def _setup():
     return gnupg.GPG(gnupghome=os.getenv('CRYPT_GNUPGHOME', '/Users/btoll/.gnupg'), gpgbinary=os.getenv('CRYPT_GPGBINARY', 'gpg'))
