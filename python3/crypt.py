@@ -114,27 +114,8 @@ def encrypt_file(filename, **kwargs):
             port = '80'
             username = getpass.getuser()
 
-            resp = input('Push to remote server? [y|N]: ')
-            if resp in ['Y', 'y']:
-                port = 80
-
-                resp = input('Username [' + username + ']: ')
-                if resp != '':
-                    username = resp
-
-                resp = input('Port [' + port + ']: ')
-                if resp != '':
-                    port = resp
-
-                resp = input('Hostname [' + hostname + ']: ')
-                if resp != '':
-                    hostname = resp
-
-                resp = input('Remote filepath [' + destination + ']: ')
-                if resp != '':
-                    destination = resp
-
-                server.put(output, hostname, username, port, destination)
+            # Push to server.
+            server.prepare(output)
 
         sys.exit(0)
     else:
