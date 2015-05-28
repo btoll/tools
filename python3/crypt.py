@@ -15,7 +15,8 @@ def usage():
             -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
                                             Useful for automation.
             -d, -decrypt, --decrypt         Signals the specified operation should be decryption rather than the default encryption.
-            -f, -file, --file               The file on which to operate.
+            -f, -file, --file               The file to encrypt/decrypt.
+            -o, -output, --output           The name of the new file (will create first if it doesn't exist).
             -r, -recipients, --recipients   A comma-separated string of recipients.
             -s, -sign, --sign               The user ID with which to sign the encrypted file.
             -h, -help, --help               Help.
@@ -23,14 +24,15 @@ def usage():
     print(textwrap.dedent(str))
 
 def main(argv):
-    json = False
+    json = None
     decrypt = False
     filename = ''
+    output = None
     recipients = None
     sign = None
 
     try:
-        opts, args = getopt.getopt(argv, 'hdc:f:r:s:', ['help', 'decrypt', 'config=', 'file=', 'recipients=', 'sign='])
+        opts, args = getopt.getopt(argv, 'hdc:f:o:r:s:', ['help', 'decrypt', 'config=', 'file=', 'output=', 'recipients=', 'sign='])
     except getopt.GetoptError:
         print('Error: Unrecognized function argument.')
         sys.exit(2)
@@ -43,6 +45,8 @@ def main(argv):
             decrypt = True
         elif opt in ('-f', '-file', '--file'):
             filename = arg
+        elif opt in ('-o', '-output', '--output'):
+            output = arg
         elif opt in ('-r', '-recipients', '--recipients'):
             recipients = arg
         elif opt in ('-s', '-sign', '--sign'):
@@ -52,14 +56,18 @@ def main(argv):
 
     if (filename):
         if not decrypt:
-            encrypt_file(filename, recipients=recipients, sign=sign, json=json)
+            encrypt_file(filename, output=output, recipients=recipients, sign=sign, json=json)
         else:
-            decrypt_file(filename)
+            decrypt_file(filename, output)
     else:
-        print('Error: You must specify a file.')
+        print('Error: No file given.')
         sys.exit(1)
 
 def encrypt_file(filename, **kwargs):
+    output = kwargs.get('output')
+    if not output:
+        output = filename + '.asc'
+
     recipients = kwargs.get('recipients')
     if not recipients:
         recipients = 'benjam72@yahoo.com'
@@ -71,10 +79,11 @@ def encrypt_file(filename, **kwargs):
     json = kwargs.get('json')
 
     gpg = _setup()
-    stream = _stream(filename)
 
     passphrase = _get_passphrase()
-    encrypted = gpg.encrypt_file(stream, [recipients], sign=sign, passphrase=passphrase, output=filename + '.asc')
+
+    with open(filename, 'rb') as f:
+        encrypted = gpg.encrypt_file(f, [recipients], sign=sign, passphrase=passphrase, output=output)
 
     if encrypted.ok:
         print('File encryption successful.')
@@ -132,23 +141,34 @@ def encrypt_file(filename, **kwargs):
         print('Error: ' + encrypted.stderr)
         sys.exit(1)
 
-def decrypt_file(filename):
+def decrypt_file(filename, output):
     gpg = _setup()
-    stream = _stream(filename)
 
-    passphrase = _get_passphrase()
-    decrypted = gpg.decrypt_file(stream, passphrase=passphrase)
+    try:
+        if not output:
+            output = input('Name of decrypted file: ')
 
-    if decrypted.ok:
-        print('File decryption successful.')
-        sys.exit(0)
-    else:
-        print('Error: ' + decrypted.stderr)
+        passphrase = _get_passphrase()
+
+        with open(filename, 'rb') as f:
+            decrypted = gpg.decrypt_file(f, passphrase=passphrase, output=output)
+
+        if decrypted.ok:
+            print('File decryption successful.')
+            sys.exit(0)
+        else:
+            #print('Error: ' + decrypted.stderr)
+            print('Bad passphrase!')
+            sys.exit(1)
+
+    except (KeyboardInterrupt, EOFError):
+        # Control-C or Control-D sent a SIGINT to the process, handle it.
+        print('\nProcess aborted!')
         sys.exit(1)
 
 def _get_passphrase():
     try:
-        return getpass.getpass('Please enter your passphrase: ')
+        return getpass.getpass('Enter your passphrase: ')
 
     except (KeyboardInterrupt, EOFError):
         # Control-C or Control-D sent a SIGINT to the process, handle it.
@@ -157,9 +177,6 @@ def _get_passphrase():
 
 def _setup():
     return gnupg.GPG(gnupghome=os.getenv('CRYPT_GNUPGHOME', '/Users/btoll/.gnupg'), gpgbinary=os.getenv('CRYPT_GPGBINARY', 'gpg'))
-
-def _stream(filename):
-    return open(filename, 'rb');
 
 if __name__ == '__main__':
     if (len(sys.argv) > 1):
