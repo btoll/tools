@@ -14,7 +14,7 @@ def usage():
         USAGE:
 
             CLI:
-                python3 js_compress.py -v 3.0.0 --src ../src/ -o JSLITE_3.0.0.min.js -d 'build' --dependencies [JSLITE.prototype.js, JSLITE.js]
+                python3 js_compress.py -v 3.0.0 --src ../src/ -o JSLITE_3.0.0.min.js -d 'build' --dependencies 'JSLITE.prototype.js, JSLITE.js'
 
             As an imported module:
                 js_compress.compress(version, src[, output='min.js', dest='.', dependencies=[], jar=None])
@@ -23,7 +23,7 @@ def usage():
         --src, -s       The location of the JavaScript source files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.js'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
-        --dependencies  A list of scripts, FIFO when compressed, default to an empty list.
+        --dependencies  A string of filenames, separated by a comma, defaults to an empty list. FIFO.
         --jar, -j       The location of the jar file, defaults to the value of YUICOMPRESSOR environment variable.
     '''
     print(textwrap.dedent(str))
@@ -56,7 +56,10 @@ def main(argv):
         elif opt in ('-d', '--dest'):
             dest = arg
         elif opt == '--dependencies':
-            dependencies = arg
+            if type(arg) is not list:
+                dependencies = arg.split(',')
+            else:
+                dependencies = arg
         elif opt in ('-j', '--jar'):
             jar = arg
 

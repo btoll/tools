@@ -23,8 +23,8 @@ def usage():
         --src, -s       The location of the CSS files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.css'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
-        --dependencies  A string of filenames, separated by a comma. FIFO.
-        --exclude       A string of filenames, separated by a comma, that should be excluded in the build.
+        --dependencies  A string of filenames, separated by a comma, defaults to an empty list. FIFO.
+        --exclude       A string of filenames, separated by a comma, that should be excluded in the build, defaults to an empty list.
     '''
     print(textwrap.dedent(str))
 
