@@ -23,7 +23,8 @@ def usage():
         --src, -s       The location of the CSS files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.css'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
-        --dependencies  A list of scripts, FIFO when compressed, default to an empty list.
+        --dependencies  A string of filenames, separated by a comma. FIFO.
+        --exclude       A string of filenames, separated by a comma, that should be excluded in the build.
     '''
     print(textwrap.dedent(str))
 
@@ -33,9 +34,10 @@ def main(argv):
     output = 'min.css'
     version = ''
     dependencies = []
+    exclude = []
 
     try:
-        opts, args = getopt.getopt(argv, 'hv:s:o:d:', ['help', 'version=', 'src=', 'output=', 'dest=', 'dependencies='])
+        opts, args = getopt.getopt(argv, 'hv:s:o:d:', ['help', 'version=', 'src=', 'output=', 'dest=', 'dependencies=', 'exclude='])
     except getopt.GetoptError:
         print('Error: Unrecognized flag.')
         usage()
@@ -54,11 +56,19 @@ def main(argv):
         elif opt in ('-d' '--dest'):
             dest = arg
         elif opt == '--dependencies':
-            dependencies = arg
+            if type(arg) is not list:
+                dependencies = arg.split(',')
+            else:
+                dependencies = arg
+        elif opt == '--exclude':
+            if type(arg) is not list:
+                exclude = arg.split(',')
+            else:
+                exclude = arg
 
-    compress(version, src, output, dest, dependencies)
+    compress(version, src, output, dest, dependencies, exclude)
 
-def compress(version, src, output='min.css', dest='.', dependencies=[]):
+def compress(version, src, output='min.css', dest='.', dependencies=[], exclude=[]):
     if not version:
         print('Error: You must provide a version.')
         sys.exit(2)
@@ -71,9 +81,9 @@ def compress(version, src, output='min.css', dest='.', dependencies=[]):
         print('Creating minified script...\n')
 
         buff = []
-        genny = (dependencies + [os.path.basename(filepath) for filepath in glob.glob(src + '*.css') if os.path.basename(filepath) not in dependencies])
+        genny = (dependencies + [os.path.basename(filepath) for filepath in glob.glob(src + '*.css') if os.path.basename(filepath) not in dependencies + exclude])
 
-        if (len(genny) - len(dependencies) <= 0):
+        if (len(genny) - len(dependencies) - len(exclude) <= 0):
             print('OPERATION ABORTED: No CSS files were found in the specified source directory. Check your path?')
             sys.exit(1)
 
