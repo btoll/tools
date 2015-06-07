@@ -14,15 +14,16 @@ def usage():
         USAGE:
 
             CLI:
-                python3 css_compress.py -v 3.0.0 --src ../resources/css/ -o JSLITE_CSS_3.0.0.min.js
+                python3 css_compress.py -v 3.0.0 --src ../resources/css/ -o JSLITE_CSS_3.0.0.min.css
 
             As an imported module:
                 css_compress.compress(version, src[, output='min.css', dest='.'])
 
-        --version, -v  The version of the minified script, must be specified.
-        --src, -s      The location of the CSS files, must be specified.
-        --output, -o   The name of the new minimized file, defaults to 'min.css'.
-        --dest, -d     The location where the minified file will be moved, defaults to cwd.
+        --version, -v   The version of the minified script, must be specified.
+        --src, -s       The location of the CSS files, must be specified.
+        --output, -o    The name of the new minimized file, defaults to 'min.css'.
+        --dest, -d      The location where the minified file will be moved, defaults to cwd.
+        --dependencies  A list of scripts, FIFO when compressed, default to an empty list.
     '''
     print(textwrap.dedent(str))
 
@@ -31,9 +32,10 @@ def main(argv):
     src = ''
     output = 'min.css'
     version = ''
+    dependencies = []
 
     try:
-        opts, args = getopt.getopt(argv, 'hv:s:o:d:', ['help', 'version=', 'src=', 'output=', 'dest='])
+        opts, args = getopt.getopt(argv, 'hv:s:o:d:', ['help', 'version=', 'src=', 'output=', 'dest=', 'dependencies='])
     except getopt.GetoptError:
         print('Error: Unrecognized flag.')
         usage()
@@ -51,10 +53,12 @@ def main(argv):
             output = arg
         elif opt in ('-d' '--dest'):
             dest = arg
+        elif opt == '--dependencies':
+            dependencies = arg
 
-    compress(version, src, output, dest)
+    compress(version, src, output, dest, dependencies)
 
-def compress(version, src, output='min.css', dest='.'):
+def compress(version, src, output='min.css', dest='.', dependencies=[]):
     if not version:
         print('Error: You must provide a version.')
         sys.exit(2)
@@ -67,9 +71,9 @@ def compress(version, src, output='min.css', dest='.'):
         print('Creating minified script...\n')
 
         buff = []
-        genny = ([os.path.basename(filepath) for filepath in glob.glob(src + '*.css') if os.path.basename(filepath)])
+        genny = (dependencies + [os.path.basename(filepath) for filepath in glob.glob(src + '*.css') if os.path.basename(filepath) not in dependencies])
 
-        if not len(genny):
+        if (len(genny) - len(dependencies) <= 0):
             print('OPERATION ABORTED: No CSS files were found in the specified source directory. Check your path?')
             sys.exit(1)
 
