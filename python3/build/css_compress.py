@@ -57,7 +57,8 @@ def main(argv):
             version = arg
         elif opt == '--dependencies':
             if type(arg) is not list:
-                dependencies = arg.split(',')
+                # Split string by comma and strip leading and trailing whitepace from each list element.
+                dependencies = ([f.strip() for f in arg.split(',')])
             else:
                 dependencies = arg
         elif opt == '--exclude':

@@ -14,7 +14,7 @@ def usage():
         USAGE:
 
             CLI:
-                python3 js_compress.py --src ../src/ -o JSLITE_3.0.0.min.js -d 'build' --dependencies 'JSLITE.prototype.js, JSLITE.js'
+                python3 js_compress.py -s /usr/local/www/jsLite/src/ -d /usr/local/www/owlsnestfarm/build/ -o jslite.js --dependencies 'JSLITE.prototype.js, JSLITE.js, JSLITE.Element.js, JSLITE.Composite.js, JSLITE.Observer.js'
 
             As an imported module:
                 js_compress.compress(src[, output='min.js', dest='.', version='3.0.0', dependencies=[], jar=None])
@@ -57,7 +57,8 @@ def main(argv):
             dest = arg
         elif opt == '--dependencies':
             if type(arg) is not list:
-                dependencies = arg.split(',')
+                # Split string by comma and strip leading and trailing whitepace from each list element.
+                dependencies = ([f.strip() for f in arg.split(',')])
             else:
                 dependencies = arg
         elif opt in ('-j', '--jar'):
