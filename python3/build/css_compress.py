@@ -14,15 +14,15 @@ def usage():
         USAGE:
 
             CLI:
-                python3 css_compress.py -v 3.0.0 --src ../resources/css/ -o JSLITE_CSS_3.0.0.min.css
+                python3 css_compress.py --src ../resources/css/ -o JSLITE_CSS_3.0.0.min.css
 
             As an imported module:
-                css_compress.compress(version, src[, output='min.css', dest='.'])
+                css_compress.compress(src[, output='min.css', dest='.', 'version=''])
 
-        --version, -v   The version of the minified script, must be specified.
         --src, -s       The location of the CSS files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.css'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
+        --version, -v   The version of the minified script.
         --dependencies  A string of filenames, separated by a comma, defaults to an empty list. FIFO.
         --exclude       A string of filenames, separated by a comma, that should be excluded in the build, defaults to an empty list.
     '''
@@ -37,7 +37,7 @@ def main(argv):
     exclude = []
 
     try:
-        opts, args = getopt.getopt(argv, 'hv:s:o:d:', ['help', 'version=', 'src=', 'output=', 'dest=', 'dependencies=', 'exclude='])
+        opts, args = getopt.getopt(argv, 'hs:o:d:v:', ['help', 'src=', 'output=', 'dest=', 'version=', 'dependencies=', 'exclude='])
     except getopt.GetoptError:
         print('Error: Unrecognized flag.')
         usage()
@@ -47,14 +47,14 @@ def main(argv):
         if opt in ('-h', '--help'):
             usage()
             sys.exit(0)
-        elif opt in ('-v', '--version'):
-            version = arg
         elif opt in ('-s', '--src'):
             src = arg
         elif opt in ('-o', '--output'):
             output = arg
         elif opt in ('-d' '--dest'):
             dest = arg
+        elif opt in ('-v', '--version'):
+            version = arg
         elif opt == '--dependencies':
             if type(arg) is not list:
                 dependencies = arg.split(',')
@@ -66,13 +66,9 @@ def main(argv):
             else:
                 exclude = arg
 
-    compress(version, src, output, dest, dependencies, exclude)
+    compress(src, output, dest, version, dependencies, exclude)
 
-def compress(version, src, output='min.css', dest='.', dependencies=[], exclude=[]):
-    if not version:
-        print('Error: You must provide a version.')
-        sys.exit(2)
-
+def compress(src, output='min.css', dest='.', version='', dependencies=[], exclude=[]):
     if not src:
         print('Error: You must provide the location of the source files.')
         sys.exit(2)

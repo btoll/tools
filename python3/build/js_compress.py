@@ -14,15 +14,15 @@ def usage():
         USAGE:
 
             CLI:
-                python3 js_compress.py -v 3.0.0 --src ../src/ -o JSLITE_3.0.0.min.js -d 'build' --dependencies 'JSLITE.prototype.js, JSLITE.js'
+                python3 js_compress.py --src ../src/ -o JSLITE_3.0.0.min.js -d 'build' --dependencies 'JSLITE.prototype.js, JSLITE.js'
 
             As an imported module:
-                js_compress.compress(version, src[, output='min.js', dest='.', dependencies=[], jar=None])
+                js_compress.compress(src[, output='min.js', dest='.', version='3.0.0', dependencies=[], jar=None])
 
-        --version, -v   The version of the minified script, must be specified.
         --src, -s       The location of the JavaScript source files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.js'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
+        --version, -v   The version of the minified script.
         --dependencies  A string of filenames, separated by a comma, defaults to an empty list. FIFO.
         --jar, -j       The location of the jar file, defaults to the value of YUICOMPRESSOR environment variable.
     '''
@@ -37,7 +37,7 @@ def main(argv):
     dependencies = []
 
     try:
-        opts, args = getopt.getopt(argv, 'hv:s:o:d:j:', ['help', 'version=', 'src=', 'output=', 'dest=', 'dependencies=', 'jar='])
+        opts, args = getopt.getopt(argv, 'hs:o:d:v:j:', ['help', 'src=', 'output=', 'dest=', 'version=', 'dependencies=', 'jar='])
     except getopt.GetoptError:
         print('Error: Unrecognized flag.')
         usage()
@@ -47,12 +47,12 @@ def main(argv):
         if opt in ('-h', '--help'):
             usage()
             sys.exit(0)
-        elif opt in ('-v', '--version'):
-            version = arg
         elif opt in ('-s', '--src'):
             src = arg
         elif opt in ('-o', '--output'):
             output = arg
+        elif opt in ('-v', '--version'):
+            version = arg
         elif opt in ('-d', '--dest'):
             dest = arg
         elif opt == '--dependencies':
@@ -63,13 +63,9 @@ def main(argv):
         elif opt in ('-j', '--jar'):
             jar = arg
 
-    compress(version, src, output, dest, dependencies, jar)
+    compress(src, output, dest, version, dependencies, jar)
 
-def compress(version, src, output='min.js', dest='.', dependencies=[], jar=None):
-    if not version:
-        print('Error: You must provide a version.')
-        sys.exit(2)
-
+def compress(src, output='min.js', dest='.', version='', dependencies=[], jar=None):
     if not src:
         print('Error: You must provide the location of the source files.')
         sys.exit(2)

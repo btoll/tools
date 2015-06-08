@@ -13,14 +13,14 @@ def usage():
         USAGE:
 
             CLI:
-                python3 tar.py -v 3.0.0 --src ../src/
+                python3 tar.py --src ../src/ -v 3.0.0
 
             As an imported module:
-                tar.tar(version, src[, dest='.'])
+                tar.tar(src[, dest='.', version])
 
-        --version, -v  The version of the minified script, must be specified.
         --src, -s      The location of the JavaScript source files, must be specified.
         --dest, -d     The location where the minified file will be moved, defaults to cwd.
+        --version, -v  The version of the minified script.
     '''
     print(textwrap.dedent(str))
 
@@ -30,7 +30,7 @@ def main(argv):
     version = ''
 
     try:
-        opts, args = getopt.getopt(argv, 'hv:s:d:', ['help', 'version=', 'src=', 'dest='])
+        opts, args = getopt.getopt(argv, 'hs:d:v:', ['help', 'src=', 'dest=', 'version='])
     except getopt.GetoptError:
         print('Error: Unrecognized flag.')
         usage()
@@ -40,20 +40,16 @@ def main(argv):
         if opt in ('-h', '--help'):
             usage()
             sys.exit(0)
-        elif opt in ('-v', '--version'):
-            version = arg
         elif opt == '--src':
             src = arg
         elif opt == '--dest':
             dest = arg
+        elif opt in ('-v', '--version'):
+            version = arg
 
-    tar(version, src, dest)
+    tar(src, dest, version)
 
-def tar(version, src, dest='.'):
-    if not version:
-        print('Error: You must provide a version.')
-        sys.exit(2)
-
+def tar(src, dest='.', version):
     if not src:
         print('Error: You must provide the location of the source files.')
         sys.exit(2)
