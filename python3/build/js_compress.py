@@ -23,7 +23,7 @@ def usage():
         --output, -o    The name of the new minimized file, defaults to 'min.js'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
         --version, -v   The version of the minified script.
-        --dependencies  A string of filenames, separated by a comma, defaults to an empty list. FIFO.
+        --dependencies  Any number of filenames, separated by a comma, defaults to an empty list. FIFO.
         --jar, -j       The location of the jar file, defaults to the value of YUICOMPRESSOR environment variable.
     '''
     print(textwrap.dedent(str))

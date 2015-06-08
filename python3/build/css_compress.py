@@ -23,8 +23,8 @@ def usage():
         --output, -o    The name of the new minimized file, defaults to 'min.css'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
         --version, -v   The version of the minified script.
-        --dependencies  A string of filenames, separated by a comma, defaults to an empty list. FIFO.
-        --exclude       A string of filenames, separated by a comma, that should be excluded in the build, defaults to an empty list.
+        --dependencies  Any number of filenames, separated by a comma, defaults to an empty list. FIFO.
+        --exclude       Any number of filenames, separated by a comma, that should be excluded in the build, defaults to an empty list.
     '''
     print(textwrap.dedent(str))
 
