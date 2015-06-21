@@ -1,6 +1,5 @@
 import getopt
 import getpass
-import glob
 import os
 import re
 import server
@@ -63,7 +62,8 @@ def main(argv):
                 dependencies = arg
         elif opt == '--exclude':
             if type(arg) is not list:
-                exclude = arg.split(',')
+                # Split string by comma and strip leading and trailing whitepace from each list element.
+                exclude = ([f.strip() for f in arg.split(',')])
             else:
                 exclude = arg
 
@@ -78,9 +78,11 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
         print('Creating minified script...\n')
 
         buff = []
-        genny = (dependencies + [os.path.basename(filepath) for filepath in glob.glob(src + '*.css') if os.path.basename(filepath) not in dependencies + exclude])
+        matches = walk(src, exclude)
 
-        if (len(genny) - len(dependencies) - len(exclude) <= 0):
+        l = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
+
+        if (len(l) - len(dependencies) - len(exclude) <= 0):
             print('OPERATION ABORTED: No CSS files were found in the specified source directory. Check your path?')
             sys.exit(1)
 
@@ -90,15 +92,19 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
             else:
                 return ''
 
-        # Strip out any comments of the "/* ... */" type (non-greedy). The subexpression matches all chars AND whitespace.
+        # Strip out any comments of the "/* ... */" type (non-greedy). The subexpression
+        # matches all chars AND whitespace.
         reStripComments = re.compile(r'/\*(?:.|\s)*?\*/')
+
         # Remove all whitespace before and after the following chars: { } : ; = , < >
         reRemoveWhitespace = re.compile(r'\s*({|}|:|;|=|,|<|>)\s*')
+
         # Lastly, replace all double spaces with a single space.
         reReplaceDoubleSpaces = re.compile(r'^\s+|\s+$')
 
-        for script in genny:
-            with open(src + script) as f:
+        for script in l:
+            # Note that `script` is the full path name.
+            with open(script) as f:
                 file_contents = f.read()
 
             file_contents = reStripComments.sub('', file_contents)
@@ -121,6 +127,19 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
         # Control-C or Control-D sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
         sys.exit(1)
+
+def walk(root, exclude):
+    matches = []
+
+    for dirpath, dirnames, filenames in os.walk(root):
+        # First add all filenames to the list.
+        matches += [os.path.join(dirpath, f) for f in filenames if re.search('.css$', f)]
+
+        # Then remove any dirnames in our exclude list so any filenames contained
+        # within them are not included.
+        [dirnames.remove(d) for d in dirnames if d in exclude]
+
+    return matches
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
