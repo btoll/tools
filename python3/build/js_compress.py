@@ -1,9 +1,8 @@
 # TODO: support compressors other than YUI Compressor?
 
-import base
+import base_compress
 import getopt
 import getpass
-import glob
 import os
 import server
 import subprocess
@@ -15,16 +14,19 @@ def usage():
         USAGE:
 
             CLI:
-                python3 js_compress.py -s /usr/local/www/jsLite/src/ -d /usr/local/www/owlsnestfarm/build/ -o jslite.js --dependencies 'JSLITE.prototype.js, JSLITE.js, JSLITE.Element.js, JSLITE.Composite.js, JSLITE.Observer.js'
+                python3 js_compress.py -s /usr/local/www/PeteJS/src/ -d /usr/local/www/owlsnestfarm/build/ -o pete.js --dependencies 'Pete.prototype.js, Pete.js, Pete.Element.js, Pete.Composite.js, Pete.Observer.js'
 
             As an imported module:
-                js_compress.compress(src[, output='min.js', dest='.', version='3.0.0', dependencies=[], jar=None])
+                js_compress.compress(src[, output='min.js', dest='.', version='3.0.0', dependencies='', exclude='', jar=None])
 
         --src, -s       The location of the JavaScript source files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.js'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
         --version, -v   The version of the minified script.
-        --dependencies  Any number of filenames, separated by a comma, defaults to an empty list. FIFO.
+        --dependencies  Any number of directories or filenames, separated by a comma, defaults to an empty list. FIFO.
+                        The absolute path will be prepended to the element, depends on the src location.
+        --exclude       Any number of directories or filenames, separated by a comma, that should be excluded in the build, defaults to an empty list.
+                        The absolute path will be prepended to the element, depends on the src location.
         --jar, -j       The location of the jar file, defaults to the value of YUICOMPRESSOR environment variable.
     '''
     print(textwrap.dedent(str))
@@ -36,9 +38,10 @@ def main(argv):
     output = 'min.js'
     version = ''
     dependencies = []
+    exclude = []
 
     try:
-        opts, args = getopt.getopt(argv, 'hs:o:d:v:j:', ['help', 'src=', 'output=', 'dest=', 'version=', 'dependencies=', 'jar='])
+        opts, args = getopt.getopt(argv, 'hs:o:d:v:j:', ['help', 'src=', 'output=', 'dest=', 'version=', 'dependencies=', 'exclude=', 'jar='])
     except getopt.GetoptError:
         print('Error: Unrecognized flag.')
         usage()
@@ -57,17 +60,15 @@ def main(argv):
         elif opt in ('-d', '--dest'):
             dest = arg
         elif opt == '--dependencies':
-            if type(arg) is not list:
-                # Split string by comma and strip leading and trailing whitepace from each list element.
-                dependencies = ([f.strip() for f in arg.split(',')])
-            else:
-                dependencies = arg
+            dependencies = arg if type(arg) is list else base.split_and_strip(arg)
+        elif opt == '--exclude':
+            exclude = arg if type(arg) is list else base.split_and_strip(arg)
         elif opt in ('-j', '--jar'):
             jar = arg
 
-    compress(src, output, dest, version, dependencies, jar)
+    compress(src, output, dest, version, dependencies, exclude, jar)
 
-def compress(src, output='min.js', dest='.', version='', dependencies=[], jar=None):
+def compress(src, output='min.js', dest='.', version='', dependencies=[], exclude=[], jar=None):
     if not src:
         print('Error: You must provide the location of the source files.')
         sys.exit(2)
@@ -85,13 +86,16 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], jar=No
         print('Creating minified script...\n')
 
         buff = []
-        genny = (dependencies + [os.path.basename(filepath) for filepath in glob.glob(src + '*.js') if os.path.basename(filepath) not in dependencies])
+        exclude = base.make_abspath(src, exclude)
+        matches = base.walk(src, exclude)
 
-        if (len(genny) - len(dependencies) <= 0):
+        ls = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
+
+        if (len(ls) - len(dependencies) - len(exclude) <= 0):
             print('OPERATION ABORTED: No JavaScript source files were found in the specified source directory. Check your path?')
             sys.exit(1)
 
-        for script in genny:
+        for script in ls:
             buff.append(subprocess.getoutput('java -jar ' + jar + ' ' + src + script))
             print('Script ' + script + ' minified.')
 
