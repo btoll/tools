@@ -13,6 +13,7 @@ ln -s "$PWD"/tmux/tmuxly.sh /usr/local/bin/tmuxly
 echo "$(tput setaf 2)[INFO]$(tput sgr0) Installing Python build tools..."
 
 ln -s "$PWD"/python3/server.py /usr/local/bin/server.py
+ln -s "$PWD"/python3/build/base_compress.py /usr/local/bin/base_compress.py
 ln -s "$PWD"/python3/build/css_compress.py /usr/local/bin/css_compress.py
 ln -s "$PWD"/python3/build/js_compress.py /usr/local/bin/js_compress.py
 ln -s "$PWD"/python3/build/crypt.py /usr/local/bin/crypt.py

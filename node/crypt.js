@@ -15,7 +15,7 @@ var gpg = require('gpg'),
         .nargs('o', 1)
         .describe('o', 'The name of the new file')
 
-        .alias('r', 'recipients')
+        .alias('r', 'recipient')
         .nargs('r', [])
         .describe('r', 'A comma-separated string of recipients')
 
@@ -44,8 +44,10 @@ if (!argv.r) {
 gpg.encryptToFile({
     source: argv.e,
     dest: argv.o,
-    recipients: argv.r
-}, function (err, data){
-    console.log(err);
+    recipient: argv.r
+}, function (data){
+    console.log(data.toString('utf-8'));
+    //console.log('data', data);
+    //console.log(err);
 });
 

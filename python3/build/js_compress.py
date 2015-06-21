@@ -1,5 +1,6 @@
 # TODO: support compressors other than YUI Compressor?
 
+import base
 import getopt
 import getpass
 import glob

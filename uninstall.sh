@@ -10,6 +10,7 @@ rm /usr/local/bin/make_file
 rm /usr/local/bin/make_ticket
 rm /usr/local/bin/tmuxly
 rm /usr/local/bin/server.py
+rm /usr/local/bin/base_compress.py
 rm /usr/local/bin/css_compress.py
 rm /usr/local/bin/js_compress.py
 rm /usr/local/bin/crypt.py

@@ -1,3 +1,4 @@
+import base_compress
 import getopt
 import getpass
 import os
@@ -13,17 +14,19 @@ def usage():
         USAGE:
 
             CLI:
-                python3 css_compress.py --src ../resources/css/ -o JSLITE_CSS_3.0.0.min.css
+                python3 css_compress.py --src ../resources/css/ --exclude 'mobile, desktop/home.css' -o mobile.css
 
             As an imported module:
-                css_compress.compress(src[, output='min.css', dest='.', 'version=''])
+                css_compress.compress(src[, output='min.css', dest='.', 'version='', --dependencies='', --exclude=''])
 
         --src, -s       The location of the CSS files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.css'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
         --version, -v   The version of the minified script.
-        --dependencies  Any number of filenames, separated by a comma, defaults to an empty list. FIFO.
-        --exclude       Any number of filenames, separated by a comma, that should be excluded in the build, defaults to an empty list.
+        --dependencies  Any number of directories or filenames, separated by a comma, defaults to an empty list. FIFO.
+                        The absolute path will be prepended to the element, depends on the src location.
+        --exclude       Any number of directories or filenames, separated by a comma, that should be excluded in the build, defaults to an empty list.
+                        The absolute path will be prepended to the element, depends on the src location.
     '''
     print(textwrap.dedent(str))
 
@@ -55,17 +58,9 @@ def main(argv):
         elif opt in ('-v', '--version'):
             version = arg
         elif opt == '--dependencies':
-            if type(arg) is not list:
-                # Split string by comma and strip leading and trailing whitepace from each list element.
-                dependencies = ([f.strip() for f in arg.split(',')])
-            else:
-                dependencies = arg
+            dependences = arg if type(arg) is list else base.split_and_strip(arg)
         elif opt == '--exclude':
-            if type(arg) is not list:
-                # Split string by comma and strip leading and trailing whitepace from each list element.
-                exclude = ([f.strip() for f in arg.split(',')])
-            else:
-                exclude = arg
+            exclude = arg if type(arg) is list else base.split_and_strip(arg)
 
     compress(src, output, dest, version, dependencies, exclude)
 
@@ -77,12 +72,14 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
     try:
         print('Creating minified script...\n')
 
+
         buff = []
-        matches = walk(src, exclude)
+        exclude = base.make_abspath(src, exclude)
+        matches = base.walk(src, exclude)
 
-        l = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
+        ls = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
 
-        if (len(l) - len(dependencies) - len(exclude) <= 0):
+        if (len(ls) - len(dependencies) - len(exclude) <= 0):
             print('OPERATION ABORTED: No CSS files were found in the specified source directory. Check your path?')
             sys.exit(1)
 
@@ -102,7 +99,7 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
         # Lastly, replace all double spaces with a single space.
         reReplaceDoubleSpaces = re.compile(r'^\s+|\s+$')
 
-        for script in l:
+        for script in ls:
             # Note that `script` is the full path name.
             with open(script) as f:
                 file_contents = f.read()
@@ -127,19 +124,6 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
         # Control-C or Control-D sent a SIGINT to the process, handle it.
         print('\nProcess aborted!')
         sys.exit(1)
-
-def walk(root, exclude):
-    matches = []
-
-    for dirpath, dirnames, filenames in os.walk(root):
-        # First add all filenames to the list.
-        matches += [os.path.join(dirpath, f) for f in filenames if re.search('.css$', f)]
-
-        # Then remove any dirnames in our exclude list so any filenames contained
-        # within them are not included.
-        [dirnames.remove(d) for d in dirnames if d in exclude]
-
-    return matches
 
 if __name__ == '__main__':
     if len(sys.argv) == 1:
