@@ -58,9 +58,9 @@ def main(argv):
         elif opt in ('-v', '--version'):
             version = arg
         elif opt == '--dependencies':
-            dependences = arg if type(arg) is list else base.split_and_strip(arg)
+            dependences = arg if type(arg) is list else base_compress.split_and_strip(arg)
         elif opt == '--exclude':
-            exclude = arg if type(arg) is list else base.split_and_strip(arg)
+            exclude = arg if type(arg) is list else base_compress.split_and_strip(arg)
 
     compress(src, output, dest, version, dependencies, exclude)
 
@@ -74,8 +74,8 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
 
 
         buff = []
-        exclude = base.make_abspath(src, exclude)
-        matches = base.walk(src, exclude)
+        exclude = base_compress.make_abspath(src, exclude)
+        matches = base_compress.walk(src, exclude)
 
         ls = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
 

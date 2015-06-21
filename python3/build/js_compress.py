@@ -60,9 +60,9 @@ def main(argv):
         elif opt in ('-d', '--dest'):
             dest = arg
         elif opt == '--dependencies':
-            dependencies = arg if type(arg) is list else base.split_and_strip(arg)
+            dependencies = arg if type(arg) is list else base_compress.split_and_strip(arg)
         elif opt == '--exclude':
-            exclude = arg if type(arg) is list else base.split_and_strip(arg)
+            exclude = arg if type(arg) is list else base_compress.split_and_strip(arg)
         elif opt in ('-j', '--jar'):
             jar = arg
 
@@ -86,8 +86,8 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], exclud
         print('Creating minified script...\n')
 
         buff = []
-        exclude = base.make_abspath(src, exclude)
-        matches = base.walk(src, exclude)
+        exclude = base_compress.make_abspath(src, exclude)
+        matches = base_compress.walk(src, exclude)
 
         ls = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
 
