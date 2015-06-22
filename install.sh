@@ -16,6 +16,7 @@ ln -s "$PWD"/python3/server.py /usr/local/bin/server.py
 ln -s "$PWD"/python3/build/base_compress.py /usr/local/bin/base_compress.py
 ln -s "$PWD"/python3/build/css_compress.py /usr/local/bin/css_compress.py
 ln -s "$PWD"/python3/build/js_compress.py /usr/local/bin/js_compress.py
+ln -s "$PWD"/python3/build/build.py /usr/local/bin/build.py
 ln -s "$PWD"/python3/build/crypt.py /usr/local/bin/crypt.py
 
 if [ -f ~/.bashrc ]; then
