@@ -86,15 +86,7 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], exclud
         print('Creating minified script...\n')
 
         buff = []
-        exclude = base_compress.make_abspath(src, exclude)
-        dependencies = base_compress.make_abspath(src, dependencies)
-        matches = base_compress.walk(src, exclude, 'js')
-
-        ls = (dependencies + [f for f in matches if f not in dependencies])
-
-        if (len(ls) - len(dependencies) - len(exclude) <= 0):
-            print('OPERATION ABORTED: No JavaScript source files were found in the specified source directory. Check your path?')
-            sys.exit(1)
+        ls = base_compress.make_list(src, 'js', exclude, dependencies)
 
         for script in ls:
             buff.append(subprocess.getoutput('java -jar ' + jar + ' ' + script))

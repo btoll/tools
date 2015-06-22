@@ -4,6 +4,19 @@ import re
 def make_abspath(root, ls):
     return [os.path.join(root, f) for f in ls]
 
+def make_list(root, suffix, exclude=[], dependencies=[]):
+    exclude = make_abspath(root, exclude)
+    dependencies = make_abspath(root, dependencies)
+    matches = walk(root, exclude, suffix)
+
+    ls = (dependencies + [f for f in matches if f not in dependencies])
+
+    if (len(ls) - len(dependencies) - len(exclude) <= 0):
+        print('OPERATION ABORTED: No ' + suffix.upper() + ' source files were found in the specified source directory. Check your path?')
+        sys.exit(1)
+
+    return ls
+
 def split_and_strip(ls):
     # Split string by comma and strip leading and trailing whitepace from each list element.
     return [f.strip() for f in ls.split(',')]
@@ -26,5 +39,4 @@ def walk(root, exclude=[], suffix='js'):
         [dirnames.remove(d) for d in dirnames if os.path.join(root, d) in exclude]
 
     return matches
-
 

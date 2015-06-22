@@ -91,17 +91,8 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
     try:
         print('Creating minified script...\n')
 
-
         buff = []
-        exclude = base_compress.make_abspath(src, exclude)
-        dependencies = base_compress.make_abspath(src, dependencies)
-        matches = base_compress.walk(src, exclude, 'css')
-
-        ls = (dependencies + [f for f in matches if f not in dependencies])
-
-        if (len(ls) - len(dependencies) - len(exclude) <= 0):
-            print('OPERATION ABORTED: No CSS files were found in the specified source directory. Check your path?')
-            sys.exit(1)
+        ls = base_compress.make_list(src, 'css', exclude, dependencies)
 
         def replace_match(match_obj):
             if not match_obj.group(1) == '':
