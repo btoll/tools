@@ -1,6 +1,7 @@
 import base_compress
 import getopt
 import getpass
+import json
 import os
 import re
 import server
@@ -39,7 +40,7 @@ def main(argv):
     exclude = []
 
     try:
-        opts, args = getopt.getopt(argv, 'hs:o:d:v:', ['help', 'src=', 'output=', 'dest=', 'version=', 'dependencies=', 'exclude='])
+        opts, args = getopt.getopt(argv, 'hs:o:d:v:c:', ['help', 'src=', 'output=', 'dest=', 'version=', 'dependencies=', 'exclude=', 'config'])
     except getopt.GetoptError:
         print('Error: Unrecognized flag.')
         usage()
@@ -61,6 +62,24 @@ def main(argv):
             dependences = arg if type(arg) is list else base_compress.split_and_strip(arg)
         elif opt == '--exclude':
             exclude = arg if type(arg) is list else base_compress.split_and_strip(arg)
+        elif opt in ('-c', '-config', '--config'):
+            try:
+                # This can read 'username hostname port'.
+                # username, hostname, port = open(arg, encoding='utf-8').readline().split()
+
+                # TODO: Is there a better way to get the values from the Json?
+                with open(arg, mode='r', encoding='utf-8') as f:
+                    json_data = json.loads(f.read())
+
+                src = json_data.get('src')
+                output = json_data.get('output')
+                version = str(json_data.get('version'))
+                exclude = json_data.get('exclude')
+
+            # Exceptions could be bad Json or file not found.
+            except (ValueError, FileNotFoundError) as e:
+                print(e)
+                sys.exit(1)
 
     compress(src, output, dest, version, dependencies, exclude)
 
