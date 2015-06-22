@@ -9,11 +9,7 @@ def usage():
     str = '''
         USAGE:
 
-            CLI:
-                python3 build.py --config foo.json
-
-            As an imported module:
-                css_compress.compress(src[, output='min.css', dest='.', 'version='', --dependencies='', --exclude=''])
+        python3 build.py --config foo.json
 
         --config, -config, -c  The location of the build file.
     '''
