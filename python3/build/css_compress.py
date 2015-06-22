@@ -94,9 +94,10 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
 
         buff = []
         exclude = base_compress.make_abspath(src, exclude)
-        matches = base_compress.walk(src, exclude)
+        dependencies = base_compress.make_abspath(src, dependencies)
+        matches = base_compress.walk(src, exclude, 'css')
 
-        ls = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
+        ls = (dependencies + [f for f in matches if f not in dependencies])
 
         if (len(ls) - len(dependencies) - len(exclude) <= 0):
             print('OPERATION ABORTED: No CSS files were found in the specified source directory. Check your path?')
@@ -136,8 +137,8 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
             # Flush the buffer (only perform I/O once).
             fp.write(''.join(buff))
 
-        if server.prepare(output):
-            print('Created minified script ' + output + ' in ' + dest)
+        #if server.prepare(output):
+        print('Created minified script ' + output + ' in ' + dest)
 
     except (KeyboardInterrupt, EOFError):
         # Control-C or Control-D sent a SIGINT to the process, handle it.

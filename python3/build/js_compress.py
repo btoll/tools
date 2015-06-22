@@ -87,16 +87,17 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], exclud
 
         buff = []
         exclude = base_compress.make_abspath(src, exclude)
-        matches = base_compress.walk(src, exclude)
+        dependencies = base_compress.make_abspath(src, dependencies)
+        matches = base_compress.walk(src, exclude, 'js')
 
-        ls = (dependencies + [f for f in matches if os.path.basename(f) not in dependencies])
+        ls = (dependencies + [f for f in matches if f not in dependencies])
 
         if (len(ls) - len(dependencies) - len(exclude) <= 0):
             print('OPERATION ABORTED: No JavaScript source files were found in the specified source directory. Check your path?')
             sys.exit(1)
 
         for script in ls:
-            buff.append(subprocess.getoutput('java -jar ' + jar + ' ' + src + script))
+            buff.append(subprocess.getoutput('java -jar ' + jar + ' ' + script))
             print('Script ' + script + ' minified.')
 
         # This will overwrite pre-existing.
@@ -106,8 +107,8 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], exclud
             # Flush the buffer (only perform I/O once).
             fp.write(''.join(buff))
 
-        if server.prepare(output):
-            print('Created minified script ' + output + ' in ' + dest)
+        #if server.prepare(output):
+        print('Created minified script ' + output + ' in ' + dest)
 
     except (KeyboardInterrupt, EOFError):
         # Control-C or Control-D sent a SIGINT to the process, handle it.
