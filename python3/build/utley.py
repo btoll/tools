@@ -9,7 +9,7 @@ def usage():
     str = '''
         USAGE:
 
-        python3 build.py --config foo.json
+        python3 utley.py --config foo.json
 
         --config, -config, -c  The location of the build file.
     '''

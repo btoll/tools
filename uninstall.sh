@@ -13,7 +13,7 @@ rm /usr/local/bin/server.py
 rm /usr/local/bin/base_compress.py
 rm /usr/local/bin/css_compress.py
 rm /usr/local/bin/js_compress.py
-rm /usr/local/bin/build.py
+rm /usr/local/bin/utley.py
 rm /usr/local/bin/crypt.py
 
 echo
