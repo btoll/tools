@@ -15,9 +15,26 @@ def usage():
     '''
     print(textwrap.dedent(str))
 
+def getJson(resource='build.json'):
+    try:
+        # TODO: Is there a better way to get the values from the Json?
+        with open(resource, mode='r', encoding='utf-8') as f:
+            jsonData = json.loads(f.read())
+
+        return (jsonData.get('css'), jsonData.get('js'))
+
+    # Exceptions could be bad Json or file not found.
+    except (ValueError, FileNotFoundError) as e:
+        print(e)
+        sys.exit(1)
+
 def main(argv):
     css = []
     js = []
+
+    # If there are no given arguments, assume a build.json file.
+    if len(argv) == 0:
+        css, js = getJson()
 
     try:
         opts, args = getopt.getopt(argv, 'h:c:', ['help', 'config'])
@@ -31,18 +48,7 @@ def main(argv):
             usage()
             sys.exit(0)
         elif opt in ('-c', '-config', '--config'):
-            try:
-                # TODO: Is there a better way to get the values from the Json?
-                with open(arg, mode='r', encoding='utf-8') as f:
-                    json_data = json.loads(f.read())
-
-                css = json_data.get('css', [])
-                js = json_data.get('js', [])
-
-            # Exceptions could be bad Json or file not found.
-            except (ValueError, FileNotFoundError) as e:
-                print(e)
-                sys.exit(1)
+            css, js = getJson(arg)
 
     build(js, css)
 
@@ -68,9 +74,9 @@ def build(js=[], css=[]):
         js_compress.compress(src, output, dest, version, dependencies, exclude)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        usage()
-        sys.exit(2)
+#    if len(sys.argv) == 1:
+#        usage()
+#        sys.exit(2)
 
     main(sys.argv[1:])
 
