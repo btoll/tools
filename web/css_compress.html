@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="copyright" content="&copy; copyright 2007-2015, Benjamin Toll" />
+<title>CSS Compressor</title>
+<style type="text/css">
+body {
+    background: #EED;
+    text-align: center;
+}
+
+h1 {
+    background: #FFF;
+    border: 2px solid #999;
+    font-size: 22px;
+    margin: 0 auto;
+    padding: 4px 6px 4px 4px;
+    width: 140px;
+}
+
+h1 span {
+    color: blue;
+    font-family: cursive;
+    font-style: italic;
+}
+
+p {
+    margin-bottom: 0;
+}
+
+p.warning {
+    font-weight: bold;
+    margin-top: 0;
+}
+
+p.warning span {
+    color: #F00;
+}
+
+div {
+    margin: 0 auto;
+    width: 90%;
+}
+
+textarea {
+    border: 1px solid #789;
+    color: #789;
+    font-weight: bold;
+    margin: 20px auto;
+    height: 170px;
+    width: 100%;
+}
+
+textarea:focus {
+    outline: 2px solid invert;
+}
+
+textarea#treated {
+    background: #F0F0F0;
+}
+
+div#stats {
+    margin-left: 80px;
+    text-align: left;
+    width: 200px;
+}
+
+div#stats label {
+    clear: left;
+    float: left;
+    width: 100px;
+}
+
+div#stats input {
+    float: left;
+}
+</style>
+<script type="text/javascript">
+function $(sElem) {
+    return document.getElementById(sElem);
+}
+
+function cssCompress() {
+    var oldSize = $('untreated').value.length,
+        skinned = $('untreated').value;
+
+    // Strip out any comments of the '/* ... */' type (non-greedy); the subexpression matches all chars AND whitespace.
+    skinned = skinned.replace(/\/\*(?:.|\s)*?\*\//g, '');
+
+    // Remove all whitespace before and after the following chars: { } : ; = , < >
+    skinned = skinned.replace(/\s*({|}|:|;|=|,|<|>)\s*/g, '$1');
+
+    // Lastly, replace all double spaces with a single space.
+    skinned = skinned.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ');
+
+    // Display the results.
+    $('treated').value = skinned;
+    $('oldSize').value = oldSize;
+    $('newSize').value = skinned.length;
+    $('ratio').value = (Math.round(skinned.length / oldSize * 1000) / 10) + '%';
+}
+
+window.onload = function() {
+    (function () {
+        $('untreated').focus();
+
+        $('compress').onclick = function () {
+            cssCompress();
+        };
+
+        $('clear').onclick = function () {
+            $('untreated').value = '';
+            $('treated').value = '';
+            $('oldSize').value = '';
+            $('newSize').value = '';
+            $('ratio').value = '';
+
+            $('untreated').focus();
+        };
+
+        $('selectAll').onclick = function () {
+            $('treated').select();
+        };
+
+        $('theForm').onsubmit = function () {
+            return false;
+        };
+    }());
+};
+</script>
+</head>
+
+<body>
+
+<h1>CSS<span>Compress</span></h1>
+
+<p>The basic functionality for this CSS compressor was inspired by Douglas Crockford's <a href="http://fmarcia.info/jsmin/test.html">JSMin</a> and Dean Edward's <a href="http://dean.edwards.name/packer/">Packer</a>.</p>
+<p class="warning"><span>Warning!</span> Compression is a one-way trip, so please backup all files before running them through the compressor!</p>
+<form id="theForm" action="stripper.html">
+    <div>
+        <textarea id="untreated"></textarea>
+
+        <button id="compress">Compress</button>
+        <button id="clear">Clear</button>
+        <textarea id="treated"></textarea>
+        <button id="selectAll">Select All</button>
+    </div>
+    <div id="stats">
+        <h2>Stats</h2>
+
+        <label for="oldSize">Old Size</label> <input type="text" id="oldSize" size="5" />
+        <label for="newSize">New Size</label> <input type="text" id="newSize" size="5" />
+        <label for="ratio">Ratio</label> <input type="text" id="ratio" size="5" />
+    </div>
+</form>
+
+</body>
+</html>
+
