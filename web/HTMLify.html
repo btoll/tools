@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>HTMLify()</title>
+<style type="text/css">
+body {
+    background: #EED;
+    text-align: center;
+}
+
+h1 {
+    background: #FFF;
+    border: 2px solid #999;
+    font-size: 22px;
+    margin: 0 auto;
+    padding: 4px 6px 4px 4px;
+    width: 140px;
+}
+
+h1 span {
+    color: blue;
+    font-family: cursive;
+    font-style: italic;
+}
+
+p {
+    margin-bottom: 0;
+}
+
+p.warning {
+    font-weight: bold;
+    margin-top: 0;
+}
+
+p.warning span {
+    color: #F00;
+}
+
+div {
+    margin: 0 auto;
+    width: 90%;
+}
+
+textarea {
+    border: 1px solid #789;
+    color: #789;
+    font-weight: bold;
+    margin: 20px auto;
+    height: 170px;
+    width: 100%;
+}
+
+textarea:focus {
+    outline: 2px solid invert;
+}
+
+textarea#treated {
+    background: #F0F0F0;
+}
+</style>
+<script type="text/javascript">
+function $(sElem) {
+    return document.getElementById(sElem);
+}
+
+String.prototype.HTMLify = function () {
+    var o = {
+        "'": "&#39;",
+        '"': "&#34;",
+        "<": "&#60;",
+        ">": "&#62;",
+        "&": "&#38;"
+    };
+    return this.replace(/['"<>&]/g, function (a) {
+        return o[a] ? o[a] : a;
+    });
+};
+
+window.onload = function() {
+  (function () {
+      $('untreated').focus();
+
+      $('compress').onclick = function () {
+          $('treated').value = $('untreated').value.HTMLify();
+      };
+
+      $('clear').onclick = function () {
+          $('untreated').value = '';
+          $('treated').value = '';
+
+          $('untreated').focus();
+      };
+
+      $('selectAll').onclick = function () {
+          $('treated').select();
+      };
+
+      $('theForm').onsubmit = function () {
+          return false;
+      };
+    })();
+};
+</script>
+</head>
+
+<body>
+<h1>HTML<span>ify()</span></h1>
+
+<p>Turns &lt; &gt; &quot; &amp; into their respective HTML entities.</p>
+<form id="theForm" action="stripper.html">
+    <div>
+        <textarea id="untreated"></textarea>
+        <button id="compress">HTMLify</button>
+        <button id="clear">Clear</button>
+
+        <textarea id="treated"></textarea>
+        <button id="selectAll">Select All</button>
+    </div>
+</form>
+
+</body>
+</html>
+
