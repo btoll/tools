@@ -20,6 +20,7 @@ def usage():
                 js_compress.compress(src[, output='min.js', dest='.', version='3.0.0', dependencies='', exclude='', jar=None])
 
         --src, -s       The location of the JavaScript source files, must be specified.
+                        If this is a path value, rather than just a filename, the value will be split with the basename becoming the new value and the path value becoming the value for dest.
         --output, -o    The name of the new minimized file, defaults to 'min.js'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
         --version, -v   The version of the minified script.
@@ -92,8 +93,13 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], exclud
             buff.append(subprocess.getoutput('java -jar ' + jar + ' ' + script))
             print('Script ' + script + ' minified.')
 
+        if '/' in output:
+            dest, output = os.path.split(output)
+
         # This will overwrite pre-existing.
-        os.makedirs(dest, exist_ok=True)
+        if dest != '.':
+            os.makedirs(dest, exist_ok=True)
+
         # Let's append in case a build prepending copyright information (or anything, really) before calling here.
         with open(dest + '/' + output, mode='a', encoding='utf-8') as fp:
             # Flush the buffer (only perform I/O once).

@@ -22,6 +22,7 @@ def usage():
 
         --src, -s       The location of the CSS files, must be specified.
         --output, -o    The name of the new minimized file, defaults to 'min.css'.
+                        If this is a path value, rather than just a filename, the value will be split with the basename becoming the new value and the path value becoming the value for dest.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
         --version, -v   The version of the minified script.
         --dependencies  Any number of directories or filenames, separated by a comma, defaults to an empty list. FIFO.
@@ -126,8 +127,13 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
             buff.append(file_contents)
             print('CSS file ' + script + ' minified.')
 
+        if '/' in output:
+            dest, output = os.path.split(output)
+
         # This will overwrite pre-existing.
-        os.makedirs(dest, exist_ok=True)
+        if dest != '.':
+            os.makedirs(dest, exist_ok=True)
+
         with open(dest + '/' + output, mode='w', encoding='utf-8') as fp:
             # Flush the buffer (only perform I/O once).
             fp.write(''.join(buff))
