@@ -83,9 +83,11 @@ function $(sElem) {
 
 function cssCompress() {
     var oldSize = $('untreated').value.length,
-        skinned = $('untreated').value;
+        skinned = $('untreated').value,
+        skinnedLen;
 
-    // Strip out any comments of the '/* ... */' type (non-greedy); the subexpression matches all chars AND whitespace.
+    // Strip out any comments of the '/* ... */' type (non-greedy).
+    // The subexpression matches all chars AND whitespace.
     skinned = skinned.replace(/\/\*(?:.|\s)*?\*\//g, '');
 
     // Remove all whitespace before and after the following chars: { } : ; = , < >
@@ -94,11 +96,13 @@ function cssCompress() {
     // Lastly, replace all double spaces with a single space.
     skinned = skinned.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ');
 
+    skinnedLen = skinned.length;
+
     // Display the results.
     $('treated').value = skinned;
     $('oldSize').value = oldSize;
-    $('newSize').value = skinned.length;
-    $('ratio').value = (Math.round(skinned.length / oldSize * 1000) / 10) + '%';
+    $('newSize').value = skinnedLen;
+    $('ratio').value = (Math.round(skinnedLen / oldSize * 1000) / 10) + '%';
 }
 
 window.onload = function() {
@@ -149,9 +153,9 @@ window.onload = function() {
     <div id="stats">
         <h2>Stats</h2>
 
-        <label for="oldSize">Old Size</label> <input type="text" id="oldSize" size="5" />
-        <label for="newSize">New Size</label> <input type="text" id="newSize" size="5" />
-        <label for="ratio">Ratio</label> <input type="text" id="ratio" size="5" />
+        <label for="oldSize">Old Size</label> <input type="text" id="oldSize" size="5" readOnly />
+        <label for="newSize">New Size</label> <input type="text" id="newSize" size="5" readOnly />
+        <label for="ratio">Ratio</label> <input type="text" id="ratio" size="5" readOnly />
     </div>
 </form>
 
