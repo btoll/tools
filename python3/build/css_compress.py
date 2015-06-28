@@ -107,8 +107,11 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
         # Remove all whitespace before and after the following chars: { } : ; = , < >
         reRemoveWhitespace = re.compile(r'\s*({|}|:|;|=|,|<|>)\s*')
 
+        # Trim.
+        reTrim = re.compile(r'^\s+|\s+$')
+
         # Lastly, replace all double spaces with a single space.
-        reReplaceDoubleSpaces = re.compile(r'^\s+|\s+$')
+        reReplaceDoubleSpaces = re.compile(r'\s{2,}')
 
         for script in ls:
             # Note that `script` is the full path name.
@@ -117,7 +120,8 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
 
             file_contents = reStripComments.sub('', file_contents)
             file_contents = reRemoveWhitespace.sub(replace_match, file_contents)
-            file_contents = reReplaceDoubleSpaces.sub('', file_contents)
+            file_contents = reTrim.sub('', file_contents)
+            file_contents = reReplaceDoubleSpaces.sub(' ', file_contents)
 
             buff.append(file_contents)
             print('CSS file ' + script + ' minified.')
