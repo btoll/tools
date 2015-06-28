@@ -88,19 +88,20 @@ function cssCompress() {
 
     // Strip out any comments of the '/* ... */' type (non-greedy).
     // The subexpression matches all chars AND whitespace.
-    skinned = skinned.replace(/\/\*(?:.|\s)*?\*\//g, '');
-
-    // Remove all whitespace before and after the following chars: { } : ; = , < >
-    skinned = skinned.replace(/\s*({|}|:|;|=|,|<|>)\s*/g, '$1');
-
-    // Lastly, replace all double spaces with a single space.
-    skinned = skinned.replace(/^\s+|\s+$/g, '').replace(/\s{2,}/g, ' ');
-
-    skinnedLen = skinned.length;
+    skinned = skinned.replace(/\/\*(?:.|\s)*?\*\//g, '')
+        // Remove all whitespace before and after the following chars: { } : ; = , < >
+        .replace(/\s*({|}|:|;|=|,|<|>)\s*/g, '$1')
+        // Trim.
+        .replace(/^\s+|\s+$/g, '')
+        // Lastly, replace all double spaces with a single space.
+        .replace(/\s{2,}/g, ' ');
 
     // Display the results.
     $('treated').value = skinned;
     $('oldSize').value = oldSize;
+
+    skinnedLen = skinned.length;
+
     $('newSize').value = skinnedLen;
     $('ratio').value = (Math.round(skinnedLen / oldSize * 1000) / 10) + '%';
 }
