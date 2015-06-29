@@ -21,6 +21,7 @@ def usage():
                 css_compress.compress(src[, output='min.css', dest='.', 'version='', --dependencies='', --exclude=''])
 
         --src, -s       The location of the CSS files, must be specified.
+                        If a list, concatenate all entries into one file.
         --output, -o    The name of the new minimized file, defaults to 'min.css'.
                         If this is a path value, rather than just a filename, the value will be split with the basename becoming the new value and the path value becoming the value for dest.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
@@ -60,9 +61,9 @@ def main(argv):
         elif opt in ('-v', '--version'):
             version = arg
         elif opt == '--dependencies':
-            dependences = arg if type(arg) is list else base_compress.split_and_strip(arg)
+            dependences = arg
         elif opt == '--exclude':
-            exclude = arg if type(arg) is list else base_compress.split_and_strip(arg)
+            exclude = arg
         elif opt in ('-c', '-config', '--config'):
             try:
                 # This can read 'username hostname port'.
@@ -90,10 +91,16 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
         sys.exit(2)
 
     try:
+        print('*****************************')
         print('Creating minified script...\n')
 
         buff = []
-        ls = base_compress.make_list(src, 'css', exclude, dependencies)
+        ls = base_compress.sift_list(
+            base_compress.make_list(src),
+            'css',
+            base_compress.make_list(exclude),
+            base_compress.make_list(dependencies)
+        )
 
         def replace_match(match_obj):
             if not match_obj.group(1) == '':
@@ -125,7 +132,7 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
             file_contents = reReplaceDoubleSpaces.sub(' ', file_contents)
 
             buff.append(file_contents)
-            print('CSS file ' + script + ' minified.')
+            print('Minified ' + script)
 
         if '/' in output:
             dest, output = os.path.split(output)
@@ -139,7 +146,8 @@ def compress(src, output='min.css', dest='.', version='', dependencies=[], exclu
             fp.write(''.join(buff))
 
         #if server.prepare(output):
-        print('Created minified script ' + output + ' in ' + dest)
+        print('\nCreated minified script ' + output + ' in ' + dest + '/')
+        print('*****************************')
 
     except (KeyboardInterrupt, EOFError):
         # Control-C or Control-D sent a SIGINT to the process, handle it.

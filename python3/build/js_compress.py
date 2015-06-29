@@ -20,6 +20,7 @@ def usage():
                 js_compress.compress(src[, output='min.js', dest='.', version='3.0.0', dependencies='', exclude='', jar=None])
 
         --src, -s       The location of the JavaScript source files, must be specified.
+                        If a list, concatenate all entries into one file.
                         If this is a path value, rather than just a filename, the value will be split with the basename becoming the new value and the path value becoming the value for dest.
         --output, -o    The name of the new minimized file, defaults to 'min.js'.
         --dest, -d      The location where the minified file will be moved, defaults to cwd.
@@ -61,9 +62,9 @@ def main(argv):
         elif opt in ('-d', '--dest'):
             dest = arg
         elif opt == '--dependencies':
-            dependencies = arg if type(arg) is list else base_compress.split_and_strip(arg)
+            dependencies = arg
         elif opt == '--exclude':
-            exclude = arg if type(arg) is list else base_compress.split_and_strip(arg)
+            exclude = arg
         elif opt in ('-j', '--jar'):
             jar = arg
 
@@ -87,11 +88,16 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], exclud
         print('Creating minified script...\n')
 
         buff = []
-        ls = base_compress.make_list(src, 'js', exclude, dependencies)
+        ls = base_compress.sift_list(
+            base_compress.make_list(src),
+            'js',
+            base_compress.make_list(exclude),
+            base_compress.make_list(dependencies)
+        )
 
         for script in ls:
             buff.append(subprocess.getoutput('java -jar ' + jar + ' ' + script))
-            print('Script ' + script + ' minified.')
+            print('Minified ' + script)
 
         if '/' in output:
             dest, output = os.path.split(output)
@@ -106,7 +112,7 @@ def compress(src, output='min.js', dest='.', version='', dependencies=[], exclud
             fp.write(''.join(buff))
 
         #if server.prepare(output):
-        print('Created minified script ' + output + ' in ' + dest)
+        print('\nCreated minified script ' + output + ' in ' + dest + '/')
 
     except (KeyboardInterrupt, EOFError):
         # Control-C or Control-D sent a SIGINT to the process, handle it.
