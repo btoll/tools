@@ -95,7 +95,7 @@ if [ $? -eq 0 ]; then
     CSS_HREF="http://localhost${SDK:${#WEB_SERVER}}/$DIR/$CSS_HREF"
     JS_SRC="http://localhost${SDK:${#WEB_SERVER}}/$DIR/ext.js"
 
-    HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\n</script>\n</head>\n\n<body>\n</body>\n</html>"
+    HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\n</script>\n</head>\n\n<body>\n</body>\n</html>\n"
 
     echo -e "$HTML" > "$FILE"
 
