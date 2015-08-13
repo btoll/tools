@@ -4,12 +4,14 @@
 
 CSS_HREF=
 DIR=
+DOMAIN="http://localhost"
 FIDDLE=
 FILE=
 HTML=
 JS_SRC=
 LOCATION=
 TITLE=
+URL=
 VERSION=5
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
@@ -78,22 +80,34 @@ if [ $? -eq 0 ]; then
     esac
 
     # Link to the SDK.
-    if [ -z $SDK ]; then
+    if [ -z "$SDK" ]; then
         read -p "Absolute path location of version $VERSION SDK (skip this step by exporting an \$SDK$VERSION env var): " LOCATION
         SDK="$LOCATION"
     fi
 
-    if [ -z "$WEB_SERVER" ]; then
-        read -p "Absolute path location of web server (skip this step by exporting a \$WEB_SERVER env var): " LOCATION
-        WEB_SERVER="$LOCATION"
+    if [ -z "$WEBSERVER" ]; then
+        read -p "Absolute path location of web server (skip this step by exporting a \$WEBSERVER env var): " LOCATION
+        WEBSERVER="$LOCATION"
     fi
 
-    # Here we're getting the length of the $WEB_SERVER string value (# is the length operator) to use as the offset to get the substring value.
-    # We're using it like a bitmask to get at the relative path of the SDK to the web server's public directory. We need to do this to construct
-    # the URIs for the test page
-    # For example, "/usr/local/www/SDK5" will become "/SDK5" if the $WEB_SERVER value is "/usr/local/www".
-    CSS_HREF="http://localhost${SDK:${#WEB_SERVER}}/$DIR/$CSS_HREF"
-    JS_SRC="http://localhost${SDK:${#WEB_SERVER}}/$DIR/ext.js"
+    # Here we're getting the length of the $WEBSERVER string value (# is the length operator) to use as the
+    # offset to get the substring value. We're using it like a bitmask to get at the relative path of the SDK
+    # to the web server's public directory. We need to do this to construct the URIs for the test page For
+    # example, "/usr/local/www/SDK5" will become "/SDK5" if the $WEBSERVER value is "/usr/local/www".
+    #
+    # Chop off last char it it's a trailing slash.
+    if [[ "$WEBSERVER" == */ ]]; then
+        WEBSERVER=${WEBSERVER%?}
+    fi
+
+    # Chop off last char it it's a trailing slash.
+    if [[ "$SDK" == */ ]]; then
+        SDK=${SDK%?}
+    fi
+
+    URL="$DOMAIN${SDK:${#WEBSERVER}}/$DIR"
+    CSS_HREF="$URL/$CSS_HREF"
+    JS_SRC="$URL/ext.js"
 
     HTML="<html>\n<head>\n<title>$TITLE</title>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"$CSS_HREF\" />\n<script type=\"text/javascript\" src=\"$JS_SRC\"></script>\n<script type=\"text/javascript\">\n</script>\n</head>\n\n<body>\n</body>\n</html>\n"
 
@@ -106,7 +120,7 @@ if [ $? -eq 0 ]; then
     # Only proceed if the Fiddle was downloaded successfully.
     if [ $? -eq 0 ]; then
         echo "$(tput setaf 2)[INFO]$(tput sgr0) File creation successful."
-        open "http://localhost${PWD:${#WEB_SERVER}}/$FILE"
+        open "$DOMAIN${PWD:${#WEBSERVER}}/$FILE"
     fi
 fi
 
