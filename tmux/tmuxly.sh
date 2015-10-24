@@ -104,6 +104,7 @@ if [ $? -eq 0 ]; then
         cd "$BUGS"
         mkdir -m 0755 -p "$TICKET"
         cd "$TICKET"
+
         make_file -f "index.html" -v "$VERSION" -t "$TICKET" --fiddle "$FIDDLE"
         TICKET_DIR_EXISTS=true
     }

@@ -12,14 +12,14 @@ def usage():
     str = '''
         Usage:
         Optional flags:
-            -c, -config, --config           A config file that the script will read to get remote system information. Session will be non-interactive.
-                                            Useful for automation.
-            -d, -decrypt, --decrypt         Signals the specified operation should be decryption rather than the default encryption.
-            -f, -file, --file               The file to encrypt/decrypt.
-            -o, -output, --output           The name of the new file (will create first if it doesn't exist).
-            -r, -recipients, --recipients   A comma-separated string of recipients.
-            -s, -sign, --sign               The user ID with which to sign the encrypted file.
-            -h, -help, --help               Help.
+            -c, --config      A config file that the script will read to get remote system information. Session will be non-interactive.
+                              Useful for automation.
+            -d, --decrypt     Signals the specified operation should be decryption rather than the default encryption.
+            -f, --file        The file to encrypt/decrypt.
+            -o, --output      The name of the new file (will create first if it doesn't exist).
+            -r, --recipients  A comma-separated string of recipients.
+            -s, --sign        The user ID with which to sign the encrypted file.
+            -h, --help        Help.
     '''
     print(textwrap.dedent(str))
 
@@ -41,17 +41,17 @@ def main(argv):
         if opt in ('-h', '-help', '--help'):
             usage()
             sys.exit(0)
-        elif opt in ('-d', '-decrypt', '--decrypt'):
+        elif opt in ('-d', '--decrypt'):
             decrypt = True
-        elif opt in ('-f', '-file', '--file'):
+        elif opt in ('-f', '--file'):
             filename = arg
-        elif opt in ('-o', '-output', '--output'):
+        elif opt in ('-o', '--output'):
             output = arg
-        elif opt in ('-r', '-recipients', '--recipients'):
+        elif opt in ('-r', '--recipients'):
             recipients = arg
-        elif opt in ('-s', '-sign', '--sign'):
+        elif opt in ('-s', '--sign'):
             sign = arg
-        elif opt in ('-c', '-config', '--config'):
+        elif opt in ('-c', '--config'):
             json = arg
 
     if (filename):
@@ -68,7 +68,7 @@ def decrypt_file(filename, output):
 
     try:
         if not output:
-            output = input('Name of decrypted file: ')
+            output = input('Name of outputted decrypted file: ')
 
         passphrase = _get_passphrase()
 
@@ -77,6 +77,13 @@ def decrypt_file(filename, output):
 
         if decrypted.ok:
             print('File decryption successful.')
+
+            # Only offer to remove original file if not editing in place!
+            if output != filename:
+                resp = input('Remove original encrypted file? [y|N]: ')
+                if resp in ['Y', 'y']:
+                    os.remove(filename)
+
             sys.exit(0)
         else:
             #print('Error: ' + decrypted.stderr)
@@ -89,7 +96,7 @@ def decrypt_file(filename, output):
 def encrypt_file(filename, **kwargs):
     output = kwargs.get('output')
     if not output:
-        output = filename + '.asc'
+        output = input('Name of outputted encrypted file: ')
 
     recipients = kwargs.get('recipients')
     if not recipients:
@@ -139,6 +146,12 @@ def encrypt_file(filename, **kwargs):
 
             # Push to server.
             server.prepare(output)
+
+        # Only offer to remove original file if not editing in place!
+        if output != filename:
+            resp = input('Remove original decrypted file? [y|N]: ')
+            if resp in ['Y', 'y']:
+                os.remove(filename)
 
         sys.exit(0)
     else:
