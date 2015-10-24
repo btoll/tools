@@ -21,11 +21,12 @@ For example, the file ~/.barchiver/benjamintoll.com in the example above could l
 
 Usage:
 
-    Optional flags:
-    -h, --help    Help.
-    -n, --name    An optional archive name. The default is YYYYMMDDHHMMSS.
-    -s, --src     The location of the assets to archive. Defaults to cwd.
-    -d, --dest    The location of where the assets should be archived. Defaults to cwd.
-    -r, --root    The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to cwd.
-    -c, --config  A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
+    Property | Description
+    ------------ | ------------
+    -n, --name | An optional archive name. The default is YYYYMMDDHHMMSS.
+    -s, --src | The location of the assets to archive. Defaults to cwd.
+    -d, --dest | The location of where the assets should be archived. Defaults to cwd.
+    -r, --root | The directory that will be the root directory of the archive. For example, we typically chdir into root_dir before creating the archive. Defaults to cwd.
+    -c, --config | A config file that the script will read to get remote system information. Session will be non-interactive. Useful for automation.
+    -h, --help | Help.
 
