@@ -1,0 +1,19 @@
+{
+  "name": "dump_describes",
+  "version": "0.1.0",
+  "description": "List all `describes` blocks in a Jasmine suite",
+  "main": "String.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "esprima",
+    "jasmine"
+  ],
+  "author": "Benjamin Toll <benjam72@yahoo.com> (http://www.benjamintoll.com)",
+  "license": "ISC",
+  "dependencies": {
+    "esprima": "^2.7.0"
+  }
+}
+
