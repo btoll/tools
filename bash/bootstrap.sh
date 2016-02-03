@@ -42,16 +42,16 @@ if [ $? -eq 0 ]; then
         exit 1
     fi
 
-    if [ -z "$BUGS" ]; then
-        read -p "Location of bugs directory (set a \$BUGS env var to skip this step): " LOCATION
-
-        if [ -n "$LOCATION" ]; then
-            BUGS="$LOCATION"
-        else
-            echo "$(tput setaf 1)[ERROR]$(tput sgr0) No location given."
-            exit 1
-        fi
-    fi
+#    if [ -z "$BUGS" ]; then
+#        read -p "Location of bugs directory (set a \$BUGS env var to skip this step): " LOCATION
+#
+#        if [ -n "$LOCATION" ]; then
+#            BUGS="$LOCATION"
+#        else
+#            echo "$(tput setaf 1)[ERROR]$(tput sgr0) No location given."
+#            exit 1
+#        fi
+#    fi
 
     # Allow `bootstrap` to be called w/o any args, will assume the current topic branch name as the ticket.
     if [ "$#" -eq 0 ]; then
