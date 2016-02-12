@@ -96,7 +96,7 @@ if [ $? -eq 0 ]; then
     # We need a space here to separate the test case from the files returned by git-ls.
     FILES+=" "$(git ls --commit "$SHA")
 
-    vim -p $FILES
+    vim $FILES
 fi
 
 exit
