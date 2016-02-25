@@ -1,24 +1,18 @@
 #!/bin/bash
-# Get up and running quickly with the test case and the versioned files that make up the bug ticket.
-# If not given a bug ticket as an argument, `bootstrap` will assume the current topic branch.
+# Get up and running quickly with the versioned files that make up the last commit.
+# If not given any arguments, `bootstrap` will assume the current topic branch.
 
-# Note the dependencies on the `git-get-hash` alias and the `git-ls` extension:
-# https://github.com/btoll/utils/tree/master/git
+# Note the dependencies on the `git-ls` extension:
+# https://github.com/btoll/git/blob/master/bin/git-ls
 
 # TODO fix errors when non-existent branch
-
 BRANCH=
-DIR=
-FILE=
 FILES=
 SHA=
-SHORT_FORM=
-TESTCASE=
-TICKET=
 
 # First, let's make sure that the system on which we are running has the dependencies installed.
 if which check_dependencies > /dev/null; then
-    check_dependencies -d "git-ls" -p "https://github.com/btoll/utils/blob/master/git/bin/git-ls"
+    check_dependencies -d "git-ls" -p "https://github.com/btoll/git/blob/master/bin/git-ls"
 fi
 
 if [ $? -eq 0 ]; then
@@ -28,10 +22,8 @@ if [ $? -eq 0 ]; then
         echo "Usage: $0 [args]"
         echo
         echo "Args:"
-        echo "--branch, -branch, -b   : If the branch name is different from the ticket name, specify the branch name"
-        echo "                          using this flag."
-        echo
-        echo "--ticket, -ticket, -t   : The bug ticket number."
+        echo "--branch, -b   : If the branch name is different from the ticket name, specify the branch name"
+        echo "                 using this flag."
         echo
         echo "Note if no arguments are passed, the current branch name will be assumed as the name of the ticket."
     }
@@ -42,56 +34,25 @@ if [ $? -eq 0 ]; then
         exit 1
     fi
 
-#    if [ -z "$BUGS" ]; then
-#        read -p "Location of bugs directory (set a \$BUGS env var to skip this step): " LOCATION
-#
-#        if [ -n "$LOCATION" ]; then
-#            BUGS="$LOCATION"
-#        else
-#            echo "$(tput setaf 1)[ERROR]$(tput sgr0) No location given."
-#            exit 1
-#        fi
-#    fi
+    # Allow `bootstrap` to be called w/o any args, will assume the current topic branch.
 
-    # Allow `bootstrap` to be called w/o any args, will assume the current topic branch name as the ticket.
-    if [ "$#" -eq 0 ]; then
-        SHORT_FORM=true
-    else
+    if [ "$#" -gt 0 ]; then
         while [ "$#" -gt 0 ]; do
             OPT="$1"
             case $OPT in
-                --branch|-branch|-b) shift; BRANCH=$1 ;;
-                --help|-help|-h) usage; exit 0 ;;
-                --ticket|-ticket|-t) shift; TICKET=$1 ;;
+                --branch|-b) shift; BRANCH=$1 ;;
+                --help|-h) usage; exit 0 ;;
             esac
             shift
         done
-
-        # Note that if the long form of the command is used that $TICKET must be specified.
-        if [ -z "$TICKET" ]; then
-            echo "$(tput setaf 1)[ERROR]$(tput sgr0) No ticket specified."
-            exit 1
-        fi
     fi
 
     # If no branch, let's assume the current one.
-    if [ "$SHORT_FORM" ] || [ -z "$BRANCH" ]; then
+    if [ -z "$BRANCH" ]; then
         BRANCH=$(git rev-parse --abbrev-ref HEAD)
-
-        # If using the short form, there will be no $TICKET, make it the same as $BRANCH.
-        TICKET=${TICKET:-"$BRANCH"}
     fi
 
-    # If the bug directory exists, get every html file in it (they should all be test cases).
-    DIR="$BUGS/$TICKET"
-    if [ -d "$DIR" ]; then
-        for FILE in "$DIR"/*.html; do
-            # We need a space here to separate the files.
-            FILES+=" $FILE"
-        done
-    fi
-
-    SHA=$(git get-hash "$BRANCH")
+    SHA=$(git rev-parse "$BRANCH")
 
     # We need a space here to separate the test case from the files returned by git-ls.
     FILES+=" "$(git ls --commit "$SHA")
