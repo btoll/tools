@@ -7,21 +7,26 @@
 // .map(s => String.fromCharCode(s ^ symmetricKey))
 // .join('');
 
-const sneak = {
-  decrypt: (msg, symmetricKey) =>
-      msg.split(' ')
-          .map(c => String.fromCharCode(c ^ symmetricKey))
-          .join(''),
+'use strict';
+let secret;
 
-  encrypt: (msg, symmetricKey) =>
-      msg.split('')
-          .map(c => c.charCodeAt() ^ symmetricKey)
-          .join(' ')
+module.exports = {
+    decode: (msg, symmetricKey) =>
+        (
+          secret = new Buffer(msg, 'base64').toString('utf8'),
+
+          secret.split(' ')
+              .map(c => String.fromCharCode(c ^ symmetricKey))
+              .join('')
+        ),
+
+    encode: (msg, symmetricKey) =>
+        (
+            secret = msg.split('')
+                .map(c => c.charCodeAt() ^ symmetricKey)
+                .join(' '),
+
+            new Buffer(secret, 'utf8').toString('base64')
+        )
 };
-
-const e = sneak.encrypt('the ides of march', 52354523);
-process.stdout.write(`${e}\n\n`);
-
-const d = sneak.decrypt(e, 52354523);
-process.stdout.write(`${d}\n`);
 
