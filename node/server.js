@@ -5,8 +5,11 @@ const cp = require('child_process');
 const fs = require('fs');
 const http = require('http');
 
+const args = process.argv;
+const idx = args.indexOf('-p');
+
 const hostname = '127.0.0.1';
-const port = 3000;
+const port = (idx > -1) ? Number(args[idx + 1]) : 8080;
 
 const server = http.createServer((req, res) => {
     const url = req.url;
