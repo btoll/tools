@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 'use strict';
 
-const cp = require('child_process');
+// const cp = require('child_process');
 const fs = require('fs');
 const http = require('http');
 
@@ -16,6 +16,7 @@ const server = http.createServer((req, res) => {
 
     if (url.indexOf('favicon') === -1) {
         const currentLocation = `${process.cwd()}${url}`;
+
         fs.stat(currentLocation, (err, stats) => {
             if (err) {
                 // TODO: Capture more error codes.
@@ -80,6 +81,7 @@ const server = http.createServer((req, res) => {
 server.listen(port, hostname, () => {
     const url = `http://${hostname}:${port}/`;
 
+    /*
     if (process.platform === 'darwin') {
         cp.exec(`open ${url}`, err => {
             if (err) {
@@ -87,6 +89,7 @@ server.listen(port, hostname, () => {
             }
         });
     }
+    */
 
     console.log(`Server running at ${url}`);
 });
