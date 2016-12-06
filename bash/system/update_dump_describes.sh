@@ -15,53 +15,53 @@ fi
 
 for file in $(ag -l --json dump_describes); do
     DIR=$(dirname $file)
+    (
+        cd "$DIR"
 
-    pushd "$DIR"
+        echo "$DEBUG In repo "$DIR"..."
+        echo "$INFO Running npm update dump_describes..."
 
-    echo "$DEBUG In repo "$DIR"..."
-    echo "$INFO Running npm update dump_describes..."
+        npm update dump_describes
 
-    npm update dump_describes
+        if [ $? -eq 0 ]; then
+            echo "$INFO Running npm run specs..."
 
-    if [ $? -eq 0 ]; then
-        echo "$INFO Running npm run specs..."
+            npm run specs
+        else
+            echo "$ERROR dump_describes package could not be updated."
+            break
+        fi
 
-        npm run specs
-    else
-        echo "$ERROR dump_describes package could not be updated."
-        break
-    fi
+        if [ $? -eq 0 ]; then
+            if [ $(git status | ag _suite | wc -l) -gt 0 ]; then
+                echo "$INFO Running git add spec/"$DIR"_suite*..."
 
-    if [ $? -eq 0 ]; then
-        if [ $(git status | ag _suite | wc -l) -gt 0 ]; then
-            echo "$INFO Running git add spec/"$DIR"_suite*..."
+                git add spec/"$DIR"_suite*
 
-            git add spec/"$DIR"_suite*
+                if [ $? -eq 0 ]; then
+                    echo "$INFO Committing and pushing..."
 
-            if [ $? -eq 0 ]; then
-                echo "$INFO Committing and pushing..."
-
-                # GPG sign and don't verify against any pre-commit hooks.
-                git commit -Snm 'Updated generated dump_describes suites'
-                git push origin master
+                    # GPG sign and don't verify against any pre-commit hooks.
+                    git commit -Snm 'Updated generated dump_describes suites'
+                    git push origin master
+                fi
+            else
+                echo "$INFO Nothing to commit."
             fi
         else
-            echo "$INFO Nothing to commit."
+            echo -e "$ERROR Specs failed."
+            break
         fi
-    else
-        echo -e "$ERROR Specs failed."
-        break
-    fi
 
-    if [ $? -eq 1 ]; then
-        echo "$ERROR Creating the commit and pushing to remote failed."
-        break
-    fi
-
-    popd
+        if [ $? -eq 1 ]; then
+            echo "$ERROR Creating the commit and pushing to remote failed."
+            break
+        fi
+    )
 done
 
 if [ $CHANGED -eq 1 ]; then
+    echo "$DEBUG Restoring original location..."
     popd
 fi
 
