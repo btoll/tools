@@ -5,7 +5,8 @@
 
 int main (int argc, char *argv[])
 {
-    int size = argc > 1 ? atoi(argv[1]) : MAX;
+    int i,
+        size = argc > 1 ? atoi(argv[1]) : MAX;
 
     char bucket[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.,<>'/\\\"?;:!@#$%&*()-+[]^`=";
     char generated[size + 1];
@@ -14,7 +15,7 @@ int main (int argc, char *argv[])
 
     srand(time(NULL));
 
-    for (int i = 0; i < size; i++) {
+    for (i = 0; i < size; i++) {
 //        *(generated + i) = bucket[(0 + rand() % len)];
         generated[i] = bucket[(0 + rand() % len)];
     }
