@@ -26,6 +26,11 @@ int main(int argc, char **argv) {
 
     int b = !argv[2] ? 4 : atoi(argv[2]);
 
+    if (b > 8) {
+        b = 8;
+        printf("Max number of display bytes is 8\n");
+    }
+
     asbits(atoi(argv[1]), b);
 
     return 0;
