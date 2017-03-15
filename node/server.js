@@ -25,20 +25,20 @@ const server = http.createServer((req, res) => {
                 }
             } else {
                 if (stats.isFile()) {
-                  fs.readFile(currentLocation, (err, data) => {
-                      if (err) {
-                          console.log(`ERROR: ${err}`);
-                          res.statusCode = 500;
-                          res.end('Cannot display file');
-                      } else {
-                          const contentType = url.indexOf('htm') > -1 ?
-                              'text/html' :
-                              'text/plain';
+                    fs.readFile(currentLocation, (err, data) => {
+                        if (err) {
+                            console.log(`ERROR: ${err}`);
+                            res.statusCode = 500;
+                            res.end('Cannot display file');
+                        } else {
+                            const contentType = url.indexOf('htm') > -1 ?
+                                'text/html' :
+                                'text/plain';
 
-                          res.setHeader('Content-Type', contentType);
-                          res.end(data);
-                      }
-                  });
+                            res.setHeader('Content-Type', contentType);
+                            res.end(data);
+                        }
+                    });
                 } else {
                     fs.readdir(currentLocation, (err, files) => {
                         if (err) {
