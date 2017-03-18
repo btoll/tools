@@ -17,7 +17,7 @@ CHROOT_NAME="$1"
 echo "$(tput setaf 4)[INFO]$(tput sgr0) Installing the chroot will take several minutes."
 
 # Dependencies.
-yes | apt-get install debootstrap schroot
+apt-get install debootstrap schroot -y
 
 # Create the dir where the jail is installed.
 mkdir -p /srv/chroot/$CHROOT_NAME
@@ -33,7 +33,7 @@ echo -e "[$CHROOT_NAME]\
 \nroot-groups=root" > /etc/schroot/chroot.d/$CHROOT_NAME
 
 # Finally, create the jail itself.
-# debootstrap jessie /var/chroot/ http://ftp.debian.org/debian
+# debootstrap jessie /srv/chroot/$CHROOT_NAME http://ftp.debian.org/debian
 debootstrap --no-check-gpg jessie /srv/chroot/$CHROOT_NAME file:///home/btoll/virt
 
 if [ $? -eq 0 ]; then

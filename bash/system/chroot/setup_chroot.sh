@@ -8,11 +8,11 @@ fi
 (
     apt-get update ;
     # Have schroot install these packages?
-    yes | apt-get install curl git sudo tmux vim ;
+    apt-get install curl git sudo tmux vim -y ;
 
     ###############################################################################
     # Attempting to work around the "perl: warning: Setting locale failed" error...
-#    yes | apt-get install locales ;
+#    apt-get install locales -y ;
 #    localedef -i en_US -f UTF-8 en_US.UTF-8 ;
 #    echo -e "\nLANGUAGE = en_US\nLC_ALL = en_US\nLANG = en_US\nLC_TYPE = en_US\n" > /etc/environment ;
     ###############################################################################
