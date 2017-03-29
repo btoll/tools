@@ -24,7 +24,7 @@ mkdir -p /srv/chroot/$CHROOT_NAME
 
 # Create a config entry for the jail.
 echo -e "[$CHROOT_NAME]\
-\ndescription=Debian 8.2.0\
+\ndescription=Debian 8 (jessie)\
 \ntype=directory\
 \ndirectory=/srv/chroot/$CHROOT_NAME\
 \nusers=btoll\

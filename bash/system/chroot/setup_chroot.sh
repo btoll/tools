@@ -6,6 +6,11 @@ if [ $EUID -ne 0 ]; then
 fi
 
 (
+    # Bug workaround.
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=705752
+    # http://askubuntu.com/questions/335538/unknown-user-in-statoverride-file
+    sed -i '/crontab/d' /var/lib/dpkg/statoverride
+
     apt-get update ;
     # Have schroot install these packages?
     apt-get install curl git sudo tmux vim -y ;
@@ -17,26 +22,26 @@ fi
 #    echo -e "\nLANGUAGE = en_US\nLC_ALL = en_US\nLANG = en_US\nLC_TYPE = en_US\n" > /etc/environment ;
     ###############################################################################
 
-    echo -e "1234\n1234\nBenjamin Toll\n\n\n\n\n" | adduser btoll ;
+    echo -e "asdf\nasdf\ntmux\n\n\n\n\n" | adduser tmux ;
 
     if [ $? -eq 0 ]; then
-        echo -e "\n$(tput setaf 4)[INFO]$(tput sgr0) Added user btoll" ;
-    elif [ ! -d /home/btoll ]; then
+        echo -e "\n$(tput setaf 4)[INFO]$(tput sgr0) Added user tmux" ;
+    elif [ ! -d /home/tmux ]; then
         # If the user already exists but the homedir doesn't, create it.
         # If the dir doesn't exist, it's because the user was auto-created
         # via schroot config or by some other means.
         echo -e "\n$(tput setaf 4)[INFO]$(tput sgr0) Creating home directory" ;
-        mkdir /home/btoll
+        mkdir /home/tmux
     fi
 
-    pushd /home/btoll ;
+    pushd /home/tmux ;
     git clone https://github.com/btoll/dotfiles.git ;
     cp dotfiles/minimal/.* .
     echo -e "\n$(tput setaf 4)[INFO]$(tput sgr0) Installed dotfiles" ;
     popd ;
 
-    chown -R btoll:btoll /home/btoll ;
-    . /home/btoll/.bash_profile ;
+    chown -R tmux:tmux /home/tmux ;
+    . /home/tmux/.bash_profile ;
 
     if [ $? -eq 0 ]; then
         echo "$(tput setaf 2)[SUCCESS]$(tput sgr0) Setup completed."
