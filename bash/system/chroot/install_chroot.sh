@@ -6,13 +6,50 @@ if [ $EUID -ne 0 ]; then
     exit 1
 fi
 
-if [ $# -eq 0 ]; then
-    echo "$(tput setaf 1)[ERROR]$(tput sgr0) Not enough arguments."
-    echo "Usage: $0 <chroot_name>"
+CHROOT_NAME=
+CHROOT_USER=
+DEBIAN_RELEASE=
+
+usage() {
+    echo "Usage: $0 [args]"
+    echo
+    echo "Args:"
+    echo "-c : The name of the chroot jail."
+    echo "-u : The name of the chroot user."
+    echo "-r : The name of the Debian release that will be bootstrapped in the jail (i.e., wheezy, jessie, etc)."
+    echo
+}
+
+if [ "$#" -eq 0 ]; then
+    usage
     exit 1
 fi
 
-CHROOT_NAME="$1"
+while [ "$#" -gt 0 ]; do
+    OPT="$1"
+    case $OPT in
+        -c) shift; CHROOT_NAME=$OPT ;;
+        -u) shift; CHROOT_USER=$OPT ;;
+        -r) shift; DEBIAN_RELEASE=$OPT ;;
+        -h) usage; exit 0 ;;
+    esac
+    shift
+done
+
+if [ -z $CHROOT_NAME ]; then
+    echo "$(tput setaf 1)[ERROR]$(tput sgr0) No chroot name specified."
+    exit 1
+fi
+
+if [ -z $CHROOT_USER ]; then
+    echo "$(tput setaf 1)[ERROR]$(tput sgr0) No chroot user specified."
+    exit 1
+fi
+
+if [ -z $DEBIAN_RELEASE ]; then
+    echo "$(tput setaf 1)[ERROR]$(tput sgr0) No debian release specified."
+    exit 1
+fi
 
 echo "$(tput setaf 4)[INFO]$(tput sgr0) Installing the chroot will take several minutes."
 
@@ -24,17 +61,17 @@ mkdir -p /srv/chroot/$CHROOT_NAME
 
 # Create a config entry for the jail.
 echo -e "[$CHROOT_NAME]\
-\ndescription=Debian 8 (jessie)\
+\ndescription=Debian ($DEBIAN_RELEASE)\
 \ntype=directory\
 \ndirectory=/srv/chroot/$CHROOT_NAME\
-\nusers=btoll\
+\nusers=$CHROOT_USER\
 \ngroups=sbuild\
-\nroot-users=btoll\
+\nroot-users=$CHROOT_USER\
 \nroot-groups=root" > /etc/schroot/chroot.d/$CHROOT_NAME
 
 # Finally, create the jail itself.
-# debootstrap jessie /srv/chroot/$CHROOT_NAME http://ftp.debian.org/debian
-debootstrap --no-check-gpg jessie /srv/chroot/$CHROOT_NAME file:///home/btoll/virt
+#debootstrap --no-check-gpg $DEBIAN_RELEASE /srv/chroot/$CHROOT_NAME file:///home/$CHROOT_USER/mnt
+debootstrap $DEBIAN_RELEASE /srv/chroot/$CHROOT_NAME http://ftp.debian.org/debian
 
 if [ $? -eq 0 ]; then
     # See /etc/schroot/default/copyfiles for files to be copied into the new chroot.
