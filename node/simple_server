@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /* eslint-disable no-console */
 'use strict';
 
@@ -14,7 +16,8 @@ const port = (idx > -1) ? Number(args[idx + 1]) : 8080;
 const server = http.createServer((req, res) => {
     const url = req.url;
 
-    if (url.indexOf('favicon') === -1) {
+    // Proceed for everything but favicon.ico.
+    if (!~url.indexOf('favicon')) {
         const currentLocation = `${process.cwd()}${url}`;
 
         fs.stat(currentLocation, (err, stats) => {
@@ -31,9 +34,20 @@ const server = http.createServer((req, res) => {
                             res.statusCode = 500;
                             res.end('Cannot display file');
                         } else {
-                            const contentType = url.indexOf('htm') > -1 ?
-                                'text/html' :
-                                'text/plain';
+                            let contentType = null;
+
+                            switch (true) {
+                                case !!~currentLocation.indexOf('css'):
+                                    contentType = 'text/css';
+                                    break;
+
+                                case !!~currentLocation.indexOf('htm'):
+                                    contentType = 'text/html';
+                                    break;
+
+                                default:
+                                    contentType = 'text/plain';
+                            }
 
                             res.setHeader('Content-Type', contentType);
                             res.end(data);
