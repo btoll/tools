@@ -72,6 +72,17 @@ const getRootPrototype = previous => {
     return getRootPrototype(next);
 };
 
+// Lazy incrementer!
+const incr = (() => {
+    let i = 0;
+
+    return function* () {
+        while (true) {
+            yield i++;
+        }
+    };
+})();
+
 const isFunction = fn =>
     Object.prototype.toString.call(fn) === '[object Function]';
 
@@ -83,7 +94,11 @@ const p = create({
         console.log('base foo');
     },
 }, {
-    getUid: () => Math.random(),
+    getUid: (() => {
+        // Start the generator.
+        const i = incr();
+        return () => i.next().value;
+    })(),
     foo() {
         console.log('middle foo');
         this.super();
@@ -105,6 +120,7 @@ const k = create(p, {
     }
 });
 
+// Objects must opt-in to having `this.super` ability!
 const j = delegate(k, {
     [INIT]() {
         console.log('init!');
@@ -113,9 +129,10 @@ const j = delegate(k, {
     yobe: false
 });
 
-k.bar();
+// k.bar();
+// console.log(k.getUid());
 k.foo();
-j.foo();
-console.log(k.hasOwnProperty('yobe') === true);
-console.log(j.hasOwnProperty('yobe') === true);
+// j.foo();
+// console.log(k.hasOwnProperty('yobe') === true);
+// console.log(j.hasOwnProperty('yobe') === true);
 
