@@ -1,79 +1,50 @@
-const BASE_PROTO = Symbol.for('BASE_PROTO');
-const FUNC_NAME = Symbol.for('FUNC_NAME');
-const INIT = Symbol.for('INIT');
-const NEXT = Symbol.for('NEXT');
+/* eslint-disable no-console, no-constant-condition, no-multi-spaces, spaced-comment */
 
-const baseProto = {
-    [BASE_PROTO]: true,
-    super: function () {
-        const caller = this.super.caller;
-        caller[NEXT][caller[FUNC_NAME]].call(this);
+// Other objects relative to { my object }
+//
+//
+//       Object.prototype / null
+//                 |
+//                 |
+//             base proto
+//                 |
+//                 |
+//             prev proto
+//                 |
+//                 |
+//            { my object }
+//                 |
+//                 |
+//             next proto
+//                 |
+//                 |
+//                \_/
+//
+//
+
+const __BASE_PROTO__ = Symbol.for('__BASE_PROTO__');
+const __FUNC_NAME__  = Symbol.for('__FUNC_NAME__');
+const __INIT__       = Symbol.for('__INIT__');
+const __PREV_PROTO__ = Symbol.for('__PREV_PROTO__');
+
+//////////////////////////////////////////////////////////////
+//  Helpers.
+//////////////////////////////////////////////////////////////
+
+// TODO: This should just do one thing!
+// Walk the prototype chain.
+const getRootPrototype = proto => {
+    if (isRootPrototype(proto)) {
+        return proto;
     }
+
+    let prevProto = Object.getPrototypeOf(proto);
+    enableSuper(proto, prevProto);
+
+    return getRootPrototype(prevProto);
 };
 
-const create = (...args) => {
-    const [proto, ...rest] = args;
-    const p = Object.create(proto);
-
-    for (let i = 0, len = rest.length; i < len; i++) {
-        Object.assign(p, rest[i]);
-    }
-
-    return p;
-};
-
-const delegate = (...args) => {
-    let [proto, ...rest] = args;
-
-    if (!proto[BASE_PROTO]) {
-        Object.setPrototypeOf(
-            getRootPrototype(proto),
-            baseProto
-        );
-    } else {
-        // TODO: Check this!
-        proto = Object.create(proto);
-    }
-
-    for (let i = 0, len = rest.length; i < len; i++) {
-        enableChaining(rest[i], proto);
-        Object.assign(proto, rest[i]);
-    }
-
-
-    if (proto[INIT]) {
-        proto[INIT].apply(proto, rest);
-    }
-
-    return proto;
-};
-
-const enableChaining = (previous, next) => {
-    const keys = Object.getOwnPropertySymbols(previous).concat(Object.keys(previous));
-
-    for (let key of keys) {
-        const fn = previous[key];
-
-        if (isFunction(fn)) {
-            fn[FUNC_NAME] = key;
-            fn[NEXT] = next;
-        }
-    }
-};
-
-const getRootPrototype = previous => {
-    if (isRootPrototype(previous)) {
-        return previous;
-    }
-
-    let next = Object.getPrototypeOf(previous);
-    enableChaining(previous, next);
-
-    return getRootPrototype(next);
-};
-
-// Lazy incrementer!
-const incr = (() => {
+const increment = (() => {
     let i = 0;
 
     return function* () {
@@ -89,14 +60,83 @@ const isFunction = fn =>
 const isRootPrototype = proto =>
     Object.getPrototypeOf(proto) === (Object.prototype || null);
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+
+const baseProto = {
+    [__BASE_PROTO__]: true,
+    super: function () {
+        try {
+            const caller = this.super.caller;
+            caller[__PREV_PROTO__][caller[__FUNC_NAME__]].call(this);
+        } catch (e) {
+            throw new Error('[ERROR] No super. Sad!');
+        }
+    }
+};
+
+const create = (...args) => {
+    let [proto, fns] = args;
+    const p = Object.create(proto);
+
+    // TODO: This SHOULD only walk the prototype chain, assigning super abilities, if not already done!
+    if (!proto[__BASE_PROTO__]) {
+        Object.setPrototypeOf(
+            getRootPrototype(proto),
+            baseProto
+        );
+    } else {
+        // TODO: Check this!
+        proto = Object.create(proto);
+    }
+
+    // Since delegate accepts an optional 2nd arg of objects to be mixed in, we have to assign super to them, as well.
+    if (fns) {
+        enableSuper(fns, proto);
+        Object.assign(p, fns);
+    }
+
+    if (p[__INIT__]) {
+        p[__INIT__].apply(p);
+    }
+
+    return p;
+};
+
+const enableSuper = (obj, proto) => {
+    // Symbols like __INIT__ may want to call super, too.
+    const keys = Object.getOwnPropertySymbols(obj).concat(Object.keys(obj));
+
+    for (let key of keys) {
+        const fn = obj[key];
+
+        // Every function gets `super` ability.
+        // TODO: Don't process the same function twice!
+        if (isFunction(fn)) {
+            fn[__FUNC_NAME__] = key;
+            fn[__PREV_PROTO__] = proto;
+        }
+    }
+};
+
+//////////////////////////////////////////////////////////////
+//  Examples.
+//////////////////////////////////////////////////////////////
+
 const p = create({
+    // Use Symbol expression as the key for `init` to ensure we don't overwrite any existing property.
+    [__INIT__]() {
+        console.log('init p!');
+        console.log('hi pepper');
+        console.log(this.getUid());
+    },
     foo() {
         console.log('base foo');
-    },
+    }
 }, {
     getUid: (() => {
         // Start the generator.
-        const i = incr();
+        const i = increment();
         return () => i.next().value;
     })(),
     foo() {
@@ -117,22 +157,33 @@ const k = create(p, {
     bar() {
         console.log('delegates to base bar');
         this.super();
-    }
-});
-
-// Objects must opt-in to having `this.super` ability!
-const j = delegate(k, {
-    [INIT]() {
-        console.log('init!');
-        this.getUid();
+    },
+    [__INIT__]() {
+        console.log('init k!');
+        console.log('hi molly');
+        console.log(this.getUid());
+        this.super();
     },
     yobe: false
 });
 
-// k.bar();
-// console.log(k.getUid());
+const j = create(k, {
+    [__INIT__]() {
+        console.log('init!');
+        console.log('hi all doggies');
+        console.log(this.getUid());
+        this.super();
+    },
+    yobe: false,
+    foo() {
+        console.log('i am foo!!');
+        this.super();
+    }
+});
+
+k.bar();
 k.foo();
-// j.foo();
-// console.log(k.hasOwnProperty('yobe') === true);
-// console.log(j.hasOwnProperty('yobe') === true);
+j.foo();
+console.log(k.hasOwnProperty('yobe') === true);
+console.log(j.hasOwnProperty('yobe') === true);
 
