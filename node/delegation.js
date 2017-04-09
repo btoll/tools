@@ -68,7 +68,7 @@ const baseProto = {
     super: function () {
         try {
             const caller = this.super.caller;
-            caller[__PREV_PROTO__][caller[__FUNC_NAME__]].call(this);
+            caller[__PREV_PROTO__][caller[__FUNC_NAME__]].apply(this, arguments);
         } catch (e) {
             throw new Error('[ERROR] No super. Sad!');
         }
@@ -150,7 +150,11 @@ const p = create({
 });
 
 const k = create(p, {
-    foo() {
+    foo(msg) {
+        if (msg) {
+            console.log(msg);
+        }
+
         console.log('delegates to base foo');
         this.super();
     },
@@ -177,7 +181,7 @@ const j = create(k, {
     yobe: false,
     foo() {
         console.log('i am foo!!');
-        this.super();
+        this.super('i come from an object upstream from the callee!');
     }
 });
 
