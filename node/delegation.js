@@ -23,9 +23,8 @@
 //
 
 const __BASE_PROTO__ = Symbol.for('__BASE_PROTO__');
-const __FUNC_NAME__  = Symbol.for('__FUNC_NAME__');
 const __INIT__       = Symbol.for('__INIT__');
-const __PREV_PROTO__ = Symbol.for('__PREV_PROTO__');
+const __SUPER__      = Symbol.for('__SUPER__');
 
 //////////////////////////////////////////////////////////////
 //  Helpers.
@@ -68,15 +67,14 @@ const baseProto = {
     super: function () {
         try {
             const caller = this.super.caller;
-            caller[__PREV_PROTO__][caller[__FUNC_NAME__]].apply(this, arguments);
+            caller[__SUPER__].apply(this, arguments);
         } catch (e) {
             throw new Error('[ERROR] No super. Sad!');
         }
     }
 };
 
-const create = (...args) => {
-    let [proto, fns] = args;
+const create = (proto, /* optional */ fns) => {
     const p = Object.create(proto);
 
     // TODO: This SHOULD only walk the prototype chain, assigning super abilities, if not already done!
@@ -112,9 +110,9 @@ const enableSuper = (obj, proto) => {
 
         // Every function gets `super` ability.
         // TODO: Don't process the same function twice!
+        // TODO: Check to ensure super is a function?
         if (isFunction(fn)) {
-            fn[__FUNC_NAME__] = key;
-            fn[__PREV_PROTO__] = proto;
+            fn[__SUPER__] = proto[key];
         }
     }
 };
