@@ -43,15 +43,24 @@ const getRootPrototype = proto => {
     return getRootPrototype(prevProto);
 };
 
-const increment = (() => {
+const incr = (() => {
     let i = 0;
 
-    return function* () {
-        while (true) {
-            yield i++;
-        }
-    };
+    return ({
+        [Symbol.iterator]: () => ({
+            next: () => ({
+                done: false,
+                value: i++
+            })
+        })
+    });
 })();
+
+const increment = function* () {
+    while (true) {
+        yield* incr;
+    }
+};
 
 const isFunction = fn =>
     Object.prototype.toString.call(fn) === '[object Function]';
