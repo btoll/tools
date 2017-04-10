@@ -1,4 +1,4 @@
-/* eslint-disable no-console, no-constant-condition, no-multi-spaces, spaced-comment */
+/* eslint-disable no-console, no-multi-spaces, spaced-comment */
 
 // Other objects relative to { my object }
 //
@@ -26,51 +26,6 @@ const __BASE_PROTO__ = Symbol.for('__BASE_PROTO__');
 const __INIT__       = Symbol.for('__INIT__');
 const __SUPER__      = Symbol.for('__SUPER__');
 
-//////////////////////////////////////////////////////////////
-//  Helpers.
-//////////////////////////////////////////////////////////////
-
-// TODO: This should just do one thing!
-// Walk the prototype chain.
-const getRootPrototype = proto => {
-    if (isRootPrototype(proto)) {
-        return proto;
-    }
-
-    let prevProto = Object.getPrototypeOf(proto);
-    enableSuper(proto, prevProto);
-
-    return getRootPrototype(prevProto);
-};
-
-const incr = (() => {
-    let i = 0;
-
-    return ({
-        [Symbol.iterator]: () => ({
-            next: () => ({
-                done: false,
-                value: i++
-            })
-        })
-    });
-})();
-
-const increment = function* () {
-    while (true) {
-        yield* incr;
-    }
-};
-
-const isFunction = fn =>
-    Object.prototype.toString.call(fn) === '[object Function]';
-
-const isRootPrototype = proto =>
-    Object.getPrototypeOf(proto) === (Object.prototype || null);
-
-//////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////
-
 const baseProto = {
     [__BASE_PROTO__]: true,
     super: function () {
@@ -86,15 +41,12 @@ const baseProto = {
 const create = (proto, /* optional */ fns) => {
     const p = Object.create(proto);
 
-    // TODO: This SHOULD only walk the prototype chain, assigning super abilities, if not already done!
+    // Insert `baseProto` between the first object and the ultimate base (Object.prototype or null).
     if (!proto[__BASE_PROTO__]) {
         Object.setPrototypeOf(
-            getRootPrototype(proto),
+            getFirstPrototype(proto),
             baseProto
         );
-    } else {
-        // TODO: Check this!
-        proto = Object.create(proto);
     }
 
     // Since delegate accepts an optional 2nd arg of objects to be mixed in, we have to assign super to them, as well.
@@ -117,84 +69,30 @@ const enableSuper = (obj, proto) => {
     for (let key of keys) {
         const fn = obj[key];
 
-        // Every function gets `super` ability.
-        // TODO: Don't process the same function twice!
         // TODO: Check to ensure super is a function?
-        if (isFunction(fn)) {
+        if (isFunction(fn) && !fn[__SUPER__]) {
             fn[__SUPER__] = proto[key];
         }
     }
 };
 
-//////////////////////////////////////////////////////////////
-//  Examples.
-//////////////////////////////////////////////////////////////
-
-const p = create({
-    // Use Symbol expression as the key for `init` to ensure we don't overwrite any existing property.
-    [__INIT__]() {
-        console.log('init p!');
-        console.log('hi pepper');
-        console.log(this.getUid());
-    },
-    foo() {
-        console.log('base foo');
+// Walk the prototype chain to get the first prototype in 'userland' (the 'base proto' in the chain above).
+const getFirstPrototype = proto => {
+    if (isFirstPrototype(proto)) {
+        return proto;
     }
-}, {
-    getUid: (() => {
-        // Start the generator.
-        const i = increment();
-        return () => i.next().value;
-    })(),
-    foo() {
-        console.log('middle foo');
-        this.super();
-    },
-    bar() {
-        this.yobe = true;
-        console.log('base bar');
-    }
-});
 
-const k = create(p, {
-    foo(msg) {
-        if (msg) {
-            console.log(msg);
-        }
+    return getFirstPrototype(Object.getPrototypeOf(proto));
+};
 
-        console.log('delegates to base foo');
-        this.super();
-    },
-    bar() {
-        console.log('delegates to base bar');
-        this.super();
-    },
-    [__INIT__]() {
-        console.log('init k!');
-        console.log('hi molly');
-        console.log(this.getUid());
-        this.super();
-    },
-    yobe: false
-});
+const isFirstPrototype = proto =>
+    Object.getPrototypeOf(proto) === (Object.prototype || null);
 
-const j = create(k, {
-    [__INIT__]() {
-        console.log('init!');
-        console.log('hi all doggies');
-        console.log(this.getUid());
-        this.super();
-    },
-    yobe: false,
-    foo() {
-        console.log('i am foo!!');
-        this.super('i come from an object upstream from the callee!');
-    }
-});
+const isFunction = fn =>
+    Object.prototype.toString.call(fn) === '[object Function]';
 
-k.bar();
-k.foo();
-j.foo();
-console.log(k.hasOwnProperty('yobe') === true);
-console.log(j.hasOwnProperty('yobe') === true);
+module.exports = {
+    __INIT__,
+    create
+};
 
