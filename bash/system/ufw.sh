@@ -12,7 +12,9 @@ fi
 apt-get install ufw -y
 
 ufw allow 22/tcp
+ufw allow 53/tcp
 ufw allow 80/tcp
+# ufw allow 'Nginx HTTP'
 ufw allow 443/tcp
 ufw deny 25/tcp
 
