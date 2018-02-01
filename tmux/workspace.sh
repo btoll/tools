@@ -4,14 +4,14 @@ usage() {
     echo "Usage: $0 [args]"
     echo
     echo "Args:"
-    echo "--dir, -dir, -d         : Optional. Creates each pane in this directory."
+    echo "--dir, -dir, -d         : Optional. Creates each pane in CWD."
     echo
     echo "--session, -session, -s : Optional. The session name."
     echo
     echo "Creates a workspace that looks like:"
     echo
     echo "#   +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-    echo "#   + ~:$                          | ~:$                          +"
+    echo "#   + ~:$                          | ~:$ _                        +"
     echo "#   +                              |                              +"
     echo "#   +                              |                              +"
     echo "#   +                              |                              +"
@@ -20,8 +20,8 @@ usage() {
     echo "#   +                              |                              +"
     echo "#   +                              |                              +"
     echo "#   +                              |                              +"
-    echo "#   +                              |                              +"
-    echo "#   +                              |                              +"
+    echo "#   +------------------------------|                              +"
+    echo "#   + ~:$                          |                              +"
     echo "#   +                              |                              +"
     echo "#   +                              |                              +"
     echo "#   +                              |                              +"
@@ -58,11 +58,18 @@ if [ "$?" -eq 1 ]; then
     tmux select-pane -t 0
     tmux split-window -h -t $SESSION
 
+    # Select first pane again before opening another smaller, vertical one directly beneath it.
+    tmux select-pane -t 0
+    tmux split-window -p 20 -t $SESSION
+
     tmux send-keys -t $SESSION:0.0 'cd '$DIR'; clear' C-m
     tmux send-keys -t $SESSION:0.1 'cd '$DIR'; clear' C-m
     tmux send-keys -t $SESSION:0.2 'cd '$DIR'; clear' C-m
+    tmux send-keys -t $SESSION:0.3 'cd '$DIR'; clear' C-m
 
-    tmux send-keys -t $SESSION:0.1 'eval "$(ssh-agent -s)" && ssh-add ~/.ssh/debian' C-m
+    # Set focus on pane in top-right position.
+    tmux select-pane -t 2
+    tmux send-keys -t $SESSION:0.2 'eval "$(ssh-agent -s)" && ssh-add ~/.ssh/debian' C-m
 fi
 
 tmux attach -t $SESSION
