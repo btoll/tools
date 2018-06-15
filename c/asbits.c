@@ -1,17 +1,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-unsigned getbits(unsigned x, int offset, int n) {
-    return x >> (offset + 1 - n) & ~(~0 << n);
-}
+unsigned valueToConvert;
 
-void asbits(unsigned n, short b) {
-    int i;
+/*
+ * Start at the first bit and move out.
+ * For each shift, only the bit in the first position is considered.
+ *
+ * For example:
+ *
+ *      asbits 203 2
+ *
+ *          (valueToConvert >> numBitsToRightShift) & 1
+ *
+ *              203 >> 7 == 1              1 & 1
+ *              203 >> 6 == 3             11 & 1
+ *              203 >> 5 == 6            110 & 1
+ *              203 >> 4 == 12          1100 & 1
+ *              203 >> 3 == 25         11001 & 1
+ *              203 >> 2 == 50        110010 & 1
+ *              203 >> 1 == 101      1100101 & 1
+ *              203 >> 0 == 203     11001011 & 1
+ *
+ *      returns => 1100 1011
+ *
+ */
+void asbits(short numDisplayBytes) {
+    int numBitsToRightShift = numDisplayBytes * sizeof(valueToConvert) - 1;
 
-    for (i = b * sizeof(n) - 1; i >= 0; i--) {
-        getbits(n, i, 1) ? putchar('1') : putchar('0');
+    for (; numBitsToRightShift >= 0; --numBitsToRightShift) {
+        (valueToConvert >> numBitsToRightShift) & 1
+            ? putchar('1')
+            : putchar('0');
 
-        if (i % 4 == 0)
+        if (numBitsToRightShift % 4 == 0)
             putchar(' ');
     }
 
@@ -24,14 +46,15 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    int b = !argv[2] ? 4 : atoi(argv[2]);
+    int numDisplayBytes = !argv[2] ? 4 : atoi(argv[2]);
 
-    if (b > 8) {
-        b = 8;
+    if (numDisplayBytes > 8) {
+        numDisplayBytes = 8;
         printf("Max number of display bytes is 8\n");
     }
 
-    asbits(atoi(argv[1]), b);
+    valueToConvert = atoi(argv[1]);
+    asbits(numDisplayBytes);
 
     return 0;
 }
