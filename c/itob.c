@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     }
 
     itob(n, buf, b);
-    printf("Number %d, Base %d => %s\n", n, b, buf);
+    printf("%s\n", buf);
 
     return 0;
 }
