@@ -1,7 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include "asbits.h"
 
-unsigned valueToConvert;
+// echo "ibase=16; 7F" | bc
+// echo "ibase=8; 0177" | bc
+
+unsigned long htoi(char *s) {
+    unsigned long n = 0;
+    int i;
+
+    for (i = 0; i < strlen(s); i++) {
+        if (IS_DIGIT(s[i]))
+            n = (n * 16) + (s[i] - '0');
+
+        else if (HEX_UPPER(s[i]))
+            n = (n * 16) + (10 + s[i] - 'A');
+
+        else if (HEX_LOWER(s[i]))
+            n = (n * 16) + (10 + s[i] - 'a');
+
+        else {
+            printf("[ERROR] Non-hexadecimal character %c\n", s[i]);
+            exit(1);
+        }
+    }
+
+    return n;
+}
+
+unsigned long otio(char *s) {
+    unsigned long n = 0;
+    int i;
+
+    for (i = 0; s[i] >= '0' && s[i] <= '7'; i++)
+        n = (n * 8) + (s[i] - '0');
+
+    return n;
+}
 
 /*
  * Start at the first bit and move out.
@@ -26,7 +62,7 @@ unsigned valueToConvert;
  *
  */
 void asbits(short numDisplayBytes) {
-    int numBitsToRightShift = numDisplayBytes * sizeof(valueToConvert) - 1;
+    int numBitsToRightShift = numDisplayBytes * sizeof(unsigned) - 1;
 
     for (; numBitsToRightShift >= 0; --numBitsToRightShift) {
         (valueToConvert >> numBitsToRightShift) & 1
@@ -42,8 +78,22 @@ void asbits(short numDisplayBytes) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        printf("Usage: %s <hex or chars> [num bytes=4]\n", argv[0]);
+        printf("Usage: %s <base-10 | hex | octal> [num bytes=4]\n", argv[0]);
         exit(1);
+    }
+
+    char *s = argv[1];
+
+    // Hex.
+    if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X')) {
+        s += 2;
+        valueToConvert = htoi(s);
+    // Octal.
+    } else if (s[0] == '0' && IS_OCTAL_DIGIT(s[1])) {
+        valueToConvert = otio(s++);
+    // Base-10.
+    } else {
+        valueToConvert = atoi(argv[1]);
     }
 
     int numDisplayBytes = !argv[2] ? 4 : atoi(argv[2]);
@@ -53,7 +103,6 @@ int main(int argc, char **argv) {
         printf("Max number of display bytes is 8\n");
     }
 
-    valueToConvert = atoi(argv[1]);
     asbits(numDisplayBytes);
 
     return 0;
