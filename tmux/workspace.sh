@@ -52,7 +52,7 @@ tmux has-session -t $SESSION 2> /dev/null
 
 if [ "$?" -eq 1 ]; then
     tmux new-session -s $SESSION -d
-    tmux split-window -p 20 -t $SESSION
+    tmux split-window -p 5 -t $SESSION
 
     # Select first pane before opening another horizontal one.
     tmux select-pane -t 0
@@ -60,7 +60,7 @@ if [ "$?" -eq 1 ]; then
 
     # Select first pane again before opening another smaller, vertical one directly beneath it.
     tmux select-pane -t 0
-    tmux split-window -p 20 -t $SESSION
+    tmux split-window -p 40 -t $SESSION
 
     tmux send-keys -t $SESSION:0.0 'cd '$DIR'; clear' C-m
     tmux send-keys -t $SESSION:0.1 'cd '$DIR'; clear' C-m
@@ -69,7 +69,7 @@ if [ "$?" -eq 1 ]; then
 
     # Set focus on pane in top-right position.
     tmux select-pane -t 2
-    tmux send-keys -t $SESSION:0.2 'eval "$(ssh-agent -s)" && ssh-add ~/.ssh/debian' C-m
+    tmux send-keys -t $SESSION:0.2 'eval "$(ssh-agent -s -t 86400)" && ssh-add ~/.ssh/debian' C-m
 fi
 
 tmux attach -t $SESSION
