@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+const N = process.argv[2] * 1;
+
+if (N == null) {
+    console.log(`Usage: ${process.argv[1]} [n]`);
+    return;
+}
+
+if (N < 2) {
+    console.log(false);
+    return;
+}
+
+console.log(
+    Boolean(
+        ([...Array(Math.sqrt(N) >> 0).keys()]
+        .map(i => i + 1)
+        .filter(i =>
+            N % i === 0
+        )
+        .length === 1) * 1
+    )
+);
+
