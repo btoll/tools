@@ -29,7 +29,7 @@ unsigned long htoi(char *s) {
     return n;
 }
 
-unsigned long otio(char *s) {
+unsigned long otoi(char *s) {
     unsigned long n = 0;
     int i;
 
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
         valueToConvert = htoi(s);
     // Octal.
     } else if (s[0] == '0' && IS_OCTAL_DIGIT(s[1])) {
-        valueToConvert = otio(s++);
+        valueToConvert = otoi(s++);
     // Base-10.
     } else {
         valueToConvert = atoi(argv[1]);

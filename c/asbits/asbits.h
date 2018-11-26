@@ -7,5 +7,5 @@ unsigned valueToConvert;
 
 void asbits(short numDisplayBytes);
 unsigned long htoi(char *s);
-unsigned long otio(char *s);
+unsigned long otoi(char *s);
 

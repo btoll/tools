@@ -4,7 +4,7 @@
 // echo "ibase=8; 0177" | bc
 
 // The groupings aren't strictly necessary when assigning to `n`, I'm only doing it for readability and understanding.
-unsigned long otio(char *s) {
+unsigned long otoi(char *s) {
     unsigned long n = 0;
     int i;
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 
     char *s = argv[1];
 
-    printf("%lu\n", otio(s));
+    printf("%lu\n", otoi(s));
 
     return 0;
 }
