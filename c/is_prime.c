@@ -2,6 +2,10 @@
 #include <stdio.h>
 
 int is_prime(int n) {
+    if (n < 2) {
+        return 0;
+    }
+
     int h = n / 2 >> 0;
 
     for (int i = 2; i <= h; i++) {
