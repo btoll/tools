@@ -1,0 +1,70 @@
+#!/usr/bin/env node
+// https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
+
+if (process.argv.length < 3) {
+    console.log(`Usage: ${process.argv[1]} [p]`);
+    return;
+}
+
+const n = process.argv[2] * 1;
+const primes = [2];
+let p = 3;
+const m = {
+    2: true
+};
+
+// First, create a dictionary of odd numbers.  This is an optimization, since
+// we know that any even number (besides two, of course), is a composite and
+// not a prime and so doesn't need to be included.
+while (p <= n) {
+    if (p % 2 !== 0) {
+        m[p] = true;
+    }
+
+    p++;
+}
+
+// Check only 3 to square root of the upper bound `n`.
+p = 3;
+while (p <= (Math.sqrt(n) >> 0)) {
+    // Only continue if `p` hasn't already been marked as `false`.
+    if (m[p]) {
+        primes.push(p);
+        //
+        // Mark every number in an arithmetic sequence as `false` that is a
+        // multiple of the the current value of `p`.
+        //
+        // i.e., p == 2, p == 3, ...
+        //      2p, 3p, 4p, 5p, 6p, etc
+        //
+        // The next element in the list that is NOT marked `false` will be prime!
+        // (Note that the same composite numbers may be inspected more than once.)
+        //
+        // Don't start with the current value of `p`, as it is a prime number!
+        // I.e., 2, 3, 5, etc.
+        // So, square it.
+        //
+        // This works b/c any multiple of a prime will be marked as `false`.
+        // I.e., when p == 2:
+        //      2p == 4, 3p == 6, 4p == 8, etc.
+        //
+        // I.e., when p == 3:
+        //      2p == 6, 3p == 9, 4p == 12, etc.
+        //
+        let q = p ** 2;
+
+        while (q <= n) {
+            m[q] = false;
+            q += p; // This generates an arithmetic sequence.
+        }
+    }
+
+    p += 2;
+}
+
+//console.log(primes);
+
+for (let i in m) {
+    if (m[i]) console.log(i);
+}
+
