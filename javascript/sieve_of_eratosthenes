@@ -16,7 +16,7 @@ const m = {
 // First, create a dictionary of odd numbers.  This is an optimization, since
 // we know that any even number (besides two, of course), is a composite and
 // not a prime and so doesn't need to be included.
-while (p <= n) {
+while (p < n) {
     if (p % 2 !== 0) {
         m[p] = true;
     }
@@ -53,7 +53,7 @@ while (p <= (Math.sqrt(n) >> 0)) {
         //
         let q = p ** 2;
 
-        while (q <= n) {
+        while (q < n) {
             m[q] = false;
             q += p; // This generates an arithmetic sequence.
         }
