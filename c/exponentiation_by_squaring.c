@@ -19,18 +19,11 @@ void reverse(char *s) {
 }
 
 void getbits(int exp, char* buf) {
-    int n = exp;
-    int i = 0;
     int maxbits = (int) log2(exp);
+    int i = 0;
 
-    while (i <= maxbits) {
-        int bit = n & 1;
-
-        buf[i++] =
-            bit == 0 ? '0' : '1';
-
-        n /= 2;
-    }
+    for (int n = exp; i <= maxbits; n >>= 1)
+        buf[i++] = (n & 1) == 0 ?  '0' : '1';
 
     buf[i] = '\0';
     reverse(buf);
