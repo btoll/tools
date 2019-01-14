@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+
+if (process.argv.length < 4) {
+    console.log(`Usage: ${process.argv[1]} [g] [p]`);
+    return;
+}
+
+const g = process.argv[2] * 1;
+const p = process.argv[3] * 1;
+const b = new Set();
+
+[...Array(p - 1).keys()]
+.map(n => ++n)
+.forEach(
+    n => b.add(g**n%p)
+);
+
+const arr = Array.from(b);
+console.log(`ord(${g}) = ${arr.length}`);
+console.log(`<${g}> { ${arr.join(', ')} }`);
+
