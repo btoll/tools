@@ -11,9 +11,9 @@
 
 void prime_factors(int n) {
     // If the number is even, reduce it until it's odd.
-    while (n % 2 == 0) {
+    while ((n & 1) == 0) {
         printf("%d ", 2);
-        n /= 2;
+        n >>= 1;
     }
 
     // Now the number is guaranteed to be odd.
