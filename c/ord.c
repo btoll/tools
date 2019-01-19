@@ -6,7 +6,7 @@
 // Note that this is different from the order of a group.
 //
 // https://www.di-mgt.com.au/multiplicative-group-mod-p.html
-// gcc -o group group.c -lm
+// gcc -o ord ord.c -lm
 
 double gcd(double a, double b) {
     double r = fmod(a, b);
@@ -17,7 +17,7 @@ double gcd(double a, double b) {
 void main(int argc, char **argv) {
     if (argc < 3) {
         printf("Finds the order of an element in group |G|:\n\n");
-        printf("\tn^e mod m\n\n");
+        printf("\tbase^k mod m\n\n");
         printf("Usage: %s <base> <mod>\n", argv[0]);
         exit(1);
     }
