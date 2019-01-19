@@ -3,7 +3,7 @@
 
 int main(int argc, char **argv) {
     if (argc < 3) {
-        printf("Finds the modulus multiplicative inverse of a number `e`:\n\n");
+        printf("Finds the modulus multiplicative inverse(s) of a number `e`:\n\n");
         printf("\tde = 1 mod n\n\n");
         printf("Defaults to searching the entire key length `n`.\n");
         printf("Usage: %s <e> <mod> <bound>\n", argv[0]);
