@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+
+// Find the order of an element of a group G.
+// Note that this is different from the order of a group.
+//
+// https://www.di-mgt.com.au/multiplicative-group-mod-p.html
+
+if (process.argv.length < 4) {
+    console.log(`Usage: ${process.argv[1]} [base] [modulus]`);
+    return;
+}
+
+const g = process.argv[2] * 1;
+const p = process.argv[3] * 1;
+
+let k = 1;
+let res = g ** k % p;
+const set = [res];
+
+while (res !== 1) {
+    res = g ** ++k % p;
+    set.push(res);
+}
+
+console.log(`ord(${g}) = ${set.length}`);
+console.log(`<${g}> { ${set.join(', ')} }`);
+if (set.length === p - 1) {
+    console.log(`${g} is a primitive root modulo ${p}`);
+}
+
