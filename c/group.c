@@ -2,18 +2,19 @@
 #include <stdio.h>
 #include <math.h>
 
+// Find the order of an element of a group G.
+// Note that this is different from the order of a group.
+//
 // https://www.di-mgt.com.au/multiplicative-group-mod-p.html
 // gcc -o group group.c -lm
 
-float mod(float a, float N) {
-    float ret = a - N * floor (a / N);
-
-    printf("%f.1 mod %f.1 = %f.1 \n", a, N, ret);
-
-    return ret;
+double gcd(double a, double b) {
+    double r = fmod(a, b);
+    if (r == 0) return b;
+    return gcd (b, r);
 }
 
-int main(int argc, char **argv) {
+void main(int argc, char **argv) {
     if (argc < 3) {
         printf("Finds the order of an element in group |G|:\n\n");
         printf("\tn^e mod m\n\n");
@@ -21,18 +22,24 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    int base = atoi(argv[1]);
-    int p = atoi(argv[2]);
-    int bound = p - 1;
-    double b[p];
+    int g = atoi(argv[1]);
+    double p = atoi(argv[2]);
 
-    for (int i = 1; i <= bound; i++) {
-        b[i] = fmod(pow(base, i), p);
+    if (gcd(g, p) != 1) {
+        printf("Error: %d and %.0f must be coprime.\n", g, p);
+        exit(1);
     }
 
-    b[p] = '\0';
-    printf("%p\n", b);
+    double k = 1;
+    double res = fmod(pow(g, k), p);
 
-    return 0;
+    printf("<%d> { %.0f ", g, res);
+
+    while (res != 1) {
+        res = fmod(pow(g, ++k), p);
+        printf("%.0f ", res);
+    }
+
+    printf("}\nord(%d) = %.0f\n", g, k);
 }
 
