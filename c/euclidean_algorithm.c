@@ -1,11 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
-// gcc -o gcd euclidean_algorithm.c
+// gcc -o gcd euclidean_algorithm.c -lm
 
-int gcd(int a, int b) {
-    if (a % b == 0) return b;
-    return gcd(b, a % b);
+double gcd(double a, double b) {
+    double r = fmod(a, b);
+    if (r == 0) return b;
+    return gcd (b, r);
 }
 
 void main(int argc, char **argv) {
@@ -14,6 +16,6 @@ void main(int argc, char **argv) {
         exit(1);
     }
 
-    printf("%d\n", gcd(atoi(argv[1]), atoi(argv[2])));
+    printf("%.0f\n", gcd(atoi(argv[1]), atoi(argv[2])));
 }
 
