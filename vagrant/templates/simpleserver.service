@@ -2,6 +2,7 @@
 Description=Python simple server
 After=network.target
 StartLimitIntervalSec=0
+
 [Service]
 Type=simple
 Restart=always

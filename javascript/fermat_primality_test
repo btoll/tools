@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+const crypto = require('crypto');
+
+if (process.argv.length < 4) {
+    console.log(`Usage: ${process.argv[1]} [n] [k (times to test)]`);
+    return;
+}
+
+const n = process.argv[2] * 1;
+let k = process.argv[3] * 1;
+
+const fermatTest = a =>
+    ((a ** n - 1)) - 1 % n
+
+const getRand = bound =>
+    Math.random() * Number.MAX_SAFE_INTEGER % bound >> 0
+
+while (k > 0) {
+    let rand = getRand(n);
+
+    while (!(rand & 1)) {
+        rand = getRand(n);
+    }
+
+    console.log('rand', rand);
+    console.log(fermatTest(rand));
+
+    k--;
+}
+

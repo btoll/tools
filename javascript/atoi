@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+if (process.argv.length < 3) {
+    console.log(`Usage: ${process.argv[1]} [string]`);
+    return;
+}
+
+const INT_MAX = 2**31 - 1;
+const INT_MIN = -(2**31);
+const matched = process.argv[2].trim().match(/^([+-]?\d+).*/);
+console.log('matched', matched);
+
+if (!matched) console.log(0)
+else if (matched[1] < INT_MIN) console.log(INT_MIN)
+else if (matched[1] > INT_MAX) console.log(INT_MAX);
+else console.log(matched[1]);
+

@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val) {
+ *     this.val = val;
+ *     this.next = null;
+ * }
+ */
+/**
+ * @param {ListNode} l1
+ * @param {ListNode} l2
+ * @return {ListNode}
+ */
+
+const walkList = l => {
+    let o = 0;
+    let magnitude = 0;
+
+    while (l.next) {
+        o += (l.val * (10 ** magnitude));
+        magnitude++;
+        l = l.next;
+    }
+
+    return o += (l.val * (10 ** magnitude));
+};
+
+var addTwoNumbers = function(l1, l2) {
+    const o1 = walkList(l1);
+    const o2 = walkList(l2);
+
+    let total = o1 + o2;
+    let magnitude = Math.log10(total) >> 0;
+
+    let val = total / 10 ** magnitude >> 0;
+    let l3 = new ListNode(val);
+    total -= val * (10 ** magnitude--);
+
+    while (magnitude >= 0) {
+        val = total / 10 ** magnitude >> 0;
+        const tmp = new ListNode(val);
+        tmp.next = l3;
+        l3 = tmp;
+        total -= val * (10 ** magnitude--);
+    }
+
+    return l3;
+};
+

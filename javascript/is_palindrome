@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+if (process.argv.length < 3) {
+    console.log(`Usage: ${process.argv[1]} [n]`);
+    return;
+}
+
+let a = process.argv[2].split('');
+
+while (a.length > 1) {
+    const head = a[0] * 1;
+    const tail = a[a.length - 1] * 1;
+
+    if (head != tail) {
+        console.log(false);
+        return;
+    }
+
+    a = a.slice(1, -1);
+}
+
+console.log(true);
+
