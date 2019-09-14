@@ -1,0 +1,50 @@
+---
+- name: Install, configure and start nginx with basic authentication
+  hosts: webservers
+  become: true
+
+  tasks:
+  - name: Update repositories cache
+    apt:
+      update_cache: yes
+
+  - name: Install packages
+    apt:
+      name: "{{ packages }}"
+      state: present
+    vars:
+      packages:
+      - nginx
+      - python-minimal
+      - python-passlib
+      - sudo
+
+  - name: Create .htpasswd file
+    htpasswd:
+      path: /etc/nginx/.htpasswd
+      name: algorand
+      password: 'test'
+      owner: root
+      group: www-data
+      mode: 0644
+
+  - name: Configure nginx
+    template:
+      src: nginx.default
+      dest: /etc/nginx/sites-available/default
+
+  - name: Install simpleserver service
+    template:
+      src: simpleserver.service
+      dest: /etc/systemd/system
+
+  - name: Start simple Python server
+    service:
+      name: simpleserver
+      state: started
+
+  - name: Start nginx
+    service:
+      name: nginx
+      state: restarted
+
