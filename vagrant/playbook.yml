@@ -7,16 +7,20 @@
   - name: Update repositories cache
     apt:
       update_cache: yes
+      cache_valid_time: 36000
 
   - name: Install packages
     apt:
-      name: "{{ packages }}"
+      name: "{{item}}"
       state: present
-    vars:
-      packages:
+    with_items:
       - nginx
-      - python-passlib
+      - python-pip
       - sudo
+
+  - name: Install passlib for htpasswd from pip
+    pip:
+      name: passlib
 
   - name: Create .htpasswd file
     htpasswd:
