@@ -3,51 +3,6 @@
   hosts: webservers
   become: true
 
-  tasks:
-  - name: Update repositories cache
-    apt:
-      update_cache: yes
-      cache_valid_time: 36000
-
-  - name: Install packages
-    apt:
-      name: "{{item}}"
-      state: present
-    with_items:
-      - nginx
-      - python-pip
-      - sudo
-
-  - name: Install passlib for htpasswd from pip
-    pip:
-      name: passlib
-
-  - name: Create .htpasswd file
-    htpasswd:
-      path: /etc/nginx/.htpasswd
-      name: algorand
-      password: 'test'
-      owner: root
-      group: www-data
-      mode: 0644
-
-  - name: Configure nginx
-    template:
-      src: nginx.default
-      dest: /etc/nginx/sites-available/default
-
-  - name: Install simpleserver service
-    template:
-      src: simpleserver.service
-      dest: /etc/systemd/system
-
-  - name: Start simple Python server
-    service:
-      name: simpleserver
-      state: started
-
-  - name: Start nginx
-    service:
-      name: nginx
-      state: restarted
+  roles:
+    - nginx
 
