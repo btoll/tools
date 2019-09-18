@@ -1,0 +1,11 @@
+---
+- name: Configure nginx
+  template:
+    src: nginx.default
+    dest: /etc/nginx/sites-available/default
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: restarted
+

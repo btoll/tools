@@ -1,8 +1,21 @@
 ---
+- hosts: all
+  become: true
+
+  roles:
+    - common
+
+- name: Load balancer
+  hosts: lb
+  become: true
+
+  roles:
+    - lb
+
 - name: Install, configure and start nginx with basic authentication
   hosts: webservers
   become: true
 
   roles:
-    - nginx
+    - web
 
