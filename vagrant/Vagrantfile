@@ -28,9 +28,6 @@ Vagrant.configure("2") do |config|
       "webservers" => ["node1", "node2", "node3"]
     }
 
-#    ansible.install = true
-#    ansible.install_mode = "default"
-
     # Disable default limit to connect to all the machines
     ansible.limit = "all"
     ansible.playbook = "playbook.yml"
