@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# 64-bit
+
 BOX_IMAGE = "generic/debian9"
 NODE_COUNT = 1
 
