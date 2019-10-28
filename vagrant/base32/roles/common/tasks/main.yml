@@ -10,18 +10,19 @@
     state: present
   with_items:
     - build-essential
+    - curl
+    - gdb
     - git
     - silversearcher-ag
     - sudo
     - vim
 
-#- name: Add the greatest hero of them all
-#  user:
-#    name: btoll
-#    password: '$6$iTCFyYyW$8EZV5/rnqXqUm/YUfJUklrECqOOirR/D0iTJGLRwRnxMzhNA3PYwLO3RFpXXXFGp2Wnv8OGzXrUZ94c0NyKI9/'
-#    groups:
-#      - root
-#      - sudo
-#    state: present
-#    shell: /bin/bash
+- name: Install vim-plug and Vim plugins
+  shell: |
+    curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+      https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    vim +'PlugInstall --sync' +qa
+  args:
+    executable: /bin/bash
+    warn: False
 

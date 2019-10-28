@@ -12,11 +12,24 @@
     dest: /opt/dotfiles
     version: master
 
+- name: Change ownership of dotfiles
+  file:
+    path: /opt/dotfiles
+    owner: vagrant
+    recurse: True
+    state: directory
+
+#- name: Remove default bash files so there's no conflict with stow
+#  file:
+#    path: /home/vagrant/.bash*
+#    state: absent
+
 - name: Symlink dotfiles to /home/vagrant
   shell: |
-    cd /opt/dotfiles
     rm /home/vagrant/.bash*
+    cd /opt/dotfiles
     stow -t /home/vagrant minimal
   args:
     executable: /bin/bash
+    warn: False
 
