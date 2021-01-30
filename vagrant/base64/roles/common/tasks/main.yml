@@ -9,7 +9,10 @@
     name: "{{item}}"
     state: present
   with_items:
+    - bc
     - build-essential
+    - curl
+    - gdb
     - git
     - sudo
     - vim
