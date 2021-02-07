@@ -1,4 +1,8 @@
 node_modules
 **/__pycache__
-a.out
+*.out
+
+.vagrant
+*console.log
+config
 
