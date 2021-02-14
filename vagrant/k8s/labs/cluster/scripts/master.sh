@@ -27,40 +27,28 @@ cp -i /etc/kubernetes/admin.conf /root/.kube/config
 mkdir -p /vagrant/.kube
 cp -i /etc/kubernetes/admin.conf /vagrant/.kube/config
 
-#Configure the Calico Network Plugin
+echo "********** $MSG ->> Applying Kube-Router YAML File"
 echo "********** $MSG"
 echo "********** $MSG"
-echo "********** $MSG ->> Configuring Kubernetes Cluster Calico Networking"
-echo "********** $MSG ->> Downloading Calico YAML File"
-echo "********** $MSG"
-echo "********** $MSG"
-wget -q https://docs.projectcalico.org/v3.10/manifests/calico.yaml -O /tmp/calico-default.yaml
-sed "s+192.168.0.0/16+$POD_CIDR+g" /tmp/calico-default.yaml > /tmp/calico-defined.yaml
+kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
 
-echo "********** $MSG ->> Applying Calico YAML File"
-echo "********** $MSG"
-echo "********** $MSG"
-kubectl apply -f /tmp/calico-defined.yaml
-
-# The coredns Pod is only installed after a successful Pod network add-on (calico) install.
+# The coredns Pod is only installed after a successful Pod network add-on (kube-router) install.
 #RES=$(awk '/coredns/' <<< "$(kubectl get pods -n kube-system)")
 #if [ -z "$RES" ]
 #then
 #    echo "********** $MSG"
-#    echo "********** $MSG ->> Calico Pod network add-on was not properly installed, aborting..."
+#    echo "********** $MSG ->> Kube-Router Pod network add-on was not properly installed, aborting..."
 #    echo "********** $MSG"
 #    exit 1
 #elif [ "$(awk 'NR==1 { print $3 }' <<< "$RES")" != Running ]
 #then
 #    echo "********** $MSG"
-#    echo "********** $MSG ->> Calico Pod network add-on was installed but is not in the Running state, aborting..."
+#    echo "********** $MSG ->> Kube-Router Pod network add-on was installed but is not in the Running state, aborting..."
 #    echo "********** $MSG"
 #    exit 1
 #fi
 
-rm /tmp/calico-default.yaml /tmp/calico-defined.yaml
 echo "KUBELET_EXTRA_ARGS=--node-ip=10.8.8.1$NODE" > /etc/default/kubelet
-
 systemctl daemon-reload
 systemctl restart kubelet
 

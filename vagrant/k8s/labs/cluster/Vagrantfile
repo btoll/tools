@@ -1,6 +1,6 @@
 BOX_IMAGE = "ubuntu/bionic64"
-MASTER_COUNT = 1
-WORKER_COUNT = 7
+MASTERS = 1
+WORKERS = 7
 POD_CIDR = "172.18.0.0/16"
 API_ADV_ADDRESS = "10.8.8.10"
 MSG = "benjamintoll.com"
@@ -17,38 +17,34 @@ Vagrant.configure("2") do |config|
         SCRIPT
     end
 
-    (0..MASTER_COUNT-1).each do |i|
+    (0..MASTERS-1).each do |i|
         config.vm.define "bt-master-#{i}" do |subconfig|
             subconfig.vm.box = BOX_IMAGE
             subconfig.vm.hostname = "bt-master-#{i}"
             subconfig.vm.network :private_network, ip: "10.8.8.#{i + 10}"
             subconfig.vm.provider :virtualbox do |vb|
                 vb.customize ["modifyvm", :id, "--cpus", 2]
-                vb.memory = 2048
+                vb.memory = 4096
             end
 
-            # This if is here just to remember me to create a multi-master cluster
-            # the behavior and overal configuration is different and this will require a HAProxy installation
-            if i == 0
-                subconfig.vm.provision "shell" do |s|
-                    s.inline = <<-SCRIPT
-                        mkdir -p $HOME/.config/.bt
-                        cp -p #{MASTER_SCRIPT_URL} $HOME/.config/.bt/master.sh
-                        $HOME/.config/.bt/master.sh #{MSG} #{i} #{POD_CIDR} #{API_ADV_ADDRESS}
-                    SCRIPT
-                end
+            subconfig.vm.provision "shell" do |s|
+                s.inline = <<-SCRIPT
+                    mkdir -p $HOME/.config/.bt
+                    cp -p #{MASTER_SCRIPT_URL} $HOME/.config/.bt/master.sh
+                    $HOME/.config/.bt/master.sh #{MSG} #{i} #{POD_CIDR} #{API_ADV_ADDRESS}
+                SCRIPT
             end
         end
     end
 
-    (0..WORKER_COUNT-1).each do |i|
+    (0..WORKERS-1).each do |i|
         config.vm.define "bt-worker-#{i}" do |subconfig|
             subconfig.vm.box = BOX_IMAGE
             subconfig.vm.hostname = "bt-worker-#{i}"
             subconfig.vm.network :private_network, ip: "10.8.8.#{i + 20}"
             subconfig.vm.provider :virtualbox do |vb|
                 vb.customize ["modifyvm", :id, "--cpus", 2]
-                vb.memory = 1024
+                vb.memory = 4096
             end
 
             subconfig.vm.provision "shell" do |s|
