@@ -1,0 +1,84 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+#                    sed -i '/^\[realms\]/a\\tKILGORE-TROUT = {\n\t\tkdc = krb5.kilgore-trout\n\t\tadmin_server = krb5.kilgore-trout\n\t}' /etc/krb5.conf
+
+BOX = "ubuntu/bionic64"
+MASTER_COUNT = 1
+WORKER_COUNT = 1
+KRB5_PASSWORD = "root"
+
+Vagrant.configure("2") do |config|
+    (0..MASTER_COUNT-1).each do |i|
+        vb_name = "nfs#{i}"
+        config.vm.define vb_name do |subconfig|
+            subconfig.vm.box = BOX
+            subconfig.vm.network "public_network", ip: "192.168.1.10#{i}", bridge: "wlp3s0"
+            subconfig.vm.hostname = vb_name
+
+            subconfig.vm.provider "virtualbox" do |vb|
+                vb.gui = true
+                vb.memory = 8192
+                vb.name = vb_name
+            end
+
+            subconfig.vm.provision "shell" do |s|
+                s.inline = <<-SCRIPT
+                    apt-get update
+
+                    hostnamectl set-hostname krb5.kilgore-trout
+                    DEBIAN_FRONTEND=noninteractive apt-get install -y krb5-kdc krb5-admin-server krb5-config
+                    cp /vagrant/krb5.conf /etc/krb5.conf
+
+                    kdb5_util create -r KILGORE-TROUT -s -P KRB5_PASSWORD
+                    kadmin.local -w KRB5_PASSWORD -q 'addprinc -pw root root/admin'
+                    kadmin.local -w KRB5_PASSWORD -q 'addprinc -randkey -pw root host/krb5.kilgore-trout'
+                    kadmin.local -w KRB5_PASSWORD -q 'ktadd host/krb5.kilgore-trout'
+
+                    echo "root/admin *" > /etc/krb5kdc/kadm5.acl
+
+                    systemctl start krb5-admin-server.service
+                    systemctl start krb5-kdc.service
+
+                    cat <<EOF >>/etc/hosts
+192.168.1.100   krb5.kilgore-trout  krb5
+EOF
+                SCRIPT
+            end
+        end
+    end
+
+    (1..WORKER_COUNT).each do |i|
+        vb_name = "nfs#{i}"
+        config.vm.define vb_name do |subconfig|
+            subconfig.vm.box = BOX
+            subconfig.vm.network "public_network", ip: "192.168.1.20#{i}", bridge: "wlp3s0"
+            subconfig.vm.hostname = vb_name
+
+            subconfig.vm.provider "virtualbox" do |vb|
+                vb.gui = true
+                vb.memory = 8192
+                vb.name = vb_name
+            end
+
+            subconfig.vm.provision "shell" do |s|
+                s.inline = <<-SCRIPT
+                    apt-get update
+
+                    hostnamectl set-hostname "client#{i}".kilgore-trout
+                    DEBIAN_FRONTEND=noninteractive apt-get install -y krb5-user libpam-krb5 libpam-ccreds auth-client-config
+                    cp /vagrant/krb5.conf /etc/krb5.conf
+
+                    kadmin -w KRB5_PASSWORD -q "addprinc -randkey -pw client#{i} host/client1.kilgore-trout"
+                    kadmin -w KRB5_PASSWORD -q "ktadd host/client#{i}.kilgore-trout"
+
+                    cat <<EOF >>/etc/hosts
+192.168.1.100   krb5.kilgore-trout  krb5
+192.168.1.20#{i}   client1.kilgore-trout   client1
+EOF
+                SCRIPT
+            end
+        end
+    end
+end
+
