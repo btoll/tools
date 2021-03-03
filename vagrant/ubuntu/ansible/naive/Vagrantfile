@@ -24,8 +24,8 @@ Vagrant.configure("2") do |config|
                 cat /vagrant/ansible.pub >> /home/vagrant/.ssh/authorized_keys
 
                 apt-add-repository ppa:ansible/ansible
-                apt update
-                apt install ansible -y
+                apt-get update
+                apt-get install ansible -y
             SHELL
         end
     end
@@ -44,8 +44,8 @@ Vagrant.configure("2") do |config|
 
             subconfig.vm.provision "shell", inline: <<-SHELL
                 apt-add-repository ppa:ansible/ansible
-                apt update
-                apt install ansible -y
+                apt-get update
+                apt-get install ansible -y
 
                 cat <<-EOF >> /etc/hosts
 192.168.1.200   ansible-worker0

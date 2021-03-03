@@ -1,0 +1,10 @@
+---
+  - hosts: testes
+    connection: local
+    user: root
+    gather_facts: no
+    tasks:
+    - shell: echo 'test'
+      register: foo
+    - debug: msg="the echo was {{ foo.stdout }}"
+
