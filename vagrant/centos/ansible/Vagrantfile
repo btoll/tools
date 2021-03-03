@@ -1,0 +1,73 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+BOX_IMAGE = "centos/7"
+NIC = "wlp3s0"
+PROVIDER = "virtualbox"
+MASTERS = 1
+WORKERS = 3
+
+Vagrant.configure("2") do |config|
+    (0..WORKERS-1).each do |i|
+        vb_name = "ansible-worker#{i}"
+
+        config.vm.define vb_name do |subconfig|
+            subconfig.vm.box = BOX_IMAGE
+            subconfig.vm.hostname = vb_name
+            subconfig.vm.network :public_network, ip: "192.168.1.20#{i}", bridge: NIC
+
+            subconfig.vm.provider PROVIDER do |v|
+                v.name = vb_name
+            end
+
+            subconfig.vm.provision "shell", inline: <<-SHELL
+                cat /vagrant/ansible.pub >> /home/vagrant/.ssh/authorized_keys
+
+                yum install epel-release -y
+                yum install ansible -y
+            SHELL
+        end
+    end
+
+    (0..MASTERS-1).each do |i|
+        vb_name = "ansible-server#{i}"
+
+        config.vm.define vb_name do |subconfig|
+            subconfig.vm.box = BOX_IMAGE
+            subconfig.vm.hostname = vb_name
+            subconfig.vm.network :public_network, ip: "192.168.1.10#{i}", bridge: NIC
+
+            subconfig.vm.provider PROVIDER do |v|
+                v.name = vb_name
+            end
+
+            subconfig.vm.provision "shell", inline: <<-SHELL
+                yum install epel-release -y
+                yum install ansible -y
+
+                cat <<-EOF >> /etc/hosts
+192.168.1.200   ansible-worker0
+192.168.1.201   ansible-worker1
+192.168.1.202   ansible-worker2
+EOF
+            SHELL
+
+            subconfig.vm.provision "shell", privileged: false, inline: <<-SHELL
+                cp -p /vagrant/ansible.{key,pub} $HOME/.ssh
+
+                {
+                    ssh-keyscan -H ansible-worker0 ;
+                    ssh-keyscan -H ansible-worker1 ;
+                    ssh-keyscan -H ansible-worker2 ;
+                } >> $HOME/.ssh/known_hosts
+
+                cat <<-EOF >> $HOME/.ssh/config
+Host *
+    IdentityFile $HOME/.ssh/ansible.key
+EOF
+                chmod 600 $HOME/.ssh/config
+            SHELL
+        end
+    end
+end
+
