@@ -1,0 +1,40 @@
+---
+packages:
+  common:
+    - build-essential
+    - cowsay
+    - curl
+    - fortune
+    - git
+    - haveged
+    - i3
+    - konsole
+    - libreoffice
+    - python3-pip
+    - python3.8
+    - shellcheck
+    - silversearcher-ag
+    - stow
+    - tree
+    - vagrant
+    - vim
+    - virtualenvwrapper
+    - xsel
+
+  docker:
+    prereq:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+    engine:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+
+  kubernetes:
+    - kubeadm
+    - kubectl
+    - kubelet
+

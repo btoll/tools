@@ -7,12 +7,9 @@
   tasks:
     - name: Installing Prerequisites for Docker
       apt:
-        name:
-        - apt-transport-https
-        - ca-certificates
-        - curl
-        - gnupg-agent
-        - software-properties-common
+        update_cache: yes
+        cache_valid_time: 21600 # 6 hours.
+        pkg: "{{ packages['docker']['prereq'] }}"
         state: present
 
     - name: Add Docker’s official GPG key
@@ -29,10 +26,7 @@
 
     - name: Install Docker Engine.
       apt:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
+        pkg: "{{ packages['docker']['engine'] }}"
         state: present
 
     - name: Add user to docker group
