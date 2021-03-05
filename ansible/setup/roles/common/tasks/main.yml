@@ -1,0 +1,26 @@
+---
+- name: Download with apt
+  apt:
+    update_cache: yes
+    cache_valid_time: 21600 # 6 hours.
+    pkg: "{{ packages['common'] }}"
+    state: present
+  become: true
+
+- name: Install dotfiles
+  remote_user: vagrant
+  shell: |
+    cd $HOME
+    rm -f .bash*
+
+    git clone https://github.com/btoll/dotfiles
+    cd dotfiles
+    stow -t $HOME bash gdb git gnupg templates vim xinit
+    mkdir -p $HOME/.config/i3
+    stow -t $HOME/.config/i3 i3
+
+    git clone --depth 1 https://github.com/junegunn/fzf.git $HOME/.fzf
+    echo "\n" | $HOME/.fzf/install
+  become: true
+  become_user: vagrant
+
