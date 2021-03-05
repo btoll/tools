@@ -1,9 +1,0 @@
-[production]
-ansible-server0
-
-[development]
-ansible-worker[0:2]
-
-[init]
-127.0.0.1 ansible_connection=local
-

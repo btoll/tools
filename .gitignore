@@ -2,8 +2,3 @@ node_modules
 **/__pycache__
 *.out
 
-.vagrant
-*console.log
-config
-playbook.retry
-
