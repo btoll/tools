@@ -1,0 +1,19 @@
+FROM ubuntu:bionic
+
+RUN apt-get update && \
+    apt-get install -y gnupg2 wget
+
+COPY default.tor.conf /etc/nginx/sites-available/default
+
+RUN wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import && \
+    gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - && \
+    echo "deb https://deb.torproject.org/torproject.org bionic main\ndeb-src https://deb.torproject.org/torproject.org bionic main" > /etc/apt/sources.list.d/tor.list
+
+RUN apt-get update && \
+    apt-get install -y apt-transport-https deb.torproject.org-keyring tor
+
+RUN echo "HiddenServiceDir /var/lib/tor/benjamintoll.com\nHiddenServicePort 80 onion:80" > /etc/tor/torrc
+RUN echo "\nHiddenServiceDir /var/lib/tor/italy\nHiddenServicePort 80 italy:80" >> /etc/tor/torrc
+
+ENTRYPOINT ["tor"]
+

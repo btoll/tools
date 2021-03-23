@@ -1,0 +1,110 @@
+version: "3.7"
+
+services:
+  db:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE_FILE: /run/secrets/db_name
+      MYSQL_USER_FILE: /run/secrets/db_user
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    networks:
+      - italy_net
+    secrets:
+       - db_name
+       - db_user
+       - db_password
+       - db_root_password
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+      - italy_data:/var/lib/mysql
+
+  webserver:
+    build:
+      context: dockerfiles
+      dockerfile: Dockerfile.nginx
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 80:80
+    networks:
+      - italy_net
+    volumes:
+      - ./italy:/var/www/html:ro
+
+  italy:
+    build:
+      context: dockerfiles
+      dockerfile: Dockerfile.php-fpm
+    restart: always
+    depends_on:
+      - webserver
+    networks:
+      - italy_net
+    secrets:
+       - source: php_italy
+         target: /var/www/italy.php
+    volumes:
+      - ./italy:/var/www/html:ro
+
+  benjamintoll:
+    image: nginx
+    restart: always
+    depends_on:
+      - webserver
+    networks:
+      - italy_net
+    volumes:
+      - ./benjamintoll.com/public:/usr/share/nginx/html:ro
+
+  tor:
+    build:
+      context: dockerfiles
+      dockerfile: Dockerfile.tor
+    restart: always
+    depends_on:
+      - onion
+    networks:
+      - italy_net
+      - onion_net
+    volumes:
+      - onion_data:/var/lib/tor
+
+  onion:
+    image: nginx
+    restart: always
+    networks:
+      - onion_net
+    volumes:
+      - ./benjamintoll.com/public:/usr/share/nginx/html:ro
+
+networks:
+  italy_net:
+    name: italy_net
+    driver: bridge
+  onion_net:
+    name: onion
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+
+secrets:
+  db_name:
+    file: secrets/italy/db_name.txt
+  db_user:
+    file: secrets/italy/db_user.txt
+  db_password:
+    file: secrets/italy/db_password.txt
+  db_root_password:
+    file: secrets/italy/db_root_password.txt
+  php_italy:
+    file: secrets/italy/php_italy.txt
+
+volumes:
+  italy_data:
+    name: italy_data
+  onion_data:
+    name: onion_data
+
