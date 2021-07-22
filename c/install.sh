@@ -1,12 +1,17 @@
 #!/bin/bash
 
-BINDIR="$HOME/bin"
-mkdir "$BINDIR"
+set -e
 
-gcc -o "$BINDIR" htoi.c
-gcc -o "$BINDIR" itob.c
-gcc -o "$BINDIR" otoi.c
+BINDIR="$HOME/bin"
+mkdir -p "$BINDIR"
+
+for bin in {htoi,itob,otoi}
+do
+    gcc -o "$BINDIR/$bin" "$bin.c"
+done
 
 cd asbits || exit
-gcc -o "$BINDIR" asbits.c
+gcc -o "$BINDIR/asbits" asbits.c
+
+echo "[SUCCESS] Installed binaries to $BINDIR"
 
