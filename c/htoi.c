@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define HEX_UPPER(N) ((N) >= 'A' && (N) <= 'F')
-#define HEX_LOWER(N) ((N) >= 'a' && (N) <= 'f')
-#define HEX_DIGIT(N) ((N) >= '0' && (N) <= '9')
+#define HEX_UPPER(N) (N >= 'A' && N <= 'F')
+#define HEX_LOWER(N) (N >= 'a' && N <= 'f')
+#define HEX_DIGIT(N) (N >= '0' && N <= '9')
 
 // echo "ibase=16; 7F" | bc
 

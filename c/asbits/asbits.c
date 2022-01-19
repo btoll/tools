@@ -78,7 +78,7 @@ void asbits(short numDisplayBytes) {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        printf("Usage: %s <base-10 | hex | octal> [num bytes=4]\n", argv[0]);
+        printf("Usage: %s <base-10 | hex | octal> [num nibbles=4]\n", argv[0]);
         exit(1);
     }
 
