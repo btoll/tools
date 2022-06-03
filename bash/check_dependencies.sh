@@ -18,13 +18,13 @@ while [ "$#" -gt 0 ]; do
 done
 
 # Read words into an array.
-IFS=";" read -a DEPENDENCIES <<< "$D"
-IFS=";" read -a PACKAGES <<< "$P"
+IFS=";" read -ra DEPENDENCIES <<< "$D"
+IFS=";" read -ra PACKAGES <<< "$P"
 
 for n in ${!DEPENDENCIES[*]}; do
     DEPENDENCY=${DEPENDENCIES[n]}
 
-    which $DEPENDENCY > /dev/null || {
+    which "$DEPENDENCY" > /dev/null || {
         FAILED_DEPENDENCIES+="\n$(tput smul)Name:$(tput sgr0) $DEPENDENCY\n$(tput smul)Package:$(tput sgr0) ${PACKAGES[n]}\n"
     }
 done
@@ -32,7 +32,7 @@ done
 if [ -n "$FAILED_DEPENDENCIES" ]; then
     echo -e "\n$(tput setaf 3)[WARNING]$(tput sgr0) This script has dependencies that are not present on your system."
     echo "Please install the following:"
-    echo -e $FAILED_DEPENDENCIES
+    echo -e "$FAILED_DEPENDENCIES"
     touch /tmp/failed_dependencies
     exit 1
 fi
