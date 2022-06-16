@@ -1,0 +1,110 @@
+version: "3.7"
+
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE_FILE: /run/secrets/db_name
+      MYSQL_USER_FILE: /run/secrets/db_user
+      MYSQL_PASSWORD_FILE: /run/secrets/db_password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    networks:
+      - italy_net
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d:ro
+      - italy_db_data:/var/lib/mysql
+    secrets:
+       - db_name
+       - db_user
+       - db_password
+       - db_root_password
+
+  proxy:
+    image: btoll/webserver-proxy:2.0.0
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - italy_net
+    volumes:
+      - ./certbot/dhparam-4096.pem:/etc/ssl/certs/dhparam-4096.pem
+      - ./certbot/letsencrypt/etc/letsencrypt/live/benjamintoll.com/fullchain.pem:/etc/letsencrypt/live/benjamintoll.com/fullchain.pem
+      - ./certbot/letsencrypt/etc/letsencrypt/live/benjamintoll.com/privkey.pem:/etc/letsencrypt/live/benjamintoll.com/privkey.pem 
+
+  benjamintoll:
+    image: btoll/benjamintoll.com:latest
+    restart: always
+    depends_on:
+      - proxy
+    networks:
+      - italy_net
+
+  italy:
+    image: btoll/italy:2.0.0
+    restart: always
+    depends_on:
+      - proxy
+    networks:
+      - italy_net
+    secrets:
+       - source: php_italy
+         target: /var/www/italy.php
+
+  owlsnestfarm:
+    image: btoll/owlsnestfarm:latest
+    restart: always
+    depends_on:
+      - proxy
+    networks:
+      - italy_net
+
+  tor:
+    image: btoll/tor:latest
+    restart: always
+    networks:
+      - italy_net
+      - tor_net
+    volumes:
+      - onion_data:/var/lib/tor:ro
+
+  onion:
+    image: btoll/benjamintoll.com:latest
+    restart: always
+    depends_on:
+      - tor
+    networks:
+      - tor_net
+
+networks:
+  italy_net:
+    name: italy_net
+    driver: bridge
+  tor_net:
+    name: onion
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "false"
+
+secrets:
+  db_name:
+    file: secrets/italy/db_name.txt
+  db_user:
+    file: secrets/italy/db_user.txt
+  db_password:
+    file: secrets/italy/db_password.txt
+  db_root_password:
+    file: secrets/italy/db_root_password.txt
+  php_italy:
+    file: secrets/italy/php_italy.txt
+
+volumes:
+  italy_db_data:
+    name: italy_db_data
+  onion_data:
+    name: onion_data
+
