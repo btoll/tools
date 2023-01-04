@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 
     if (numDisplayBytes > 8) {
         numDisplayBytes = 8;
-        printf("Max number of display bytes is 8\n");
+        printf("Max number of display nibbles is 8\n");
     }
 
     asbits(numDisplayBytes);
