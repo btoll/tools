@@ -1,12 +1,16 @@
 #!/bin/bash
 
 BINDIR="$HOME/bin"
-mkdir "$BINDIR"
 
-gcc -o "$BINDIR" htoi.c
-gcc -o "$BINDIR" itob.c
-gcc -o "$BINDIR" otoi.c
+if [ ! -d "$BINDIR" ]
+then
+    mkdir "$BINDIR"
+fi
+
+gcc -o "$BINDIR/htoi" htoi.c
+gcc -o "$BINDIR/itob" itob.c
+gcc -o "$BINDIR/otoi" otoi.c
 
 cd asbits || exit
-gcc -o "$BINDIR" asbits.c
+gcc -o "$BINDIR/asbits" asbits.c
 
